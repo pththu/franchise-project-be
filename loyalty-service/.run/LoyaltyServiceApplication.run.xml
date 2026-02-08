@@ -1,0 +1,21 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="LoyaltyServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <envs>
+      <env name="DB_URL" value="jdbc:postgresql://dpg-d644ehfpm1nc738hbvrg-a.singapore-postgres.render.com/auth_franchise_heoe" />
+      <env name="DB_USERNAME" value="sa" />
+      <env name="DB_PASSWORD" value="1IywPMOfBdPLn1E8FZfqkA2LBfnVwR9E" />
+    </envs>
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />
+    <module name="loyalty-service" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.loyaltyservice.LoyaltyServiceApplication" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.franchiseproject.loyaltyservice.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
