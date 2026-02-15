@@ -1,9 +1,12 @@
 package com.franchiseproject.shiftservice.controller;
 
+import com.franchiseproject.shiftservice.dto.AssignShiftRequest;
+import com.franchiseproject.shiftservice.service.ShiftConfigurationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -11,48 +14,54 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ShiftController {
 
-    // 1. Tạo ca làm (tạo shift_config)
+    private final ShiftConfigurationService service;
+
+    // 1. Tạo ca làm
     @PostMapping("/config")
-    public String createShiftConfig() {
-        return "Create shift configuration";
+    public UUID createShiftConfig() {
+        return service.createShiftConfiguration();
     }
 
     // 2. Lấy danh sách ca theo franchise
     @GetMapping("/config/{franchiseId}")
-    public String getShiftConfigs(@PathVariable UUID franchiseId) {
-        return "Get shift configs of franchise " + franchiseId;
+    public List<UUID> getShiftConfigs(@PathVariable UUID franchiseId) {
+        return service.getShiftConfigurationsByFranchise(franchiseId);
     }
 
-    // 3. Phân ca cho staff (tạo staff_shift)
+    // 3. Phân ca cho staff
     @PostMapping("/assign")
-    public String assignShift() {
-        return "Assign shift to staff";
+    public UUID assignShift(@RequestBody AssignShiftRequest request) {
+        return service.assignShift(
+                request.getStaffId(),
+                request.getShiftConfigId(),
+                request.getWorkDate()
+        );
     }
 
     // 4. Check-in
     @PutMapping("/checkin/{shiftId}")
-    public String checkIn(@PathVariable UUID shiftId) {
-        return "Check-in shift " + shiftId;
+    public void checkIn(@PathVariable UUID shiftId) {
+        service.checkIn(shiftId);
     }
 
     // 5. Check-out
     @PutMapping("/checkout/{shiftId}")
-    public String checkOut(@PathVariable UUID shiftId) {
-        return "Check-out shift " + shiftId;
+    public void checkOut(@PathVariable UUID shiftId) {
+        service.checkOut(shiftId);
     }
 
     // 6. Xem lịch làm theo ngày
     @GetMapping("/schedule")
-    public String getSchedule(
+    public List<UUID> getSchedule(
             @RequestParam UUID staffId,
             @RequestParam LocalDate date
     ) {
-        return "Schedule of " + staffId + " at " + date;
+        return service.getSchedule(staffId, date);
     }
 
     // 7. Báo vắng
     @PutMapping("/absent/{shiftId}")
-    public String markAbsent(@PathVariable UUID shiftId) {
-        return "Absent shift " + shiftId;
+    public void markAbsent(@PathVariable UUID shiftId) {
+        service.markAbsent(shiftId);
     }
 }
