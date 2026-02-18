@@ -14,6 +14,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,6 +47,8 @@ public class UserServiceImpl implements UserService {
         }
         User user = userMapper.toUser(request);
         user.setStatus(UserStatus.ACTIVE);
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         return userRepository.save(user);
     }
 
@@ -52,10 +56,14 @@ public class UserServiceImpl implements UserService {
     public User register(CustomerRegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USERNAME_EXISTED);
 
+
         User user = userMapper.toUser(request);
         user.setStatus(UserStatus.ACTIVE);
         user.setRole(Role.builder().id(UUID.fromString("06d75b82-c01e-4cfa-872d-e69c7cdf9cae")).build());
         user.setVerifyEmail(false);
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         return userRepository.save(user);
     }
 }
