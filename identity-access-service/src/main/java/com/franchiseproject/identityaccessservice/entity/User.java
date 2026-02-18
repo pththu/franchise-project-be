@@ -1,4 +1,4 @@
-package com.franchiseproject.identityaccessservice.model;
+package com.franchiseproject.identityaccessservice.entity;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
