@@ -1,5 +1,6 @@
 package com.franchiseproject.identityaccessservice.dto.request;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +8,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@Builder
 public class UserCreationRequest {
     String username;
     String fullName;

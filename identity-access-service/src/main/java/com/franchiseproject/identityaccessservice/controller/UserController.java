@@ -3,7 +3,9 @@ package com.franchiseproject.identityaccessservice.controller;
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
+import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.mapper.UserMapper;
 import com.franchiseproject.identityaccessservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -20,16 +22,18 @@ import java.util.UUID;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserController {
     UserService userService;
+    UserMapper userMapper;
 
     @GetMapping
-    public ApiResponse<List<User>> getAll() {
-        List<User> users = userService.getAll();
-        ApiResponse<List<User>> response = ApiResponse.<List<User>>builder()
+    public ApiResponse<List<UserResponse>> getAll() {
+        ApiResponse<List<UserResponse>> response = ApiResponse.<List<UserResponse>>builder()
                 .statusCode(200)
                 .message("Get Data Success")
-                .data(users)
+                .data(userService.getAll()
+                        .stream()
+                        .map(u -> userMapper.toUserResponse(u))
+                        .toList())
                 .build();
-
         return response;
     }
 

@@ -2,8 +2,10 @@ package com.franchiseproject.identityaccessservice.mapper;
 
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
+import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.repository.UserRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -29,6 +31,8 @@ public interface UserMapper {
     @Mapping(target = "franchiseId", ignore = true)
     @Mapping(target = "isVerifyEmail", ignore = true)
     User toUser(CustomerRegisterRequest request);
+
+    UserResponse toUserResponse(User user);
 
     default Role map(UUID roleId) {
         if (roleId == null) return null;
