@@ -1,5 +1,6 @@
 package com.franchiseproject.identityaccessservice.mapper;
 
+import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
@@ -17,9 +18,17 @@ public interface UserMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "lastLogin", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "isVerifyEmail", ignore = true)
     User toUser(UserCreationRequest request);
 
-
+    @Mapping(target = "passwordHash", source = "password")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "lastLogin", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "franchiseId", ignore = true)
+    @Mapping(target = "isVerifyEmail", ignore = true)
+    User toUser(CustomerRegisterRequest request);
 
     default Role map(UUID roleId) {
         if (roleId == null) return null;

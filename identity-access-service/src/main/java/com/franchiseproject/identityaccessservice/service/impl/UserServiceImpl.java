@@ -1,5 +1,6 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
+import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
@@ -31,33 +32,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getOne(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
     public User createOne(UserCreationRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USERNAME_EXISTED);
         }
-
-//        User user = User.builder()
-//                .username(request.getUsername())
-//                .email(request.getEmail())
-//                .passwordHash(request.getPasswordHash())
-//                .phone(request.getPhone())
-//                .franchiseId(request.getFranchiseId())
-//                .role(Role.builder()
-//                        .id(request.getRoleId())
-//                        .build())
-//                .avatarUrl(request.getAvatarUrl())
-//                .gender(request.isGender())
-//                .status(UserStatus.ACTIVE)
-//                .build();
         User user = userMapper.toUser(request);
         user.setStatus(UserStatus.ACTIVE);
         return userRepository.save(user);
     }
 
     @Override
-    public User getOne(UUID userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public User register(CustomerRegisterRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USERNAME_EXISTED);
+
+        User user = userMapper.toUser(request);
+        user.setStatus(UserStatus.ACTIVE);
+        user.setRole(Role.builder().id(UUID.fromString("06d75b82-c01e-4cfa-872d-e69c7cdf9cae")).build());
+        user.setVerifyEmail(false);
+        return userRepository.save(user);
     }
 }

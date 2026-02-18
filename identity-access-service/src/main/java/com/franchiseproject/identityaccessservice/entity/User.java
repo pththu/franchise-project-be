@@ -24,6 +24,8 @@ public class User {
     UUID id;
     @Column(unique = true, nullable = false)
     String username;
+    @Column(name = "full_name", nullable = false)
+    String fullName;
     @Column(name = "password_hash", nullable = false)
     String passwordHash;
     @Column(nullable = false, unique = true)
@@ -31,11 +33,14 @@ public class User {
     @Column(unique = true)
     String phone;
     boolean gender;
+    @Column(name = "is_verify_email")
+    boolean isVerifyEmail;
     @Column(name = "avatar_url")
     String avatarUrl;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     UserStatus status;
+    @Column(name = "franchise_id", columnDefinition = "UUID", nullable = true)
     UUID franchiseId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", columnDefinition = "UUID", nullable = false)

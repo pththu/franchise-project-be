@@ -1,6 +1,7 @@
 package com.franchiseproject.identityaccessservice.controller;
 
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
+import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.service.UserService;
@@ -42,11 +43,20 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<User>  getUserById(@PathVariable("id") UUID userId) {
+    public ApiResponse<User> getUserById(@PathVariable("id") UUID userId) {
         return ApiResponse.<User>builder()
                 .statusCode(201)
                 .message("Get One")
                 .data(userService.getOne(userId))
+                .build();
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<User> register(@RequestBody @Valid CustomerRegisterRequest request) {
+        return ApiResponse.<User>builder()
+                .statusCode(201)
+                .message("Register success")
+                .data(userService.register(request))
                 .build();
     }
 }

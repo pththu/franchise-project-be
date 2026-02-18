@@ -1,4 +1,5 @@
 package com.franchiseproject.identityaccessservice.dto.request;
+
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +8,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class UserCreationRequest {
+public class CustomerRegisterRequest {
     String username;
     String fullName;
     @Size(min = 8, message = "INVALID_PASSWORD")
@@ -17,6 +18,4 @@ public class UserCreationRequest {
     String phone;
     boolean gender;
     String avatarUrl;
-    UUID franchiseId;
-    UUID roleId;
 }
