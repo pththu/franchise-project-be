@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     public User createOne(UserCreationRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new AppException(ErrorCode.USERNAME_EXISTED);
+            throw new AppException(ErrorCode.USER_EXISTED);
         }
         User user = userMapper.toUser(request);
         user.setStatus(UserStatus.ACTIVE);
@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(CustomerRegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USERNAME_EXISTED);
+        if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USER_EXISTED);
 
 
         User user = userMapper.toUser(request);
