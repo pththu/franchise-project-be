@@ -27,7 +27,7 @@ public class LoyaltyTransaction {
     UUID franchiseId;
     @Column(name = "customer_id", nullable = false)
     UUID customerId;
-    @Column(name = "promotion_id", nullable = false)
+    @Column(name = "promotion_id", nullable = true)
     UUID promotionId;
     int points;
     @Column(name = "balance_before")
