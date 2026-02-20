@@ -12,5 +12,5 @@ public interface UserService {
     User getOne (UUID userId);
 
     User createOne (UserCreationRequest request);
-    User register (CustomerRegisterRequest request);
+
 }

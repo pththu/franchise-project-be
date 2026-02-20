@@ -26,15 +26,14 @@ public class UserController {
 
     @GetMapping
     public ApiResponse<List<UserResponse>> getAll() {
-        ApiResponse<List<UserResponse>> response = ApiResponse.<List<UserResponse>>builder()
+        return ApiResponse.<List<UserResponse>>builder()
                 .statusCode(200)
                 .message("Get Data Success")
                 .data(userService.getAll()
                         .stream()
-                        .map(u -> userMapper.toUserResponse(u))
+                        .map(userMapper::toUserResponse)
                         .toList())
                 .build();
-        return response;
     }
 
     @PostMapping("")
@@ -52,15 +51,6 @@ public class UserController {
                 .statusCode(201)
                 .message("Get One")
                 .data(userService.getOne(userId))
-                .build();
-    }
-
-    @PostMapping("/register")
-    public ApiResponse<User> register(@RequestBody @Valid CustomerRegisterRequest request) {
-        return ApiResponse.<User>builder()
-                .statusCode(201)
-                .message("Register success")
-                .data(userService.register(request))
                 .build();
     }
 }

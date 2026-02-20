@@ -51,19 +51,4 @@ public class UserServiceImpl implements UserService {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         return userRepository.save(user);
     }
-
-    @Override
-    public User register(CustomerRegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USER_EXISTED);
-
-
-        User user = userMapper.toUser(request);
-        user.setStatus(UserStatus.ACTIVE);
-        user.setRole(Role.builder().id(UUID.fromString("06d75b82-c01e-4cfa-872d-e69c7cdf9cae")).build());
-        user.setVerifyEmail(false);
-
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        return userRepository.save(user);
-    }
 }
