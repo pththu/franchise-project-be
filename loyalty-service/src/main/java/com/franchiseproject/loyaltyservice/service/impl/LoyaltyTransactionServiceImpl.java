@@ -3,7 +3,8 @@ package com.franchiseproject.loyaltyservice.service.impl;
 import com.franchiseproject.loyaltyservice.dto.request.AdjustPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.response.AdjustPointsResponse;
 import com.franchiseproject.loyaltyservice.enums.LoyalyTransactionType;
-import com.franchiseproject.loyaltyservice.exception.ResourceNotFoundException;
+import com.franchiseproject.loyaltyservice.exception.AppException;
+import com.franchiseproject.loyaltyservice.exception.ErrorCode;
 import com.franchiseproject.loyaltyservice.mapper.LoyaltyMapper;
 import com.franchiseproject.loyaltyservice.model.CustomerLoyalty;
 import com.franchiseproject.loyaltyservice.model.LoyaltyTransaction;
@@ -16,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,14 +39,14 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     @Transactional
     public AdjustPointsResponse adjustPoints(AdjustPointsRequest request) {
         CustomerLoyalty loyalty = customerLoyaltyRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer loyalty profile not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_PROFILE_NOT_FOUND));
 
         int balanceBefore = loyalty.getCurrentPoints() != null ? loyalty.getCurrentPoints() : 0;
         int pointsToAdjust = request.getPoints();
         int newBalance = balanceBefore + pointsToAdjust;
 
         if (newBalance < 0) {
-            throw new IllegalArgumentException("Cannot deduct more points than the current balance. Current balance: " + balanceBefore);
+            throw new AppException(ErrorCode.INSUFFICIENT_POINTS_BALANCE);
         }
 
         loyalty.setCurrentPoints(newBalance);
@@ -61,6 +63,7 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
                 .balanceAfter(newBalance)
                 .points(pointsToAdjust)
                 .type(LoyalyTransactionType.MANUAL)
+                .createdAt(Instant.now()) // Thêm dòng này để DTO trả về không bị null timestamp
                 .build();
 
         transaction = loyaltyTransactionRepository.save(transaction);

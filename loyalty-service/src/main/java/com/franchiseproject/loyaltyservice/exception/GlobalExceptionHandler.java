@@ -1,59 +1,59 @@
 package com.franchiseproject.loyaltyservice.exception;
 
-import org.springframework.http.HttpStatus;
+import com.franchiseproject.loyaltyservice.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Object> handleResourceNotFound(ResourceNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", ex.getMessage());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    @ExceptionHandler(value = Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handlingRuntimeException(Exception exception) {
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .statusCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
+                .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
+                .build();
+        return ResponseEntity.internalServerError().body(response);
     }
 
-    @ExceptionHandler(InsufficientPointsException.class)
-    public ResponseEntity<Object> handleInsufficientPoints(InsufficientPointsException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", ex.getMessage());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(value = AppException.class)
+    public ResponseEntity<ApiResponse<Void>> handlingAppException(AppException exception) {
+        ErrorCode errorCode = exception.getErrorCode();
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .statusCode(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .build();
+
+        int httpStatus = (String.valueOf(errorCode.getCode()).startsWith("404")) ? 404 : 400;
+        return ResponseEntity.status(httpStatus).body(response);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", ex.getMessage());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handlingMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        String errorKey = exception.getFieldError().getDefaultMessage();
+        ErrorCode errorCode = ErrorCode.INVALID_KEY;
+        try {
+            errorCode = ErrorCode.valueOf(errorKey);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .statusCode(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .build();
+        return ResponseEntity.badRequest().body(response);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", "Validation failed");
-        body.put("errors", errors);
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(value = NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handlingNoResourceFoundException (NoResourceFoundException exception) {
+        ErrorCode errorCode = ErrorCode.NOT_FOUND;
+        return ResponseEntity.status(404)
+                .body(ApiResponse.<Void>builder()
+                        .statusCode(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build());
     }
 }
