@@ -63,7 +63,7 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
                 .balanceAfter(newBalance)
                 .points(pointsToAdjust)
                 .type(LoyalyTransactionType.MANUAL)
-                .createdAt(Instant.now()) // Thêm dòng này để DTO trả về không bị null timestamp
+                .createdAt(Instant.now())
                 .build();
 
         transaction = loyaltyTransactionRepository.save(transaction);
