@@ -1,15 +1,15 @@
 package com.franchiseproject.loyaltyservice.dto.request;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.UUID;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AdjustPointsRequest {
     @NotNull(message = "Customer ID is required")
