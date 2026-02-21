@@ -1,5 +1,6 @@
 package com.franchiseproject.customerservice.service;
 
+import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
 import com.franchiseproject.customerservice.model.Customer;
 import org.springframework.data.domain.Page;
@@ -11,7 +12,11 @@ import java.util.UUID;
 public interface CustomerService {
     List<Customer> getAll();
 
+//    Customer getCustomerById(UUID id);
+//
+//    Page<Customer> searchCustomers(String keyword, CustomerStatus status, Pageable pageable);
+
     Customer getCustomerById(UUID id);
 
-    Page<Customer> searchCustomers(String keyword, CustomerStatus status, Pageable pageable);
+    PageResponse<Customer> searchCustomers(String keyword, CustomerStatus status, Pageable pageable);
 }

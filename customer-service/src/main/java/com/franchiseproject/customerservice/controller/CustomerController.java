@@ -1,5 +1,8 @@
 package com.franchiseproject.customerservice.controller;
 
+import com.franchiseproject.customerservice.dto.ApiResponse;
+import com.franchiseproject.customerservice.dto.response.CustomerDetailResponse;
+import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
 import com.franchiseproject.customerservice.model.Customer;
 import com.franchiseproject.customerservice.model.CustomerFranchise;
@@ -39,41 +42,35 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
-    // 1. API Search & Filter
+    // Search and filter Customer
     @GetMapping("/search")
-    public ResponseEntity<Map<String, Object>> searchCustomers(
+    public ApiResponse<PageResponse<Customer>> searchCustomers(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) CustomerStatus status,
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
-        Page<Customer> pageResult = customerService.searchCustomers(keyword, status, pageable);
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("data", pageResult.getContent());
-        response.put("currentPage", pageResult.getNumber());
-        response.put("totalItems", pageResult.getTotalElements());
-        response.put("totalPages", pageResult.getTotalPages());
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.<PageResponse<Customer>>builder()
+                .statusCode(200)
+                .message("Search customers successfully")
+                .data(customerService.searchCustomers(keyword, status, pageable))
+                .build();
     }
 
-    // 2. API xem chi tiet Customer + Loyalty info
+    // View Loyalty tier and point
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getCustomerDetail(@PathVariable UUID id) {
-        // Gọi Service lấy dữ liệu thật từ DB
+    public ApiResponse<CustomerDetailResponse> getCustomerDetail(@PathVariable UUID id) {
         Customer customer = customerService.getCustomerById(id);
-
-        if (customer == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        // Lấy info Loyalty
         List<CustomerFranchise> loyaltyInfos = customerFranchiseService.getLoyaltyInfoByCustomerId(id);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("customer", customer);
-        response.put("loyalty", loyaltyInfos);
+        CustomerDetailResponse detailResponse = CustomerDetailResponse.builder()
+                .customer(customer)
+                .loyaltyInfos(loyaltyInfos)
+                .build();
 
-        return ResponseEntity.ok(response);
+        return ApiResponse.<CustomerDetailResponse>builder()
+                .statusCode(200)
+                .message("Get customer detail successfully")
+                .data(detailResponse)
+                .build();
     }
 }

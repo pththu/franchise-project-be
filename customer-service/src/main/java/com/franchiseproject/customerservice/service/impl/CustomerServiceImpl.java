@@ -1,9 +1,9 @@
 package com.franchiseproject.customerservice.service.impl;
 
+import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
 import com.franchiseproject.customerservice.model.Customer;
 import com.franchiseproject.customerservice.repository.CustomerRepository;
-import com.franchiseproject.customerservice.repository.specification.CustomerSpecification;
 import com.franchiseproject.customerservice.service.CustomerService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,12 +29,19 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer getCustomerById(UUID id) {
-        return customerRepository.findById(id).orElse(null);
+        // AppException: pending..
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
     }
 
     @Override
-    public Page<Customer> searchCustomers(String keyword, CustomerStatus status, Pageable pageable) {
-        Specification<Customer> spec = CustomerSpecification.filterCustomers(keyword, status);
-        return customerRepository.findAll(spec, pageable);
+    public PageResponse<Customer> searchCustomers(String keyword, CustomerStatus status, Pageable pageable) {
+        Page<Customer> pageResult = customerRepository.searchCustomers(keyword, status, pageable);
+        return PageResponse.<Customer>builder()
+                .items(pageResult.getContent())
+                .currentPage(pageResult.getNumber())
+                .totalPages(pageResult.getTotalPages())
+                .totalItems(pageResult.getTotalElements())
+                .build();
     }
 }
