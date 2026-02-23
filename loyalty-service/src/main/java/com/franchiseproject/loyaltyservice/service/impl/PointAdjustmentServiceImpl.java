@@ -17,6 +17,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+
 @Service
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -56,6 +58,7 @@ public class PointAdjustmentServiceImpl implements PointAdjustmentService {
                 .balanceBefore(balanceBefore)
                 .balanceAfter(newBalance)
                 .type(LoyaltyTransactionType.MANUAL)
+                .createdAt(Instant.now())
                 .build();
         loyaltyTransactionRepository.save(transaction);
 
