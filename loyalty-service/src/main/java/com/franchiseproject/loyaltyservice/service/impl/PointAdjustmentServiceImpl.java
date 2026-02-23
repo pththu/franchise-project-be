@@ -3,7 +3,7 @@ package com.franchiseproject.loyaltyservice.service.impl;
 import com.franchiseproject.loyaltyservice.dto.request.ManualAdjustPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.response.ManualAdjustPointsResponse;
 import com.franchiseproject.loyaltyservice.enums.LoyaltyTransactionType;
-import com.franchiseproject.loyaltyservice.enums.LoyalyTransactionType;
+import com.franchiseproject.loyaltyservice.enums.LoyaltyTransactionType;
 import com.franchiseproject.loyaltyservice.exception.AppException;
 import com.franchiseproject.loyaltyservice.exception.ErrorCode;
 import com.franchiseproject.loyaltyservice.model.CustomerFranchise;
@@ -32,7 +32,6 @@ public class PointAdjustmentServiceImpl implements PointAdjustmentService {
             throw new IllegalArgumentException("Adjustment points cannot be zero");
         }
 
-        // 1. Tìm ví điểm của khách
         CustomerFranchise cf = customerFranchiseRepository
                 .findByCustomerIdAndFranchiseId(request.getCustomerId(), request.getFranchiseId())
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_PROFILE_NOT_FOUND));
@@ -40,31 +39,26 @@ public class PointAdjustmentServiceImpl implements PointAdjustmentService {
         int balanceBefore = cf.getLoyaltyCurrentPoint();
         int newBalance = balanceBefore + request.getPoints();
 
-        // 2. Validate nếu trừ điểm thì không được âm ví
         if (newBalance < 0) {
             throw new AppException(ErrorCode.INSUFFICIENT_POINTS);
         }
 
-        // 3. Cập nhật ví điểm
         cf.setLoyaltyCurrentPoint(newBalance);
-        // Nếu là cộng điểm (+), ta có thể cộng luôn vào điểm xét hạng (Total Point)
         if (request.getPoints() > 0) {
             cf.setLoyaltyTotalPoint(cf.getLoyaltyTotalPoint() + request.getPoints());
         }
         customerFranchiseRepository.save(cf);
 
-        // 4. Lưu lịch sử giao dịch (MANUAL)
         LoyaltyTransaction transaction = LoyaltyTransaction.builder()
                 .customerId(request.getCustomerId())
                 .franchiseId(request.getFranchiseId())
                 .points(request.getPoints())
                 .balanceBefore(balanceBefore)
                 .balanceAfter(newBalance)
-                .type(LoyaltyTransactionType.MANUAL) // Đã có sẵn trong ENUM
+                .type(LoyaltyTransactionType.MANUAL)
                 .build();
         loyaltyTransactionRepository.save(transaction);
 
-        // 5. Trả về kết quả
         return ManualAdjustPointsResponse.builder()
                 .transactionId(transaction.getId())
                 .customerId(cf.getCustomerId())
