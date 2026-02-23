@@ -6,6 +6,7 @@ import com.franchiseproject.identityaccessservice.dto.response.AuthenticationRes
 import com.franchiseproject.identityaccessservice.entity.User;
 
 public interface AuthenticationService {
-    boolean login(AuthenticationRequest request);
-    User register (CustomerRegisterRequest request);
+    AuthenticationResponse login(AuthenticationRequest request);
+
+    User register(CustomerRegisterRequest request);
 }

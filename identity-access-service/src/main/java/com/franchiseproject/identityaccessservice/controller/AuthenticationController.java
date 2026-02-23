@@ -38,9 +38,7 @@ public class AuthenticationController {
         return ApiResponse.<AuthenticationResponse>builder()
                 .statusCode(200)
                 .message("Login success")
-                .data(AuthenticationResponse.builder()
-                        .authenticated(authenticationService.login(request))
-                        .build())
+                .data(authenticationService.login(request))
                 .build();
     }
 }
