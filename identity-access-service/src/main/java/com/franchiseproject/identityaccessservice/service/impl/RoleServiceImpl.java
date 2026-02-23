@@ -1,6 +1,10 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
-import com.franchiseproject.identityaccessservice.model.Role;
+import com.franchiseproject.identityaccessservice.dto.request.RoleCreationRequest;
+import com.franchiseproject.identityaccessservice.entity.Role;
+import com.franchiseproject.identityaccessservice.exception.AppException;
+import com.franchiseproject.identityaccessservice.exception.ErrorCode;
+import com.franchiseproject.identityaccessservice.mapper.RoleMapper;
 import com.franchiseproject.identityaccessservice.repository.RoleRepository;
 import com.franchiseproject.identityaccessservice.service.RoleService;
 import lombok.AccessLevel;
@@ -17,16 +21,26 @@ import java.util.UUID;
 public class RoleServiceImpl implements RoleService {
 
     RoleRepository roleRepository;
+    RoleMapper roleMapper;
 
     @Override
-    public Role createRole(Role role) {
-        return roleRepository.save(role);
+    public List<Role> getAll() {
+        return roleRepository.findAll();
     }
 
     @Override
-    public Role updateRole(UUID id, Role role) {
+    public Role createRole(RoleCreationRequest request) {
+        if (roleRepository.existsByName(request.getName())) {
+            throw new AppException(ErrorCode.ROLE_EXISTED);
+        }
+
+        return roleRepository.save(roleMapper.toRole(request));
+    }
+
+    @Override
+    public Role updateRole(UUID id, RoleCreationRequest role) {
         Role existingRole = roleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
 
         existingRole.setName(role.getName());
         existingRole.setDescription(role.getDescription());
@@ -35,12 +49,18 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
+    public Role getById(UUID id) {
+        return roleRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
     }
 
+
     @Override
-    public void deleteRole(UUID id) {
+    public boolean deleteRole(UUID id) {
+        if (roleRepository.existsById(id)) {
+            new AppException(ErrorCode.NOT_FOUND);
+        }
         roleRepository.deleteById(id);
+        return true;
     }
 }

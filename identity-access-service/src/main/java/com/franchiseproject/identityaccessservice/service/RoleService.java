@@ -1,16 +1,20 @@
 package com.franchiseproject.identityaccessservice.service;
 
-import com.franchiseproject.identityaccessservice.model.Role;
+import com.franchiseproject.identityaccessservice.dto.request.RoleCreationRequest;
+import com.franchiseproject.identityaccessservice.entity.Role;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface RoleService {
-    Role createRole(Role role);
+    Role createRole(RoleCreationRequest role);
 
-    Role updateRole(UUID id, Role role);
+    Role updateRole(UUID id, RoleCreationRequest role);
 
-    List<Role> getAllRoles();
+    Role getById(UUID id);
 
-    void deleteRole(UUID id);
+    List<Role> getAll();
+
+    boolean deleteRole(UUID id);
 }
+

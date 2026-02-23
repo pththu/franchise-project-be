@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
+    ROLE_EXISTED(409, "Role is existed"),
     USER_EXISTED(409, "User is existed"),
     INVALID_PASSWORD(400, "Password must be at least 8 character"),
     INVALID_KEY(1001, "Invalid message key"),

@@ -10,7 +10,6 @@ import java.util.UUID;
 public interface UserService {
     List<User> getAll ();
     User getOne (UUID userId);
-
     User createOne (UserCreationRequest request);
 
 }

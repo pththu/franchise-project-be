@@ -11,14 +11,14 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public class GlobalExceptionHandler {
 
     // bat exception chung, chua xac dinh
-    @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<ApiResponse> handlingRuntimeException(Exception exception) {
-        ApiResponse response = ApiResponse.builder()
-                .statusCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
-                .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
-                .build();
-        return ResponseEntity.badRequest().body(response);
-    }
+//    @ExceptionHandler(value = Exception.class)
+//    public ResponseEntity<ApiResponse> handlingRuntimeException(Exception exception) {
+//        ApiResponse response = ApiResponse.builder()
+//                .statusCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
+//                .message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage())
+//                .build();
+//        return ResponseEntity.badRequest().body(response);
+//    }
 
     // bat app exception
     @ExceptionHandler(value = AppException.class)
