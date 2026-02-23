@@ -1,6 +1,6 @@
 package com.franchiseproject.loyaltyservice.model;
 
-import com.franchiseproject.loyaltyservice.enums.LoyaltyTransactionType;
+import com.franchiseproject.loyaltyservice.enums.LoyaltyTier;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -11,32 +11,41 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "loyalty_transactions")
-@Getter
+@Table(name = "customer_franchise")
 @Setter
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LoyaltyTransaction {
+public class CustomerFranchise {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(unique = true, nullable = false)
     UUID id;
-    @Column(name = "franchise_id", nullable = true)
+
+    @Column(name = "franchise_id")
     UUID franchiseId;
-    @Column(name = "customer_id", nullable = false)
-    UUID customerId;
-    @Column(name = "promotion_id", nullable = true)
-    UUID promotionId;
-    int points;
-    @Column(name = "balance_before")
-    int balanceBefore;
-    @Column(name = "balance_after")
-    int balanceAfter;
+
     @Enumerated(EnumType.STRING)
-    LoyaltyTransactionType type;
+    LoyaltyTier loyaltyTier;
+
+    @Column(name = "loyalty_current_point")
+    int loyaltyCurrentPoint;
+
+    @Column(name = "loyalty_total_point")
+    int loyaltyTotalPoint;
+
+    @Column(name = "first_order_at")
+    Instant firstOrderAt;
+
+    @Column(name = "last_order_at")
+    Instant lastOrderAt;
+
     @CreationTimestamp
     @Column(name = "created_at")
     Instant createdAt;
+
+    @Column(name = "customer_id", columnDefinition = "UUID")
+    UUID customerId;
 }

@@ -1,7 +1,7 @@
 package com.franchiseproject.loyaltyservice.enums;
 
-public enum LoyalyTransactionType {
+public enum LoyaltyTransactionType {
     EARN, // cộng điểm
     REDEEM, // đổi điểm lấy promotion
-    MANUAL  //admin điều chỉnh thủ công
+    MANUAL //admin điều chỉnh thủ công
 }

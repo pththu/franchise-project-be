@@ -11,11 +11,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AdjustPointsResponse {
+public class ManualAdjustPointsResponse {
     UUID transactionId;
     UUID customerId;
     Integer pointsAdjusted;
-    Integer balanceBefore;
     Integer balanceAfter;
+    String adjustmentReason;
     Instant timestamp;
 }

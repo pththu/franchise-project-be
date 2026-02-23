@@ -11,10 +11,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AdjustPointsRequest {
-    @NotNull(message = "Customer ID is required")
+public class ManualAdjustPointsRequest {
+    @NotNull(message = "INVALID_KEY")
     UUID customerId;
 
-    @NotNull(message = "Points value is required")
-    Integer points; // Truyền số âm nếu muốn trừ điểm, số dương nếu muốn cộng điểm
+    @NotNull(message = "INVALID_KEY")
+    UUID franchiseId;
+
+    @NotNull(message = "INVALID_KEY")
+    Integer points;
+
+    String reason;
 }
