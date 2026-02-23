@@ -1,6 +1,8 @@
 package com.franchiseproject.identityaccessservice.controller;
 
-import com.franchiseproject.identityaccessservice.model.Role;
+import com.franchiseproject.identityaccessservice.dto.ApiResponse;
+import com.franchiseproject.identityaccessservice.dto.request.RoleCreationRequest;
+import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.service.RoleService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -17,28 +19,52 @@ import java.util.UUID;
 public class RoleController {
     RoleService roleService;
 
+    // Get all Roles
+    @GetMapping
+    public ApiResponse<List<Role>> getAllRoles() {
+        return ApiResponse.<List<Role>>builder()
+                .statusCode(200)
+                .message("Gel all role")
+                .data(roleService.getAll())
+                .build();
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<Role> getById(@PathVariable UUID id) {
+        return ApiResponse.<Role>builder()
+                .statusCode(200)
+                .message("Get role by id")
+                .data(roleService.getById(id))
+                .build();
+    }
+
     // Create Role
     @PostMapping
-    public Role createRole(@RequestBody Role role) {
-        return roleService.createRole(role);
+    public ApiResponse<Role> createRole(@RequestBody RoleCreationRequest request) {
+        return ApiResponse.<Role>builder()
+                .statusCode(201)
+                .message("Role Created")
+                .data(roleService.createRole(request))
+                .build();
     }
 
     // Update Role
     @PutMapping("/{id}")
-    public Role updateRole(@PathVariable UUID id,
-                           @RequestBody Role role) {
-        return roleService.updateRole(id, role);
-    }
-
-    // Get all Roles
-    @GetMapping
-    public List<Role> getAllRoles() {
-        return roleService.getAllRoles();
+    public ApiResponse<Role> updateRole(@PathVariable UUID id, @RequestBody RoleCreationRequest role) {
+        return ApiResponse.<Role>builder()
+                .statusCode(200)
+                .message("Role updated")
+                .data(roleService.updateRole(id, role))
+                .build();
     }
 
     // Delete Role
     @DeleteMapping("/{id}")
-    public void deleteRole(@PathVariable UUID id) {
-        roleService.deleteRole(id);
+    public ApiResponse<Object> deleteRole(@PathVariable UUID id) {
+        return ApiResponse.builder()
+                .statusCode(200)
+                .message("Deleted")
+                .data(Boolean.valueOf(roleService.deleteRole(id)))
+                .build();
     }
 }

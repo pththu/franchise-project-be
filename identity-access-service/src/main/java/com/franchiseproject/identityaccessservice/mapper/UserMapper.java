@@ -5,7 +5,6 @@ import com.franchiseproject.identityaccessservice.dto.request.UserCreationReques
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
-import com.franchiseproject.identityaccessservice.repository.UserRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

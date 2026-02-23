@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserCreationRequest {
     String username;
