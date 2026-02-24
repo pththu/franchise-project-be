@@ -2,7 +2,9 @@ package com.franchiseproject.identityaccessservice.service.impl;
 
 import com.franchiseproject.identityaccessservice.dto.request.AuthenticationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
+import com.franchiseproject.identityaccessservice.dto.request.IntrospectRequest;
 import com.franchiseproject.identityaccessservice.dto.response.AuthenticationResponse;
+import com.franchiseproject.identityaccessservice.dto.response.IntrospectResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
@@ -13,7 +15,9 @@ import com.franchiseproject.identityaccessservice.repository.UserRepository;
 import com.franchiseproject.identityaccessservice.service.AuthenticationService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +29,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -50,7 +55,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         boolean result = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
         if (!result) throw new AppException(ErrorCode.UNAUTHORIZED);
 
-        var token = generateToken(user.getUsername(), user.getRole().getName());
+        var token = generateToken(user.getId(), user.getRole().getName());
 
         user.setLastLogin(Instant.now());
         userRepository.save(user);
@@ -78,14 +83,33 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return userRepository.save(user);
     }
 
-    private String generateToken(String userId, String role) {
+    @Override
+    public IntrospectResponse introspect(IntrospectRequest request)
+            throws JOSEException, ParseException {
+
+        var token = request.getToken();
+
+        JWSVerifier verifier = new MACVerifier(SECRET_KEY.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        var verified = signedJWT.verify(verifier);
+
+        return IntrospectResponse.builder()
+                .valid(verified && expiryTime.after(new Date()))
+                .build();
+    }
+
+    private String generateToken(UUID userId, String role) {
         System.out.println("SECRET_KEY: " + SECRET_KEY);
 
         // HMAC (Hash-based Message Authentication Code) + SHA-256
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS256);
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(userId)
+                .subject(userId.toString())
                 .claim("role", role)
                 .issuer("identity-service")
                 .issueTime(new Date())
