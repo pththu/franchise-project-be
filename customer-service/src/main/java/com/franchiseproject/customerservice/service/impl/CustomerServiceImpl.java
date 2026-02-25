@@ -1,7 +1,11 @@
 package com.franchiseproject.customerservice.service.impl;
 
+import com.franchiseproject.customerservice.dto.response.CustomerResponse;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
+import com.franchiseproject.customerservice.exception.AppException;
+import com.franchiseproject.customerservice.exception.ErrorCode;
+import com.franchiseproject.customerservice.mapper.CustomerMapper;
 import com.franchiseproject.customerservice.model.Customer;
 import com.franchiseproject.customerservice.repository.CustomerRepository;
 import com.franchiseproject.customerservice.service.CustomerService;
@@ -10,7 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +24,7 @@ import java.util.UUID;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class CustomerServiceImpl implements CustomerService {
     CustomerRepository customerRepository;
+    CustomerMapper customerMapper;
 
     @Override
     public List<Customer> getAll() {
@@ -29,16 +33,20 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer getCustomerById(UUID id) {
-        // AppException: pending..
         return customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
 
     @Override
-    public PageResponse<Customer> searchCustomers(String keyword, CustomerStatus status, Pageable pageable) {
+    public PageResponse<CustomerResponse> searchCustomers(String keyword, CustomerStatus status, Pageable pageable) {
         Page<Customer> pageResult = customerRepository.searchCustomers(keyword, status, pageable);
-        return PageResponse.<Customer>builder()
-                .items(pageResult.getContent())
+
+        List<CustomerResponse> customerResponses = pageResult.getContent().stream()
+                .map(customerMapper::toCustomerResponse)
+                .toList();
+
+        return PageResponse.<CustomerResponse>builder()
+                .items(customerResponses)
                 .currentPage(pageResult.getNumber())
                 .totalPages(pageResult.getTotalPages())
                 .totalItems(pageResult.getTotalElements())
