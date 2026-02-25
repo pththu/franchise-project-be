@@ -42,3 +42,4 @@ public class CustomerFranchise {
     @Column(name = "customer_id", columnDefinition = "UUID")
     UUID customerId;
 }
+
