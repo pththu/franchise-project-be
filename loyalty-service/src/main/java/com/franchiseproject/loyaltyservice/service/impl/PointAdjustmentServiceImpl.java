@@ -31,7 +31,7 @@ public class PointAdjustmentServiceImpl implements PointAdjustmentService {
     @Transactional
     public ManualAdjustPointsResponse manuallyAdjustPoints(ManualAdjustPointsRequest request) {
         if (request.getPoints() == 0) {
-            throw new IllegalArgumentException("Adjustment points cannot be zero");
+            throw new AppException(ErrorCode.POINTS_CANNOT_BE_ZERO);
         }
 
         CustomerFranchise cf = customerFranchiseRepository

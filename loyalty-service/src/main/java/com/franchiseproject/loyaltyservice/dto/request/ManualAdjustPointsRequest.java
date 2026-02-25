@@ -12,14 +12,15 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ManualAdjustPointsRequest {
-    @NotNull(message = "INVALID_KEY")
+    @NotNull(message = "CUSTOMER_ID_REQUIRED")
     UUID customerId;
 
-    @NotNull(message = "INVALID_KEY")
+    @NotNull(message = "FRANCHISE_ID_REQUIRED")
     UUID franchiseId;
 
-    @NotNull(message = "INVALID_KEY")
+    @NotNull(message = "POINTS_IS_REQUIRED")
     Integer points;
 
+    @NotNull(message = "REASON_IS_REQUIRED")
     String reason;
 }
