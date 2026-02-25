@@ -1,5 +1,6 @@
 package com.franchiseproject.customerservice.service;
 
+import com.franchiseproject.customerservice.dto.response.CustomerResponse;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
 import com.franchiseproject.customerservice.model.Customer;
@@ -16,7 +17,9 @@ public interface CustomerService {
 //
 //    Page<Customer> searchCustomers(String keyword, CustomerStatus status, Pageable pageable);
 
-    Customer getCustomerById(UUID id);
+    CustomerResponse getById(UUID id);
 
-    PageResponse<Customer> searchCustomers(String keyword, CustomerStatus status, Pageable pageable);
+    PageResponse<CustomerResponse> searchCustomers(String keyword, CustomerStatus status, Pageable pageable);
+
+    List<UUID> getOrderHistory(UUID customerId);
 }
