@@ -42,13 +42,35 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
-    // View Customer's order history
-    @GetMapping("/{id}/orders-history")
-    public ApiResponse<List<UUID>> getOrderHistory(@PathVariable UUID id) {
-        return ApiResponse.<List<UUID>>builder()
+    // Search and filter Customer
+    @GetMapping("/search")
+    public ApiResponse<PageResponse<Customer>> searchCustomers(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) CustomerStatus status,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        return ApiResponse.<PageResponse<Customer>>builder()
                 .statusCode(200)
-                .message("Get order history successfully")
-                .data(customerService.getOrderHistory(id))
+                .message("Search customers successfully")
+                .data(customerService.searchCustomers(keyword, status, pageable))
+                .build();
+    }
+
+    // View Loyalty tier and point
+    @GetMapping("/{id}")
+    public ApiResponse<CustomerDetailResponse> getCustomerDetail(@PathVariable UUID id) {
+        Customer customer = customerService.getCustomerById(id);
+        List<CustomerFranchise> loyaltyInfos = customerFranchiseService.getLoyaltyInfoByCustomerId(id);
+
+        CustomerDetailResponse detailResponse = CustomerDetailResponse.builder()
+                .customer(customer)
+                .loyaltyInfos(loyaltyInfos)
+                .build();
+
+        return ApiResponse.<CustomerDetailResponse>builder()
+                .statusCode(200)
+                .message("Get customer detail successfully")
+                .data(detailResponse)
                 .build();
     }
 }
