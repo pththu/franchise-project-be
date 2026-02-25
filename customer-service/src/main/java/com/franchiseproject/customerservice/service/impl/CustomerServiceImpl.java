@@ -1,11 +1,7 @@
 package com.franchiseproject.customerservice.service.impl;
 
-import com.franchiseproject.customerservice.dto.response.CustomerResponse;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
-import com.franchiseproject.customerservice.exception.AppException;
-import com.franchiseproject.customerservice.exception.ErrorCode;
-import com.franchiseproject.customerservice.mapper.CustomerMapper;
 import com.franchiseproject.customerservice.model.Customer;
 import com.franchiseproject.customerservice.repository.CustomerRepository;
 import com.franchiseproject.customerservice.service.CustomerService;
@@ -14,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +21,6 @@ import java.util.UUID;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class CustomerServiceImpl implements CustomerService {
     CustomerRepository customerRepository;
-    CustomerMapper customerMapper;
 
     @Override
     public List<Customer> getAll() {
@@ -32,28 +28,20 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerResponse getById(UUID id) {
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
-        return customerMapper.toCustomerResponse(customer);
+    public Customer getCustomerById(UUID id) {
+        // AppException: pending..
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
     }
 
     @Override
-    public PageResponse<CustomerResponse> searchCustomers(String keyword, CustomerStatus status, Pageable pageable) {
+    public PageResponse<Customer> searchCustomers(String keyword, CustomerStatus status, Pageable pageable) {
         Page<Customer> pageResult = customerRepository.searchCustomers(keyword, status, pageable);
-        return PageResponse.<CustomerResponse>builder()
-                .items(pageResult.getContent().stream().map(customerMapper::toCustomerResponse).toList())
+        return PageResponse.<Customer>builder()
+                .items(pageResult.getContent())
                 .currentPage(pageResult.getNumber())
                 .totalPages(pageResult.getTotalPages())
                 .totalItems(pageResult.getTotalElements())
                 .build();
-    }
-
-    @Override
-    public List<UUID> getOrderHistory(UUID customerId) {
-        if (!customerRepository.existsById(customerId)) {
-            throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
-        }
-        return List.of(UUID.randomUUID(), UUID.randomUUID());
     }
 }
