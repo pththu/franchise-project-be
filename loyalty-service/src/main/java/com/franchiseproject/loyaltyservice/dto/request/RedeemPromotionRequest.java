@@ -18,9 +18,9 @@ public class RedeemPromotionRequest {
     @NotNull(message = "FRANCHISE_ID_REQUIRED")
     UUID franchiseId;
 
-        @NotNull(message = "PROMOTION_ID_REQUIRED")
+    @NotNull(message = "PROMOTION_ID_REQUIRED")
     UUID promotionId;
 
-    @NotNull(message = "INVALID_POINTS_AMOUNT")
+    @NotNull(message = "POINTS_IS_REQUIRED")
     Integer pointsToRedeem;
 }
