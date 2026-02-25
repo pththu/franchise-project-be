@@ -16,3 +16,13 @@ spring:
     show-sql: true
     properties:
       hibernate.jdbc.time_zone: UTC
+
+# CẤU HÌNH LOYALTY RULES VÀ TIERS
+loyalty:
+  rule:
+    amount-per-point: 10000.0 # 10,000 VND = 1 điểm
+  tiers:
+    silver: 500               # Mốc điểm lên hạng Bạc
+    gold: 1000                # Mốc điểm lên hạng Vàng
+    platinum: 2000            # Mốc điểm lên hạng Bạch Kim
+    diamond: 3000             # Mốc điểm lên hạng Kim Cương
