@@ -64,4 +64,16 @@ public class CustomerServiceImpl implements CustomerService {
                 UUID.randomUUID()
         );
     }
+
+    @Override
+    public List<UUID> getFeedbackHistory(UUID customerId) {
+        if (!customerRepository.existsById(customerId)) {
+            throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
+        }
+
+        return List.of(
+                UUID.randomUUID(),
+                UUID.randomUUID()
+        );
+    }
 }
