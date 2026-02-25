@@ -37,6 +37,6 @@ public class LoyaltyTransaction {
     @Enumerated(EnumType.STRING)
     LoyaltyTransactionType type;
     @CreationTimestamp
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     Instant createdAt;
 }

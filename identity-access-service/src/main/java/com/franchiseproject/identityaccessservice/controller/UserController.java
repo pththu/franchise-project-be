@@ -1,17 +1,20 @@
 package com.franchiseproject.identityaccessservice.controller;
-import com.franchiseproject.identityaccessservice.model.User;
+
+import com.franchiseproject.identityaccessservice.dto.ApiResponse;
+import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
+import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
+import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
+import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.mapper.UserMapper;
 import com.franchiseproject.identityaccessservice.service.UserService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -19,18 +22,35 @@ import java.util.Map;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserController {
     UserService userService;
+    UserMapper userMapper;
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getAll() {
-        Map<String, Object> response = new HashMap<>();
+    public ApiResponse<List<UserResponse>> getAll() {
+        return ApiResponse.<List<UserResponse>>builder()
+                .statusCode(200)
+                .message("Get Data Success")
+                .data(userService.getAll()
+                        .stream()
+                        .map(userMapper::toUserResponse)
+                        .toList())
+                .build();
+    }
 
-        List<User> users = userService.getAll();
-        response.put("message", "Get All");
-        response.put("data", users);
+    @PostMapping("")
+    public ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest request) {
+        return ApiResponse.<User>builder()
+                .statusCode(201)
+                .message("Created")
+                .data(userService.createOne(request))
+                .build();
+    }
 
-        return ResponseEntity.ok(response);
+    @GetMapping("/{id}")
+    public ApiResponse<User> getUserById(@PathVariable("id") UUID userId) {
+        return ApiResponse.<User>builder()
+                .statusCode(201)
+                .message("Get One")
+                .data(userService.getOne(userId))
+                .build();
     }
 }
-
-
-
