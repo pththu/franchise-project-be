@@ -24,9 +24,8 @@ public class OrderStatusLog {
     @Column(unique = true, nullable = false)
     UUID id;
     @Column(name = "status_id", nullable = false)
-    UUID statusId;
-    @Column(name = "form_status", nullable = false)
-    String formStatus;
+    UUID statusId;@Column(name = "from_status", nullable = false)
+    String fromStatus;
     @Column(name = "to_status", nullable = false)
     String toStatus;
     @Column(name = "notes_log", nullable = false)
@@ -36,5 +35,5 @@ public class OrderStatusLog {
     Instant  createdAt;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id",columnDefinition = "UUID")
-    Order ordrer;
+    Order order;
 }

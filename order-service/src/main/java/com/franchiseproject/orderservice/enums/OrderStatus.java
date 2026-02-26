@@ -8,7 +8,14 @@ public enum OrderStatus {
     PREPARING,
     READY,
     COMPLETED,
-    CANCELED,
+    CANCELLED,
     FAILED,
-    REFUNDED
+    REFUNDED;
+
+    public boolean canBeCancelledByCustomer() {
+        return this == CREATED ||
+                this == WAITING_PAYMENT ||
+                this == CONFIRMED ||
+                this == PAID;
+    }
 }

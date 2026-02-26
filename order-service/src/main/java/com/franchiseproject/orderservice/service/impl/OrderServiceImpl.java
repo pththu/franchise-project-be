@@ -162,10 +162,10 @@ public class OrderServiceImpl implements OrderService {
 
         OrderStatusLog log = OrderStatusLog.builder()
                 .statusId(UUID.randomUUID())
-                .formStatus("INIT")
+                .fromStatus("CONFIRMED")
                 .toStatus(OrderStatus.WAITING_PAYMENT.name())
                 .noteLog("Customer placed online order")
-                .ordrer(savedOrder)
+                .order(savedOrder)
                 .build();
 
         orderStatusLogRepository.save(log);
@@ -173,9 +173,51 @@ public class OrderServiceImpl implements OrderService {
         return savedOrder.getId();
     }
 
-    private BigDecimal calculateShipping(BigDecimal totalProductCost) {
+    @Override
+    @Transactional
+    public void cancelOrder(UUID orderId, UUID customerId) {
 
-        // Ví dụ rule đơn giản:
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException("ORDER_003", "Order not found"));
+
+        OrderStatus oldStatus = order.getOrderStatus();
+        String status = oldStatus.name();
+
+        if (!order.getCustomerId().equals(customerId)) {
+            throw new BusinessException("ORDER_004", "You cannot cancel this order");
+        }
+
+        OrderStatus currentStatus = order.getOrderStatus();
+
+        if (currentStatus == OrderStatus.CANCELLED) {
+            return; // đã hủy rồi thì thôi
+        }
+
+        if (!currentStatus.canBeCancelledByCustomer()) {
+            throw new BusinessException("ORDER_05", "Order cannot be cancelled");
+        }
+        if (currentStatus == OrderStatus.PAID) {
+            order.setOrderStatus(OrderStatus.REFUNDED);
+        } else {
+            order.setOrderStatus(OrderStatus.CANCELLED);
+        }
+
+        orderRepository.save(order);
+
+        orderStatusLogRepository.save(
+                OrderStatusLog.builder()
+                        .statusId(null)
+                        .fromStatus(status)
+                        .toStatus("CANCELLED")
+                        .noteLog("Customer cancelled order")
+                        .order(order)
+                        .build()
+        );
+    }
+
+    private BigDecimal calculateShipping(BigDecimal totalProductCost) {
+        // hard-core nó mốt sửa sao
         // Nếu tổng tiền > 500k thì free ship
         if (totalProductCost.compareTo(BigDecimal.valueOf(500000)) >= 0) {
             return BigDecimal.ZERO;
@@ -183,4 +225,5 @@ public class OrderServiceImpl implements OrderService {
 
         return BigDecimal.valueOf(30000);
     }
+
 }

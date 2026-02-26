@@ -86,5 +86,13 @@ public class OrderController {
         return ResponseEntity.ok(orderId);
     }
 
+    @PutMapping("/{orderId}/cancel")
+    public ResponseEntity<?> cancelOrder(
+            @PathVariable UUID orderId,
+            @RequestParam UUID customerId
+    ) {
+        orderService.cancelOrder(orderId, customerId);
+        return ResponseEntity.ok("Order cancelled successfully");
+    }
 
 }
