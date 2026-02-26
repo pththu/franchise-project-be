@@ -7,8 +7,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -39,6 +41,7 @@ public class Order {
     @Column(name = "payment_transaction_id", nullable = false)
     UUID paymentTransactionId;
     UUID promotionId;
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "address", nullable = false, columnDefinition = "json")
     String address;
     @Column(name = "total_due", precision = 12, scale = 2, nullable = false)
