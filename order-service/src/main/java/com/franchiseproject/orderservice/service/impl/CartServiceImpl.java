@@ -1,0 +1,50 @@
+package com.franchiseproject.orderservice.service.impl;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.franchiseproject.orderservice.dto.request.AddPosItemRequest;
+import com.franchiseproject.orderservice.model.PosCartItem;
+import com.franchiseproject.orderservice.service.CartService;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+
+@Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class CartServiceImpl implements CartService {
+    RedisTemplate<String, Object> redisTemplate;
+    ObjectMapper objectMapper;
+
+    @Override
+    public void addItem(AddPosItemRequest request) {
+        String key = "pos:cart:" + request.getTerminalId();
+        String productField = request.getProductId().toString();
+
+        Object existingItem = redisTemplate
+                .opsForHash()
+                .get(key, productField);
+
+        if (existingItem != null) {
+            PosCartItem cartItem =
+                    objectMapper.convertValue(existingItem, PosCartItem.class);
+            cartItem.setQuantity(
+                    cartItem.getQuantity() + request.getQuantity()
+            );
+            redisTemplate.opsForHash()
+                    .put(key, productField, cartItem);
+            redisTemplate.expire(key, Duration.ofMinutes(30));
+            return;
+        }
+        PosCartItem newItem = PosCartItem.builder()
+                .productId(request.getProductId())
+                .quantity(request.getQuantity())
+                .build();
+        redisTemplate.opsForHash()
+                .put(key, productField, newItem);
+        redisTemplate.expire(key, Duration.ofMinutes(30));
+    }
+}
