@@ -62,11 +62,38 @@ public class CartController {
     @GetMapping("/online/{customerId}")
     public ApiResponse<List<PosCartItem>> getOnlineCart(
             @PathVariable UUID customerId) {
-
         return ApiResponse.<List<PosCartItem>>builder()
                 .message("Lấy giỏ Online thành công")
                 .data(cartService.getCartOnline(customerId))
                 .statusCode(200)
+                .errors(null)
+                .build();
+    }
+
+    // Xóa 1 sản phẩm trong giỏ hàng (POS)
+    @DeleteMapping("/pos/{terminalId}/remove/{productId}")
+    public ApiResponse<Void> removePosItem(
+            @PathVariable String terminalId,
+            @PathVariable UUID productId) {
+        cartService.removePosItem(terminalId, productId);
+        return ApiResponse.<Void>builder()
+                .message("Xóa sản phẩm khỏi giỏ POS thành công")
+                .statusCode(200)
+                .data(null)
+                .errors(null)
+                .build();
+    }
+
+    //Xóa 1 sản phẩm trong giỏ hàng (Online)
+    @DeleteMapping("/online/{customerId}/remove/{productId}")
+    public ApiResponse<Void> removeOnlineItem(
+            @PathVariable UUID customerId,
+            @PathVariable UUID productId) {
+        cartService.removeOnlineItem(customerId, productId);
+        return ApiResponse.<Void>builder()
+                .message("Xóa sản phẩm khỏi giỏ Online thành công")
+                .statusCode(200)
+                .data(null)
                 .errors(null)
                 .build();
     }

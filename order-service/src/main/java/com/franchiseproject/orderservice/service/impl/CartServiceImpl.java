@@ -99,4 +99,28 @@ public class CartServiceImpl implements CartService {
                 .map(value -> objectMapper.convertValue(value, PosCartItem.class))
                 .toList();
     }
+
+    @Override
+    public void removePosItem(String terminalId, UUID productId) {
+        String key = "pos:cart:" + terminalId;
+        String productField = productId.toString();
+        redisTemplate.opsForHash().delete(key, productField);
+        Long size = redisTemplate.opsForHash().size(key);
+        if (size != null && size == 0) {
+            redisTemplate.delete(key);
+        }
+    }
+
+    @Override
+    public void removeOnlineItem(UUID customerId, UUID productId) {
+        String key = "online:cart:" + customerId;
+        String productField = productId.toString();
+        redisTemplate.opsForHash().delete(key, productField);
+        Long size = redisTemplate.opsForHash().size(key);
+        if (size != null && size == 0) {
+            redisTemplate.delete(key);
+        }
+    }
+
+
 }
