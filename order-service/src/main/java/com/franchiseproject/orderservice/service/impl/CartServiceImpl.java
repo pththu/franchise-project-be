@@ -1,6 +1,7 @@
 package com.franchiseproject.orderservice.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.franchiseproject.orderservice.dto.request.AddOnlineItemRequest;
 import com.franchiseproject.orderservice.dto.request.AddPosItemRequest;
 import com.franchiseproject.orderservice.model.PosCartItem;
 import com.franchiseproject.orderservice.service.CartService;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class CartServiceImpl implements CartService {
     ObjectMapper objectMapper;
 
     @Override
-    public void addItem(AddPosItemRequest request) {
+    public void addPosItem(AddPosItemRequest request) {
         String key = "pos:cart:" + request.getTerminalId();
         String productField = request.getProductId().toString();
 
@@ -51,12 +53,48 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    public void addOnlineItem(AddOnlineItemRequest request) {
+        String key = "online:cart:" + request.getCustomerId();
+        String productField = request.getProductId().toString();
+
+        Object existingItem = redisTemplate
+                .opsForHash()
+                .get(key, productField);
+
+        if (existingItem != null) {
+            PosCartItem cartItem =
+                    objectMapper.convertValue(existingItem, PosCartItem.class);
+
+            cartItem.setQuantity(
+                    cartItem.getQuantity() + request.getQuantity()
+            );
+            redisTemplate.opsForHash()
+                    .put(key, productField, cartItem);
+            return;
+        }
+        PosCartItem newItem = PosCartItem.builder()
+                .productId(request.getProductId())
+                .quantity(request.getQuantity())
+                .build();
+        redisTemplate.opsForHash()
+                .put(key, productField, newItem);
+    }
+
+    @Override
     public List<PosCartItem> getCartPos(String terminalId) {
         String key = "pos:cart:" + terminalId;
-
         Map<Object, Object> entries =
                 redisTemplate.opsForHash().entries(key);
+        return entries.values().stream()
+                .map(value -> objectMapper.convertValue(value, PosCartItem.class))
+                .toList();
+    }
 
+    @Override
+    public List<PosCartItem> getCartOnline(UUID customerId) {
+        String key = "online:cart:" + customerId;
+        Map<Object, Object> entries =
+                redisTemplate.opsForHash().entries(key);
         return entries.values().stream()
                 .map(value -> objectMapper.convertValue(value, PosCartItem.class))
                 .toList();
