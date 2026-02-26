@@ -32,16 +32,14 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
         try {
-            // Đường dẫn tuyệt đối
+
             String uploadDir = System.getProperty("user.dir") + "/uploads/";
 
-            // Tạo folder nếu chưa có
             File directory = new File(uploadDir);
             if (!directory.exists()) {
                 directory.mkdirs();
             }
 
-            // Tên file
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
             File destination = new File(uploadDir + fileName);
@@ -55,6 +53,43 @@ public class ProductServiceImpl implements ProductService {
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Upload failed: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Product updateImage(UUID id, MultipartFile file) {
+        try {
+            Product product = productRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            String uploadDir = System.getProperty("user.dir") + "/uploads/";
+            File dir = new File(uploadDir);
+
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            if (product.getImageUrl() != null) {
+                String oldFileName = product.getImageUrl().replace("/uploads/", "");
+                File oldFile = new File(uploadDir + oldFileName);
+
+                if (oldFile.exists()) {
+                    oldFile.delete();
+                }
+            }
+
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            File dest = new File(uploadDir + fileName);
+
+            file.transferTo(dest);
+
+            product.setImageUrl("/uploads/" + fileName);
+
+            return productRepository.save(product);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Update failed");
         }
     }
 }

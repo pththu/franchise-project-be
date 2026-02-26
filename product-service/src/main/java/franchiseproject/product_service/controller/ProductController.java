@@ -29,4 +29,12 @@ public class ProductController {
     ) {
         return productService.uploadImage(id, file);
     }
+
+    @PutMapping("/{id}/update-image")
+    public Product updateImage(
+            @PathVariable UUID id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return productService.updateImage(id, file);
+    }
 }

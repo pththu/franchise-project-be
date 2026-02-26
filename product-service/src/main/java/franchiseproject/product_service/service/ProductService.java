@@ -8,5 +8,6 @@ import java.util.List;
 public interface ProductService {
     List<Product> getAll();
     Product uploadImage(UUID id, MultipartFile file);
+    Product updateImage(UUID id, MultipartFile file);
 }
 
