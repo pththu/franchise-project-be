@@ -1,6 +1,7 @@
 package franchiseproject.product_service.controller;
 
-
+import org.springframework.web.multipart.MultipartFile;
+import java.util.UUID;
 import franchiseproject.product_service.model.Product;
 import franchiseproject.product_service.service.ProductService;
 import lombok.AccessLevel;
@@ -21,4 +22,11 @@ public class ProductController {
        return productService.getAll();
   }
 
+    @PostMapping("/{id}/upload-image")
+    public Product uploadImage(
+            @PathVariable UUID id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return productService.uploadImage(id, file);
+    }
 }

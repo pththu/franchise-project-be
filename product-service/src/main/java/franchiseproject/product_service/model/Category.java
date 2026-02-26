@@ -1,5 +1,6 @@
 package franchiseproject.product_service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,8 +22,8 @@ import java.util.UUID;
 public class Category {
 
     @Id
-    @UuidGenerator(style=UuidGenerator.Style.RANDOM)
-    @Column(name = "id",unique = true, nullable = false)
+    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
+    @Column(name = "id", unique = true, nullable = false)
     UUID id;
 
     @Column(name = "name", nullable = false)
@@ -34,11 +35,12 @@ public class Category {
     @CreationTimestamp
     @Column(name = "created_at")
     Instant createdAt;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     Instant updatedAt;
 
-   @OneToMany(mappedBy = "category")
-   List<Product> product;
-
+    @OneToMany(mappedBy = "category")
+    @JsonIgnore
+    List<Product> product;
 }
