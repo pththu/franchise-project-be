@@ -16,6 +16,17 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Business exception
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAppException(AppException ex) {
+        ErrorCode ec = ex.getErrorCode();
+        ApiResponse<Void> body = ApiResponse.<Void>builder()
+                .statusCode(ec.getCode())
+                .message(ec.getMessage())
+                .build();
+        return ResponseEntity.status(ec.getHttpStatus()).body(body);
+    }
+
     // Bean Validation (@Valid) trên @RequestBody
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
