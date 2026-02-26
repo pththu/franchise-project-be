@@ -11,6 +11,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -46,5 +48,17 @@ public class CartServiceImpl implements CartService {
         redisTemplate.opsForHash()
                 .put(key, productField, newItem);
         redisTemplate.expire(key, Duration.ofMinutes(30));
+    }
+
+    @Override
+    public List<PosCartItem> getCartPos(String terminalId) {
+        String key = "pos:cart:" + terminalId;
+
+        Map<Object, Object> entries =
+                redisTemplate.opsForHash().entries(key);
+
+        return entries.values().stream()
+                .map(value -> objectMapper.convertValue(value, PosCartItem.class))
+                .toList();
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ErrorCode {
 
-    VALIDATION_FAILED(2001, "Dữ liệu không hợp lệ", HttpStatus.BAD_REQUEST);
+    VALIDATION_FAILED(400, "Dữ liệu không hợp lệ", HttpStatus.BAD_REQUEST);
     int code;
     String message;
     HttpStatus httpStatus;
