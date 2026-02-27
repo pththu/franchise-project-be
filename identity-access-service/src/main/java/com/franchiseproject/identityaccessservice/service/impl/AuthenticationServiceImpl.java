@@ -22,6 +22,7 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.crypto.impl.RSASSA;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +30,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,7 @@ import org.springframework.stereotype.Service;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -50,28 +54,35 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
 
-//    @NonFinal
-//    @Value("${jwt.private-key}")
-//    private String PRIVATE_KEY;
-
     private JwtKeyProperties jwtKeyProperties;
 
-    public AuthenticationResponse login(AuthenticationRequest request) throws Exception {
+    public AuthenticationResponse login(AuthenticationRequest request, HttpServletResponse response)
+            throws Exception {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean result = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
         if (!result) throw new AppException(ErrorCode.UNAUTHORIZED);
 
-        var token = generateToken(user.getUsername(), user.getRole().getName());
+        var accessToken = generateAccessToken(user.getUsername(), user.getRole().getName());
+        var refeshToken = generateRefreshToken(user.getUsername());
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refeshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofDays(14))
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
         user.setLastLogin(Instant.now());
         userRepository.save(user);
 
         return AuthenticationResponse.builder()
                 .authenticated(true)
-                .token(token)
+                .accessToken(accessToken)
                 .build();
     }
 
@@ -100,40 +111,51 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // Lấy public key
         RSAPublicKey publicKey = jwtKeyProperties.getPublicKeyObject();
-        RSAPrivateKey privateKey = jwtKeyProperties.getPrivateKeyObject();
 
         JWSVerifier verifier = new RSASSAVerifier(publicKey);
 
         boolean verified = signedJWT.verify(verifier);
 
         Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-        System.out.println("Verified: " + verified);
-        System.out.println("Expiry: " + expiryTime);
-        System.out.println("Now: " + new Date());
-        System.out.println("Private modulus: " + privateKey.getModulus());
-        System.out.println("Public modulus: " + publicKey.getModulus());
-
         return IntrospectResponse.builder()
                 .valid(verified && expiryTime.after(new Date()))
                 .build();
     }
 
-    private String generateToken(String username, String role) throws Exception {
-        JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256)
-                .type(JOSEObjectType.JWT)
-                .build();
+    private String generateAccessToken(String username, String role) throws Exception {
+        Instant now = Instant.now();
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(username)
                 .claim("scope", role)
+                .claim("type", "access")
                 .issuer("identity-service")
                 .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().plus(10, ChronoUnit.MINUTES).toEpochMilli()))
+                .expirationTime(new Date(now.plus(10, ChronoUnit.MINUTES).toEpochMilli()))
                 .build();
 
+        return signToken(jwtClaimsSet);
+    }
+
+    private String generateRefreshToken(String username) throws Exception {
+        Instant now = Instant.now();
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(username)
+                .claim("type", "refresh")
+                .issuer("identity-service")
+                .issueTime(new Date())
+                .expirationTime(new Date(now.plus(14, ChronoUnit.DAYS).toEpochMilli()))
+                .build();
+
+        return signToken(jwtClaimsSet);
+    }
+
+    private String signToken(JWTClaimsSet claimsSet) {
+        JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256)
+                .type(JOSEObjectType.JWT)
+                .build();
         try {
-            SignedJWT signedJWT = new SignedJWT(jwsHeader, jwtClaimsSet);
+            SignedJWT signedJWT = new SignedJWT(jwsHeader, claimsSet);
             JWSSigner signer = new RSASSASigner(jwtKeyProperties.getPrivateKeyObject());
             signedJWT.sign(signer);
 
@@ -141,7 +163,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (Exception e) {
             throw new AppException(ErrorCode.CREATE_TOKEN_FAIL);
         }
-
     }
-
 }

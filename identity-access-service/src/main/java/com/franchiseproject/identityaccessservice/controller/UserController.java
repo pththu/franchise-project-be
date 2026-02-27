@@ -14,7 +14,9 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -56,9 +58,15 @@ public class UserController {
                 .build();
     }
 
+    /**
+     * view account detail
+     *
+     * @param userId
+     * @return
+     */
     @GetMapping("/{id}")
-    public ApiResponse<User> getUserById(@PathVariable("id") UUID userId) {
-        return ApiResponse.<User>builder()
+    public ApiResponse<UserResponse> getUserById(@PathVariable("id") UUID userId) {
+        return ApiResponse.<UserResponse>builder()
                 .statusCode(201)
                 .message("Get One")
                 .data(userService.getOne(userId))
@@ -73,6 +81,16 @@ public class UserController {
                 .data(ChangePasswordResponse.builder()
                         .isChange(userService.changePassword(request))
                         .build())
+                .build();
+    }
+
+    @GetMapping("/profile")
+    public ApiResponse<UserResponse> profile(@AuthenticationPrincipal Jwt jwt) {
+        System.out.println(userService.getProfile(jwt.getSubject()));
+        return ApiResponse.<UserResponse>builder()
+                .statusCode(200)
+                .message("View account detail")
+                .data(userService.getProfile(jwt.getSubject()))
                 .build();
     }
 }
