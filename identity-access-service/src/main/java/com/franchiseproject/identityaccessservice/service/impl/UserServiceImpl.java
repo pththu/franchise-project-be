@@ -1,7 +1,9 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
+import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
+import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
@@ -50,5 +52,21 @@ public class UserServiceImpl implements UserService {
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         return userRepository.save(user);
+    }
+
+    @Override
+    public boolean changePassword(ChangePasswordRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+
+        System.out.println("User: " + user);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        String olbPasswordHash = passwordEncoder.encode(request.getOldPassword());
+        if (user.getPasswordHash().matches(olbPasswordHash))) {
+            user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            return true;
+        }
+        return false;
     }
 }

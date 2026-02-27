@@ -1,8 +1,10 @@
 package com.franchiseproject.identityaccessservice.controller;
 
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
+import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
+import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.mapper.UserMapper;
@@ -51,6 +53,17 @@ public class UserController {
                 .statusCode(201)
                 .message("Get One")
                 .data(userService.getOne(userId))
+                .build();
+    }
+
+    @PostMapping("/change-password")
+    public ApiResponse<ChangePasswordResponse> changePassword(@RequestBody ChangePasswordRequest request) {
+        return ApiResponse.<ChangePasswordResponse>builder()
+                .statusCode(200)
+                .message("Change password success")
+                .data(ChangePasswordResponse.builder()
+                        .isChange(userService.changePassword(request))
+                        .build())
                 .build();
     }
 }
