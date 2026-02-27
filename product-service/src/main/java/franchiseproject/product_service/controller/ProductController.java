@@ -108,7 +108,6 @@ public class ProductController {
         );
     }
 
-    // ✅ Upload image: POST /api/products/{id}/image
     @PostMapping("/{id}/image")
     public ResponseEntity<?> uploadImage(
             @PathVariable UUID id,
@@ -117,23 +116,24 @@ public class ProductController {
         try {
             Product product = productService.uploadImage(id, file);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("status", 200);
-            response.put("message", "Upload image successfully");
-            response.put("data", product);
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok().body(
+                    Map.of(
+                            "status", 200,
+                            "message", "Upload thành công",
+                            "data", product.getImageUrl()
+                    )
+            );
 
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("status", 404);
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.status(500).body(
+                    Map.of(
+                            "status", 500,
+                            "message", e.getMessage()
+                    )
+            );
         }
     }
 
-    // ✅ Update image: PUT /api/products/{id}/image
     @PutMapping("/{id}/image")
     public ResponseEntity<?> updateImage(
             @PathVariable UUID id,
@@ -142,19 +142,29 @@ public class ProductController {
         try {
             Product product = productService.updateImage(id, file);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("status", 200);
-            response.put("message", "Update image successfully");
-            response.put("data", product);
+            return ResponseEntity.ok().body(
+                    Map.of(
+                            "status", 200,
+                            "message", "Update image thành công",
+                            "data", product.getImageUrl()
+                    )
+            );
 
-            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(
+                    Map.of(
+                            "status", 404,
+                            "message", e.getMessage()
+                    )
+            );
 
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("status", 404);
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.status(500).body(
+                    Map.of(
+                            "status", 500,
+                            "message", "Lỗi server"
+                    )
+            );
         }
     }
 }
