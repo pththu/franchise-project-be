@@ -1,6 +1,6 @@
 package com.franchiseproject.orderservice.mapper;
 
-import com.franchiseproject.orderservice.dto.response.OrderResponse;
+import com.franchiseproject.orderservice.dto.response.OrderByCustomerResponse;
 import com.franchiseproject.orderservice.model.Order;
 import org.mapstruct.Mapper;
 
@@ -9,5 +9,5 @@ import org.mapstruct.Mapper;
          uses = {OrderDetailMapper.class}
 )
 public interface OrderMapper {
-    OrderResponse toOrderResponse(Order order);
+    OrderByCustomerResponse toOrderByCustomerResponse(Order order);
 }

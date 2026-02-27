@@ -1,11 +1,11 @@
 package com.franchiseproject.orderservice.service.impl;
 
 import com.franchiseproject.orderservice.dto.*;
+import com.franchiseproject.orderservice.dto.response.OrderByCustomerResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
 import com.franchiseproject.orderservice.exception.BusinessException;
 import com.franchiseproject.orderservice.infrastructure.client.ProductClient;
-import com.franchiseproject.orderservice.dto.response.OrderResponse;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import com.franchiseproject.orderservice.mapper.OrderMapper;
@@ -243,8 +243,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponse> getOrderByCustomerId(UUID customerId) {
+    public List<OrderByCustomerResponse> getOrderByCustomerId(UUID customerId) {
        List<Order> o =  orderRepository.findAllByCustomerId(customerId);
-       return o.stream().map(orderMapper::toOrderResponse).toList();
+       return o.stream().map(orderMapper::toOrderByCustomerResponse).toList();
     }
 }
