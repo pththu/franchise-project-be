@@ -11,9 +11,9 @@ import com.nimbusds.jose.JOSEException;
 import java.text.ParseException;
 
 public interface AuthenticationService {
-    AuthenticationResponse login(AuthenticationRequest request);
+    AuthenticationResponse login(AuthenticationRequest request) throws Exception;
 
     User register(CustomerRegisterRequest request);
 
-    IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException;
+    IntrospectResponse introspect(IntrospectRequest request) throws Exception;
 }

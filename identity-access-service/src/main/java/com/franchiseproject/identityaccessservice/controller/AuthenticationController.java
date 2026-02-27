@@ -39,7 +39,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
+    public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) throws Exception {
         return ApiResponse.<AuthenticationResponse>builder()
                 .statusCode(200)
                 .message("Login success")
@@ -49,7 +49,7 @@ public class AuthenticationController {
 
     @PostMapping("/introspect")
     public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request)
-            throws ParseException, JOSEException {
+            throws Exception {
         return ApiResponse.<IntrospectResponse>builder()
                 .statusCode(200)
                 .message("Login success")

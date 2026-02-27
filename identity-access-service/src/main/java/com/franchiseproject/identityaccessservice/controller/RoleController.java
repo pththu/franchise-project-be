@@ -38,6 +38,15 @@ public class RoleController {
                 .build();
     }
 
+    @GetMapping("/search/{roleName}")
+    public ApiResponse<Role> getByName(@PathVariable String roleName) {
+        return ApiResponse.<Role>builder()
+                .statusCode(200)
+                .message("Get role by name")
+                .data(roleService.getByName(roleName))
+                .build();
+    }
+
     // Create Role
     @PostMapping
     public ApiResponse<Role> createRole(@RequestBody RoleCreationRequest request) {
