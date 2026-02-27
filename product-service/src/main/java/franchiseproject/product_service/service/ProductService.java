@@ -13,9 +13,11 @@ public interface ProductService {
 
     List<Product> getAll();
 
+    // ✅ thêm cái này
+    List<ProductListItemDTO> getAllAsListItem();
+
     Product getById(UUID id);
 
-    // ✅ View product details
     ProductDetailDTO getDetail(UUID id);
 
     Product create(Product product, UUID categoryId);
@@ -24,7 +26,6 @@ public interface ProductService {
 
     void delete(UUID id);
 
-    // ✅ View product list (paging + filter + search + sort)
     PageResponse<ProductListItemDTO> list(
             String q,
             String status,

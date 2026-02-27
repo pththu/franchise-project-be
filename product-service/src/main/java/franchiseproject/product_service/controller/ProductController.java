@@ -18,18 +18,19 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RequestMapping("/product")
+@RequestMapping("/api/products")
 public class ProductController {
 
     ProductService productService;
 
-    // (Optional) route cũ để tương thích: GET /product/getall
+    // ✅ Backward-compatible: GET /api/products/getall
+    // Trả DTO để tránh 500 do serialize Entity (LAZY / vòng lặp)
     @GetMapping("/getall")
-    public List<Product> findAll() {
-        return productService.getAll();
+    public List<ProductListItemDTO> findAll() {
+        return productService.getAllAsListItem();
     }
 
-    // ✅ View product list (paging + filter + search + sort): GET /product
+    // ✅ View product list (paging + filter + search + sort): GET /api/products
     @GetMapping
     public PageResponse<ProductListItemDTO> list(
             @RequestParam(required = false) String q,
@@ -44,31 +45,35 @@ public class ProductController {
         return productService.list(q, status, categoryId, minPrice, maxPrice, page, size, sort);
     }
 
-    // ✅ View product details: GET /product/{id}
+    // ✅ View product details: GET /api/products/{id}
     @GetMapping("/{id}")
     public ProductDetailDTO getDetail(@PathVariable UUID id) {
         return productService.getDetail(id);
     }
 
-    // ✅ CREATE: POST /product?categoryId=...
+    // ✅ CREATE: POST /api/products?categoryId=...
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductDetailDTO create(@RequestBody Product product,
-                                   @RequestParam UUID categoryId) {
+    public ProductDetailDTO create(
+            @RequestBody Product product,
+            @RequestParam UUID categoryId
+    ) {
         Product saved = productService.create(product, categoryId);
         return productService.getDetail(saved.getId());
     }
 
-    // ✅ UPDATE: PUT /product/{id} (categoryId optional)
+    // ✅ UPDATE: PUT /api/products/{id} (categoryId optional)
     @PutMapping("/{id}")
-    public ProductDetailDTO update(@PathVariable UUID id,
-                                   @RequestBody Product product,
-                                   @RequestParam(required = false) UUID categoryId) {
+    public ProductDetailDTO update(
+            @PathVariable UUID id,
+            @RequestBody Product product,
+            @RequestParam(required = false) UUID categoryId
+    ) {
         productService.update(id, product, categoryId);
         return productService.getDetail(id);
     }
 
-    // ✅ DELETE: DELETE /product/{id}
+    // ✅ DELETE: DELETE /api/products/{id}
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id) {

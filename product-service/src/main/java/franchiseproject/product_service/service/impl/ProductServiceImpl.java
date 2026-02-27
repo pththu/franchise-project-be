@@ -30,10 +30,33 @@ public class ProductServiceImpl implements ProductService {
     ProductRepository productRepository;
     CategoryRepository categoryRepository;
 
+    // ✅ (Optional) dùng nội bộ hoặc route cũ trả entity
     @Override
     @Transactional(readOnly = true)
     public List<Product> getAll() {
         return productRepository.findAll();
+    }
+
+    // ✅ Dùng cho /api/products/getall (trả DTO để tránh 500 do serialize Entity)
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductListItemDTO> getAllAsListItem() {
+        // category là LAZY, nhưng đang ở trong @Transactional => đọc được categoryId/name
+        return productRepository.findAll().stream()
+                .map(p -> new ProductListItemDTO(
+                        p.getId(),
+                        p.getProductType(),
+                        p.getName(),
+                        p.getPrice(),
+                        p.getUnit(),
+                        p.getStatus(),
+                        p.getImageUrl(),
+                        p.getCategory() != null ? p.getCategory().getId() : null,
+                        p.getCategory() != null ? p.getCategory().getName() : null,
+                        p.getCreatedAt(),
+                        p.getUpdatedAt()
+                ))
+                .toList();
     }
 
     @Override
@@ -89,6 +112,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // ✅ View product details (DTO)
+    @Override
     @Transactional(readOnly = true)
     public ProductDetailDTO getDetail(UUID id) {
         Product p = productRepository.findById(id)
