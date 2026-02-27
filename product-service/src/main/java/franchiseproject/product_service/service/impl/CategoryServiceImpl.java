@@ -47,7 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         List<ProductInCategoryResponse> productResponses =
-                category.getProduct()
+                category.getProducts()
                         .stream()
                         .map(product -> ProductInCategoryResponse.builder()
                                 .name(product.getName())
