@@ -1,6 +1,6 @@
 package franchiseproject.product_service.model;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -19,14 +19,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-
 public class Product {
+
     @Id
-    @UuidGenerator(style=UuidGenerator.Style.RANDOM)
-    @Column(name = "id",unique = true, nullable = false)
+    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
+    @Column(name = "id", unique = true, nullable = false)
     UUID id;
 
-    @Column(name = "productType", nullable = false)
+    @Column(name = "product_type", nullable = false)
     String product_type;
 
     @Column(name = "name", nullable = false)
@@ -35,7 +35,7 @@ public class Product {
     @Column(name = "description", nullable = false)
     String description;
 
-    @Column(name = "price",precision = 12, scale = 2, nullable = false)
+    @Column(name = "price", precision = 12, scale = 2, nullable = false)
     BigDecimal price;
 
     @Column(name = "unit", nullable = false)
@@ -44,19 +44,19 @@ public class Product {
     @Column(name = "status", nullable = false)
     String status;
 
-    @Column(name = "image_url", nullable = false)
+    @Column(name = "image_url")
     String imageUrl;
-
 
     @CreationTimestamp
     @Column(name = "created_at")
     Instant createdAt;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     Instant updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties("product")
     Category category;
-
 }
