@@ -86,4 +86,14 @@ public class CustomerController {
                 .data(customerService.getOrderHistory(id))
                 .build();
     }
+
+    // Customer feedback access
+    @GetMapping("/{id}/feedbacks")
+    public ApiResponse<List<UUID>> getFeedbackHistory(@PathVariable UUID id) {
+        return ApiResponse.<List<UUID>>builder()
+                .statusCode(200)
+                .message("Get customer feedbacks successfully")
+                .data(customerService.getFeedbackHistory(id))
+                .build();
+    }
 }
