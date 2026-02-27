@@ -1,5 +1,8 @@
 package com.franchiseproject.orderservice.controller;
 
+import com.franchiseproject.orderservice.dto.response.ApiResponse;
+import com.franchiseproject.orderservice.dto.response.OrderResponse;
+import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.model.Order;
 import com.franchiseproject.orderservice.service.OrderDetailService;
 import com.franchiseproject.orderservice.service.OrderService;
@@ -7,14 +10,14 @@ import com.franchiseproject.orderservice.service.OrderStatusLogService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping
@@ -36,4 +39,25 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/{orderId}/status")
+    public ApiResponse<Void> updateOrderStatus(
+            @PathVariable UUID orderId,
+            @RequestParam OrderStatus status) {
+        orderService.updateOrderStatus(orderId, status);
+        return ApiResponse.<Void>builder()
+                .message("Cập nhật trạng thái đơn hàng thành công")
+                .statusCode(200)
+                .data(null)
+                .errors(null)
+                .build();
+    }
+
+    @GetMapping("/{customerId}")
+    public ApiResponse<List<OrderResponse>> getOrderByCustomerId(@PathVariable UUID customerId) {
+        return ApiResponse.<List<OrderResponse>>builder()
+                .message("Tìm đơn hàng theo mã khách hàng thành công!!!")
+                .statusCode(200)
+                .data(orderService.getOrderByCustomerId(customerId))
+                .build();
+    }
 }
