@@ -1,5 +1,6 @@
 package com.franchiseproject.orderservice.service.impl;
 
+import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.response.OrderResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.exception.AppException;
@@ -12,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
     OrderRepository orderRepository;
     OrderMapper  orderMapper;
+    RedisTemplate<String, Object> redisTemplate;
     @Override
     public List<Order> getAll() {
         return orderRepository.findAll();
@@ -47,5 +50,18 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderResponse> getOrderByCustomerId(UUID customerId) {
        List<Order> o =  orderRepository.findAllByCustomerId(customerId);
        return o.stream().map(orderMapper::toOrderResponse).toList();
+    }
+
+    @Override
+    public void addAddressOnlineOrder(AddAddressRequest request) {
+        String key = "online_order:" + request.getCustomerId();
+        redisTemplate.opsForValue().set(key, request.getAddress());
+    }
+
+    @Override
+    public String getAddressOnlineOrder(UUID customerId) {
+        String key = "online_order:" + customerId;
+        Object address = redisTemplate.opsForValue().get(key);
+        return address != null ? address.toString() : null;
     }
 }

@@ -1,5 +1,6 @@
 package com.franchiseproject.orderservice.controller;
 
+import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.response.OrderResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
@@ -7,6 +8,7 @@ import com.franchiseproject.orderservice.model.Order;
 import com.franchiseproject.orderservice.service.OrderDetailService;
 import com.franchiseproject.orderservice.service.OrderService;
 import com.franchiseproject.orderservice.service.OrderStatusLogService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -58,6 +60,31 @@ public class OrderController {
                 .message("Tìm đơn hàng theo mã khách hàng thành công!!!")
                 .statusCode(200)
                 .data(orderService.getOrderByCustomerId(customerId))
+                .build();
+    }
+
+    // Thêm địa chỉ cho đơn hàng Online
+    @PostMapping("/online/address")
+    public ApiResponse<Void> addAddressOnlineOrder(
+            @Valid @RequestBody AddAddressRequest request) {
+        orderService.addAddressOnlineOrder(request);
+        return ApiResponse.<Void>builder()
+                .message("Thêm địa chỉ cho đơn hàng Online thành công")
+                .data(null)
+                .statusCode(200)
+                .errors(null)
+                .build();
+    }
+
+    // Lấy địa chỉ của đơn hàng Online
+    @GetMapping("/online/{customerId}/address")
+    public ApiResponse<String> getAddressOnlineOrder(
+            @PathVariable UUID customerId) {
+        return ApiResponse.<String>builder()
+                .message("Lấy địa chỉ đơn hàng Online thành công")
+                .data(orderService.getAddressOnlineOrder(customerId))
+                .statusCode(200)
+                .errors(null)
                 .build();
     }
 }
