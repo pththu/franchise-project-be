@@ -1,9 +1,9 @@
 package com.franchiseproject.shiftservice.service;
 
-import com.franchiseproject.shiftservice.dto.AssignShiftRequest;
-import com.franchiseproject.shiftservice.dto.CreateShiftRequest;
-import com.franchiseproject.shiftservice.dto.ShiftResponse;
-import com.franchiseproject.shiftservice.dto.StaffShiftResponse;
+import com.franchiseproject.shiftservice.dto.request.AssignShiftRequest;
+import com.franchiseproject.shiftservice.dto.request.CreateShiftRequest;
+import com.franchiseproject.shiftservice.dto.response.ShiftResponse;
+import com.franchiseproject.shiftservice.dto.response.StaffShiftResponse;
 
 import java.time.LocalDate;
 import java.util.List;

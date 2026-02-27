@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface StaffShiftRepository extends JpaRepository<StaffShift, UUID> {
 
     List<StaffShift> findByStaffIdAndWorkDate(UUID staffId, LocalDate workDate);
+
+    boolean existsByStaffIdAndWorkDate(UUID staffId, LocalDate workDate);
 }

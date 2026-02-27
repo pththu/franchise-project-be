@@ -1,4 +1,4 @@
-package com.franchiseproject.shiftservice.dto;
+package com.franchiseproject.shiftservice.dto.response;
 
 import com.franchiseproject.shiftservice.enums.ShiftStatus;
 import lombok.Data;

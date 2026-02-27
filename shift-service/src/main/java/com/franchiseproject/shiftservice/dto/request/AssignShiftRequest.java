@@ -1,4 +1,4 @@
-package com.franchiseproject.shiftservice.dto;
+package com.franchiseproject.shiftservice.dto.request;
 
 import lombok.Data;
 

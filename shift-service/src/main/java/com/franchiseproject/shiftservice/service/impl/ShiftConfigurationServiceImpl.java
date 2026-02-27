@@ -1,9 +1,9 @@
 package com.franchiseproject.shiftservice.service.impl;
 
-import com.franchiseproject.shiftservice.dto.AssignShiftRequest;
-import com.franchiseproject.shiftservice.dto.CreateShiftRequest;
-import com.franchiseproject.shiftservice.dto.ShiftResponse;
-import com.franchiseproject.shiftservice.dto.StaffShiftResponse;
+import com.franchiseproject.shiftservice.dto.request.AssignShiftRequest;
+import com.franchiseproject.shiftservice.dto.request.CreateShiftRequest;
+import com.franchiseproject.shiftservice.dto.response.ShiftResponse;
+import com.franchiseproject.shiftservice.dto.response.StaffShiftResponse;
 import com.franchiseproject.shiftservice.mapper.ShiftMapper;
 import com.franchiseproject.shiftservice.mapper.StaffShiftMapper;
 import com.franchiseproject.shiftservice.model.ShiftConfiguration;
@@ -61,6 +61,14 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
 
     @Override
     public UUID assignShift(AssignShiftRequest request) {
+
+        if (staffShiftRepository.existsByStaffIdAndWorkDate(
+                request.getStaffId(),
+                request.getWorkDate())) {
+
+            throw new IllegalArgumentException("Staff already has a shift on this date");
+        }
+
         StaffShift staffShift = StaffShift.builder()
                 .id(UUID.randomUUID())
                 .staffId(request.getStaffId())
