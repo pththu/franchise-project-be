@@ -2,8 +2,10 @@ package com.franchiseproject.customerservice.controller;
 
 import com.franchiseproject.customerservice.dto.ApiResponse;
 import com.franchiseproject.customerservice.dto.response.CustomerDetailResponse;
+import com.franchiseproject.customerservice.dto.response.CustomerResponse;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
+import com.franchiseproject.customerservice.mapper.CustomerMapper;
 import com.franchiseproject.customerservice.model.Customer;
 import com.franchiseproject.customerservice.model.CustomerFranchise;
 import com.franchiseproject.customerservice.service.CustomerFranchiseService;
@@ -30,6 +32,7 @@ import java.util.UUID;
 public class CustomerController {
     CustomerService customerService;
     CustomerFranchiseService customerFranchiseService;
+    CustomerMapper customerMapper;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllCustomer() {
@@ -44,12 +47,12 @@ public class CustomerController {
 
     // Search and filter Customer
     @GetMapping("/search")
-    public ApiResponse<PageResponse<Customer>> searchCustomers(
+    public ApiResponse<PageResponse<CustomerResponse>> searchCustomers(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) CustomerStatus status,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        return ApiResponse.<PageResponse<Customer>>builder()
+        return ApiResponse.<PageResponse<CustomerResponse>>builder()
                 .statusCode(200)
                 .message("Search customers successfully")
                 .data(customerService.searchCustomers(keyword, status, pageable))
@@ -63,14 +66,34 @@ public class CustomerController {
         List<CustomerFranchise> loyaltyInfos = customerFranchiseService.getLoyaltyInfoByCustomerId(id);
 
         CustomerDetailResponse detailResponse = CustomerDetailResponse.builder()
-                .customer(customer)
-                .loyaltyInfos(loyaltyInfos)
+                .customer(customerMapper.toCustomerResponse(customer))
+                .loyaltyInfos(customerMapper.toLoyaltyInfoResponseList(loyaltyInfos))
                 .build();
 
         return ApiResponse.<CustomerDetailResponse>builder()
                 .statusCode(200)
                 .message("Get customer detail successfully")
                 .data(detailResponse)
+                .build();
+    }
+
+    // View Customer's Order History
+    @GetMapping("/{id}/orders-history")
+    public ApiResponse<List<UUID>> getOrderHistory(@PathVariable UUID id) {
+        return ApiResponse.<List<UUID>>builder()
+                .statusCode(200)
+                .message("Get order history successfully")
+                .data(customerService.getOrderHistory(id))
+                .build();
+    }
+
+    // Customer feedback access
+    @GetMapping("/{id}/feedbacks")
+    public ApiResponse<List<UUID>> getFeedbackHistory(@PathVariable UUID id) {
+        return ApiResponse.<List<UUID>>builder()
+                .statusCode(200)
+                .message("Get customer feedbacks successfully")
+                .data(customerService.getFeedbackHistory(id))
                 .build();
     }
 }

@@ -1,6 +1,6 @@
 package com.franchiseproject.loyaltyservice.model;
 
-import com.franchiseproject.loyaltyservice.enums.LoyalyTransactionType;
+import com.franchiseproject.loyaltyservice.enums.LoyaltyTransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -27,7 +27,7 @@ public class LoyaltyTransaction {
     UUID franchiseId;
     @Column(name = "customer_id", nullable = false)
     UUID customerId;
-    @Column(name = "promotion_id", nullable = false)
+    @Column(name = "promotion_id", nullable = true)
     UUID promotionId;
     int points;
     @Column(name = "balance_before")
@@ -35,8 +35,8 @@ public class LoyaltyTransaction {
     @Column(name = "balance_after")
     int balanceAfter;
     @Enumerated(EnumType.STRING)
-    LoyalyTransactionType type;
+    LoyaltyTransactionType type;
     @CreationTimestamp
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     Instant createdAt;
 }
