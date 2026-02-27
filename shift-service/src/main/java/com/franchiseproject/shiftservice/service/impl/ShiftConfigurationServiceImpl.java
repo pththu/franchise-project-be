@@ -1,6 +1,13 @@
 package com.franchiseproject.shiftservice.service.impl;
 
+import com.franchiseproject.shiftservice.dto.AssignShiftRequest;
+import com.franchiseproject.shiftservice.dto.CreateShiftRequest;
+import com.franchiseproject.shiftservice.dto.ShiftResponse;
+import com.franchiseproject.shiftservice.dto.StaffShiftResponse;
+import com.franchiseproject.shiftservice.mapper.ShiftMapper;
+import com.franchiseproject.shiftservice.mapper.StaffShiftMapper;
 import com.franchiseproject.shiftservice.model.ShiftConfiguration;
+import com.franchiseproject.shiftservice.enums.ShiftStatus;
 import com.franchiseproject.shiftservice.model.StaffShift;
 import com.franchiseproject.shiftservice.repository.ShiftConfigurationRepository;
 import com.franchiseproject.shiftservice.repository.StaffShiftRepository;
@@ -19,90 +26,111 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
 
     private final ShiftConfigurationRepository shiftRepository;
     private final StaffShiftRepository staffShiftRepository;
+    private final ShiftMapper shiftMapper;
+    private final StaffShiftMapper staffShiftMapper;
 
     @Override
-    public UUID createShiftConfiguration() {
+    public ShiftResponse getShift(UUID id) {
+        ShiftConfiguration shift = shiftRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Shift not found"));
 
-        ShiftConfiguration shift = ShiftConfiguration.builder()
-                .id(UUID.randomUUID())
-                .franchiseId(UUID.randomUUID())
-                .name("Morning Shift")
-                .startTime(LocalTime.of(8, 0))
-                .endTime(LocalTime.of(17, 0))
-                .breakMinutes(60)
-                .status(true)
-                .build();
+        return shiftMapper.toResponse(shift);
+    }
+
+    @Override
+        public UUID createShiftConfiguration(CreateShiftRequest request) {
+
+        ShiftConfiguration shift = shiftMapper.toEntity(request);
+
+        shift.setId(UUID.randomUUID());
+        shift.setStatus(true);
 
         shiftRepository.save(shift);
+
         return shift.getId();
     }
 
     @Override
-    public List<UUID> getShiftConfigurationsByFranchise(UUID franchiseId) {
+    public List<ShiftResponse> getShiftConfigurationsByFranchise(UUID franchiseId) {
+
         return shiftRepository.findByFranchiseId(franchiseId)
                 .stream()
-                .map(ShiftConfiguration::getId)
+                .map(shiftMapper::toResponse)
                 .toList();
     }
 
     @Override
-    public UUID assignShift(UUID staffId, UUID shiftConfigId, LocalDate workDate) {
-
+    public UUID assignShift(AssignShiftRequest request) {
         StaffShift staffShift = StaffShift.builder()
                 .id(UUID.randomUUID())
-                .staffId(staffId)
-                .shiftConfigId(shiftConfigId)
-                .workDate(workDate)
-                .status("ASSIGNED")
+                .staffId(request.getStaffId())
+                .shiftConfigId(request.getShiftConfigId())
+                .workDate(request.getWorkDate())
+                .status(ShiftStatus.ASSIGNED)
                 .build();
 
         staffShiftRepository.save(staffShift);
+
         return staffShift.getId();
     }
 
     @Override
-    public void checkIn(UUID shiftId) {
+    public StaffShiftResponse checkIn(UUID shiftId) {
 
         StaffShift staffShift = staffShiftRepository.findById(shiftId)
                 .orElseThrow(() -> new RuntimeException("Shift not found"));
+
+        if (staffShift.getStatus() != ShiftStatus.ASSIGNED) {
+            throw new RuntimeException("Cannot check in. Invalid shift status.");
+        }
 
         staffShift.setCheckInTime(LocalTime.now());
-        staffShift.setStatus("CHECKED_IN");
+        staffShift.setStatus(ShiftStatus.CHECKED_IN);
 
         staffShiftRepository.save(staffShift);
+
+        return staffShiftMapper.toResponse(staffShift);
     }
 
     @Override
-    public void checkOut(UUID shiftId) {
+    public StaffShiftResponse checkOut(UUID shiftId) {
 
         StaffShift staffShift = staffShiftRepository.findById(shiftId)
                 .orElseThrow(() -> new RuntimeException("Shift not found"));
 
+        if (staffShift.getStatus() != ShiftStatus.CHECKED_IN) {
+            throw new RuntimeException("Cannot check out before check in.");
+        }
+
         staffShift.setCheckOutTime(LocalTime.now());
-        staffShift.setStatus("CHECKED_OUT");
+        staffShift.setStatus(ShiftStatus.CHECKED_OUT);
 
         staffShiftRepository.save(staffShift);
+        return staffShiftMapper.toResponse(staffShift);
     }
 
     @Override
-    public List<UUID> getSchedule(UUID staffId, LocalDate date) {
+    public List<StaffShiftResponse> getSchedule(UUID staffId, LocalDate date) {
 
         return staffShiftRepository
                 .findByStaffIdAndWorkDate(staffId, date)
                 .stream()
-                .map(StaffShift::getShiftConfigId)
+                .map(staffShiftMapper::toResponse)
                 .toList();
     }
 
     @Override
-    public void markAbsent(UUID shiftId) {
+    public StaffShiftResponse markAbsent(UUID shiftId) {
 
         StaffShift staffShift = staffShiftRepository.findById(shiftId)
                 .orElseThrow(() -> new RuntimeException("Shift not found"));
 
-        staffShift.setStatus("ABSENT");
+        if (staffShift.getStatus() != ShiftStatus.ASSIGNED) {
+            throw new RuntimeException("Cannot mark absent");
+        }
+        staffShift.setStatus(ShiftStatus.ABSENT);
 
         staffShiftRepository.save(staffShift);
+        return staffShiftMapper.toResponse(staffShift);
     }
 }
-

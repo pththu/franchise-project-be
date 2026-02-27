@@ -7,6 +7,7 @@ import java.util.UUID;
 
 @Data
 public class AssignShiftRequest {
+
     private UUID staffId;
     private UUID shiftConfigId;
     private LocalDate workDate;
