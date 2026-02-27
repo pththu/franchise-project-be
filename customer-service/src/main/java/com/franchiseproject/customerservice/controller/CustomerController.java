@@ -76,14 +76,4 @@ public class CustomerController {
                 .data(detailResponse)
                 .build();
     }
-
-    // View Customer's Order History
-    @GetMapping("/{id}/orders-history")
-    public ApiResponse<List<UUID>> getOrderHistory(@PathVariable UUID id) {
-        return ApiResponse.<List<UUID>>builder()
-                .statusCode(200)
-                .message("Get order history successfully")
-                .data(customerService.getOrderHistory(id))
-                .build();
-    }
 }
