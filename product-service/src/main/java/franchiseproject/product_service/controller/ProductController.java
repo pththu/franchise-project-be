@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -13,22 +14,25 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE , makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequestMapping("api/products")
 public class ProductController {
 
     ProductService productService;
 
-    @GetMapping("/getall")
+    // Get all products
+    @GetMapping
     public List<Product> findAll() {
         return productService.getAll();
     }
 
+    // Get product by id
     @GetMapping("/{id}")
     public Product getById(@PathVariable UUID id) {
         return productService.getById(id);
     }
 
+    // Search products
     @GetMapping("/search")
     public List<Product> searchProducts(
             @RequestParam(required = false) String name,
@@ -38,7 +42,6 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) UUID categoryId
     ) {
-
         return productService.search(
                 name,
                 productType,
@@ -47,5 +50,23 @@ public class ProductController {
                 maxPrice,
                 categoryId
         );
+    }
+
+    // Upload image
+    @PostMapping("/{id}/image")
+    public Product uploadImage(
+            @PathVariable UUID id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return productService.uploadImage(id, file);
+    }
+
+    // Update image
+    @PutMapping("/{id}/image")
+    public Product updateImage(
+            @PathVariable UUID id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return productService.updateImage(id, file);
     }
 }

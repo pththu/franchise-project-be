@@ -1,6 +1,6 @@
 package franchiseproject.product_service.model;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -23,7 +23,7 @@ public class Product {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
-    @Column(name = "id", nullable = false)
+    @Column(name = "id", unique = true, nullable = false)
     UUID id;
 
     @Column(name = "product_type", nullable = false)
@@ -44,7 +44,7 @@ public class Product {
     @Column(name = "status", nullable = false)
     String status;
 
-    @Column(name = "image_url", nullable = false)
+    @Column(name = "image_url")
     String imageUrl;
 
     @CreationTimestamp
@@ -57,5 +57,6 @@ public class Product {
 
     @ManyToOne
     @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties("product")
     Category category;
 }
