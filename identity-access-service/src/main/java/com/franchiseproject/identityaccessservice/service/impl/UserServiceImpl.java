@@ -33,12 +33,18 @@ public class UserServiceImpl implements UserService {
     PasswordEncoder passwordEncoder;
 
     @Override
+    public User getByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+    }
+
+    @Override
     public List<User> getAll() {
         return userRepository.findAll();
     }
 
     @Override
-    public UserResponse getOne(UUID userId) {
+    public UserResponse getById(UUID userId) {
         return userMapper.toUserResponse(userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found")));
     }

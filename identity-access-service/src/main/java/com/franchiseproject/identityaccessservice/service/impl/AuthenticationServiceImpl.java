@@ -56,6 +56,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private JwtKeyProperties jwtKeyProperties;
 
+    @Override
+    public boolean logout() {
+        return false;
+    }
+
     public AuthenticationResponse login(AuthenticationRequest request, HttpServletResponse response)
             throws Exception {
         var user = userRepository.findByUsername(request.getUsername())
@@ -70,7 +75,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refeshToken)
                 .httpOnly(true)
                 .secure(true)
-                .path("/")
+                .path("/refresh")
                 .maxAge(Duration.ofDays(14))
                 .sameSite("Strict")
                 .build();

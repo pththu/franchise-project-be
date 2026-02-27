@@ -7,6 +7,8 @@ import com.franchiseproject.identityaccessservice.dto.request.IntrospectRequest;
 import com.franchiseproject.identityaccessservice.dto.response.AuthenticationResponse;
 import com.franchiseproject.identityaccessservice.dto.response.IntrospectResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.exception.AppException;
+import com.franchiseproject.identityaccessservice.exception.ErrorCode;
 import com.franchiseproject.identityaccessservice.service.AuthenticationService;
 import com.franchiseproject.identityaccessservice.service.UserService;
 import com.nimbusds.jose.JOSEException;
@@ -17,10 +19,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.time.Duration;
@@ -70,6 +71,41 @@ public class AuthenticationController {
                 .statusCode(200)
                 .message("Login success")
                 .data(authenticationService.introspect(request))
+                .build();
+    }
+
+    @GetMapping("/logout")
+    public ApiResponse<String> logout(@AuthenticationPrincipal Jwt jwt, HttpServletResponse response) {
+
+        String username = jwt.getSubject();
+        User user = userService.getByUsername(username);
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+
+        ResponseCookie accessCookie = ResponseCookie.from("access_token", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/refresh")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+
+        return ApiResponse.<String>builder()
+                .statusCode(200)
+                .message("Logout")
                 .build();
     }
 }

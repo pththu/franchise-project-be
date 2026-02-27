@@ -11,9 +11,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
+    User getByUsername(String username);
     List<User> getAll ();
-    UserResponse getOne (UUID userId);
+    UserResponse getById (UUID userId);
     User createOne (UserCreationRequest request);
     boolean changePassword(ChangePasswordRequest request);
     UserResponse getProfile(String username);
+    
 }

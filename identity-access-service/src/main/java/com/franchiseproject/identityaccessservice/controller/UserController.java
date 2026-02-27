@@ -60,7 +60,6 @@ public class UserController {
 
     /**
      * view account detail
-     *
      * @param userId
      * @return
      */
@@ -69,7 +68,7 @@ public class UserController {
         return ApiResponse.<UserResponse>builder()
                 .statusCode(201)
                 .message("Get One")
-                .data(userService.getOne(userId))
+                .data(userService.getById(userId))
                 .build();
     }
 
