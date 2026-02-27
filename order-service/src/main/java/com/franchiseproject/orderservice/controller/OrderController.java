@@ -1,7 +1,9 @@
 package com.franchiseproject.orderservice.controller;
 
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
+import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
+import com.franchiseproject.orderservice.dto.response.OrderDetailResponse;
 import com.franchiseproject.orderservice.dto.response.OrderResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.model.Order;
@@ -12,7 +14,6 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,6 +61,48 @@ public class OrderController {
                 .message("Tìm đơn hàng theo mã khách hàng thành công!!!")
                 .statusCode(200)
                 .data(orderService.getOrderByCustomerId(customerId))
+                .build();
+    }
+
+    @PutMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrder(
+            @RequestBody @Valid UpdateOrderRequest request
+    ) {
+        Order order = orderService.updateOrder(request);
+        OrderResponse response = mapToResponse(order);
+
+        return ResponseEntity.ok(
+                ApiResponse.<OrderResponse>builder()
+                        .message("Cập nhật đơn hàng thành công")
+                        .data(response)
+                        .statusCode(200)
+                        .errors(null)
+                        .build()
+        );
+    }
+
+    private OrderResponse mapToResponse(Order order) {
+        List<OrderDetailResponse> orderDetails = order.getOrderDetails()
+                .stream()
+                .map(detail -> OrderDetailResponse.builder()
+                        .productId(detail.getProductId())
+                        .productNameSnapshot(detail.getProductNameSnapshot())
+                        .priceSnapshot(detail.getPriceSnapshot())
+                        .quantity(detail.getQuantity())
+                        .build())
+                .toList();
+
+        return OrderResponse.builder()
+                .id(order.getId())
+                .franchiseId(order.getFranchiseId())
+                .customerId(order.getCustomerId())
+                .staffId(order.getStaffId())
+                .totalDue(order.getTotalDue())
+                .priceShip(order.getPriceShip())
+                .orderStatus(order.getOrderStatus())
+                .typeOrder(order.getTypeOrder())
+                .createAt(order.getCreateAt())
+                .orderDetails(orderDetails)
                 .build();
     }
 
