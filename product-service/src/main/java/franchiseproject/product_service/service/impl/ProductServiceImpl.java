@@ -1,7 +1,6 @@
 package franchiseproject.product_service.service.impl;
 
 import franchiseproject.product_service.dto.PageResponse;
-import franchiseproject.product_service.dto.ProductDetailDTO;
 import franchiseproject.product_service.dto.ProductListItemDTO;
 import franchiseproject.product_service.exception.NotFoundException;
 import franchiseproject.product_service.model.Category;
@@ -21,10 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-
+import franchiseproject.product_service.dto.ProductDetailDTO;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Transactional
 public class ProductServiceImpl implements ProductService {
 
     ProductRepository productRepository;
@@ -44,20 +44,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public Product create(Product product, UUID categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category not found: " + categoryId));
 
-        // đảm bảo tạo mới
         product.setId(null);
         product.setCategory(category);
-
         return productRepository.save(product);
     }
 
     @Override
-    @Transactional
     public Product update(UUID id, Product product, UUID categoryId) {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found: " + id));
@@ -80,7 +76,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public void delete(UUID id) {
         if (!productRepository.existsById(id)) {
             throw new NotFoundException("Product not found: " + id);
@@ -88,7 +83,7 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(id);
     }
 
-    // ✅ View product details (DTO)
+    @Override
     @Transactional(readOnly = true)
     public ProductDetailDTO getDetail(UUID id) {
         Product p = productRepository.findById(id)
@@ -110,7 +105,7 @@ public class ProductServiceImpl implements ProductService {
         );
     }
 
-    // ✅ View product list (paging + filter + search + sort)
+    // ✅ NEW: view product list (paging + filter + search + sort)
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ProductListItemDTO> list(
@@ -164,14 +159,11 @@ public class ProductServiceImpl implements ProductService {
         if (sort == null || sort.isBlank()) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
         }
-
         String[] parts = sort.split(",");
         String field = parts[0].trim();
-        Sort.Direction direction =
-                (parts.length > 1 && "asc".equalsIgnoreCase(parts[1].trim()))
-                        ? Sort.Direction.ASC
-                        : Sort.Direction.DESC;
-
+        Sort.Direction direction = (parts.length > 1 && "asc".equalsIgnoreCase(parts[1].trim()))
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
         return Sort.by(direction, field);
     }
 }

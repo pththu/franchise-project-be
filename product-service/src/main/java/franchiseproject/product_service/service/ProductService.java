@@ -10,21 +10,15 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ProductService {
-
-    List<Product> getAll();
-
-    Product getById(UUID id);
-
-    // ✅ View product details
     ProductDetailDTO getDetail(UUID id);
-
+    List<Product> getAll();
+    Product getById(UUID id);
     Product create(Product product, UUID categoryId);
-
     Product update(UUID id, Product product, UUID categoryId);
 
     void delete(UUID id);
 
-    // ✅ View product list (paging + filter + search + sort)
+    // ✅ NEW: view product list
     PageResponse<ProductListItemDTO> list(
             String q,
             String status,
