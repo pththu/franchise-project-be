@@ -13,7 +13,8 @@ public enum ErrorCode {
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception"),
     NOT_FOUND(404, "No Resource Found"),
     USER_NOT_EXISTED(404, "User is not existed"),
-    UNAUTHORIZED(401, "Invalid username or password");
+    UNAUTHORIZED(401, "Invalid username or password"),
+    CREATE_TOKEN_FAIL(500, "Failed to create token");
 
     private int code;
     private String message;

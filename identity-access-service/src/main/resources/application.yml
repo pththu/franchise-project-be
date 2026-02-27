@@ -16,3 +16,45 @@ spring:
     show-sql: true
     properties:
       hibernate.jdbc.time_zone: UTC
+
+jwt:
+  secret: ${SECRET_KEY}
+  public-key: |
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyf7UesiFChCCDRZ+4J/H
+    voNnpoB1XH3z8zJe/w5gGT2yewzmGIC4NSKwmsuDQJST3pMSyCmor5wrL0S5SziM
+    FnrFXjSBklYIQZQR+R93VwRui4Qv7DKrS3JAhQdTLmPCVAiWKZaLDHhLrEAxnIhq
+    4L5Nm0ZQ7CQmfYbmnkXvPvUaWhPrOls+pp9UuVcHzXsNMv8li8ELcAJv/U5Xkqcv
+    uDQSR5Tau5GcaWKF/ljMWu5ca4ZdrSGHvxPG6JeZSKRaqDN6+TMPNkguvcdS6/ed
+    zDd8aBYvI4Op0lwU+N2SNNp3/8oT6eUnTTbYwoPtNVPrzNyM0oljdwgowuiOGFOY
+    DQIDAQAB
+    -----END PUBLIC KEY-----
+  private-key: |
+    -----BEGIN PRIVATE KEY-----
+    MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDJ/tR6yIUKEIIN
+    Fn7gn8e+g2emgHVcffPzMl7/DmAZPbJ7DOYYgLg1IrCay4NAlJPekxLIKaivnCsv
+    RLlLOIwWesVeNIGSVghBlBH5H3dXBG6LhC/sMqtLckCFB1MuY8JUCJYplosMeEus
+    QDGciGrgvk2bRlDsJCZ9huaeRe8+9RpaE+s6Wz6mn1S5VwfNew0y/yWLwQtwAm/9
+    TleSpy+4NBJHlNq7kZxpYoX+WMxa7lxrhl2tIYe/E8bol5lIpFqoM3r5Mw82SC69
+    x1Lr953MN3xoFi8jg6nSXBT43ZI02nf/yhPp5SdNNtjCg+01U+vM3IzSiWN3CCjC
+    6I4YU5gNAgMBAAECggEBAL5ii0529L35tTo0u71nm9J69BTA+t0EcgwEq/jmSblA
+    p5rHG5B4siaS3bXon3sdDwo3wPocGbv7C9Dvi13UnGULrj8OahnNMNbugso12DuS
+    F8cz/h832q+vrhQ0RThyGlUuCqqEE+ba8ygVES2ifmn5tBfn/Jm1sPmbTn5bGBZT
+    LBuLgBdi8HW1JCxnFZlplDf0H7k4hP5sXQ+CXVbUWUyNqLSLPZyhZZHyCJGxVqSI
+    u4oUoUM3HEaYlPfEHr/D8U4ZCG6nezFvswybiS/1UfRFH4v0mRcZl9p/CQK9lLrB
+    nQEkliI1NDZrJV28MV+kKmCTihNVFQTKjVkIkxdJooECgYEA96VKnzbme4yQ7uSZ
+    4Fv5VeL+UDSIGopKBg56/Mw972Rkug9K+kFrX7ns+8uoa3BRyZ3U+xla2W/xhC3Y
+    hZnOx9K4eY37djYvVFIRXsBRA286sEpzbcwtQt12H66GEecVzpwsZ4q+P5ONLXKw
+    09Vq9x5vfM+ImvAgd3xDzuKdPHECgYEA0M9LqjZR/b4RkqinXN76/9/txTrfqUtv
+    X/qD5P6NdM7z7zuhExS06VxVD+fuu+L/LUda/DYHL8G5Hm5rIknOrl6CfxY5WwNI
+    2gnGqBbvWJF+HsJROv0xnun+q04tVHReJ6hjz+cMwJIJX2pxGqsbpmxwarRN5Ibw
+    orKY7TJcU10CgYANFueC0twL27otZlfbzAC50W2vv5cSEA0plMpbYlBDvwKz8ur7
+    n0mVnbYw+OrGAwHPrk/7lbN/mrMhUWsIZMDRPwoRIrgP331Q76WLZI7jp5VqjATd
+    4NTjm+EKe6cKezRj301Zi7PSmHH13QILsFQfC7TI3A9UYSzWI/NRlBjLgQKBgEfq
+    3bimNN8cE5lblSkbc3+ldJM1j8sTPCzmb37zXW0ZylJfSz7zJswpDPMJguQbbp/9
+    r4ymXxtHsaaViTiqCxFrY665zM9X9kOCknVaUN1EXxfg/XE/u1NsbFY7+sjXu4YV
+    LStx/KZmpevDEWmJ/V/4gU9/AkTvZPnkYV9wtPPRAoGAb5YZAqY+XCVeokvCRX9R
+    lE7V3dCrlxVJTHTPHSyo2kaHfuKi3iUpXlSm7Sc0VJ4EesYUps0+g/yRCxIcI1ZQ
+    eL9mRyOIGCCrTOgdkvPO21hI93zvUO9oshMrJ3V8Dzhx5M3C3MyfrC8vwKywN15w
+    8opFZfhd1qbwCRnsIueTEcc=
+    -----END PRIVATE KEY-----
