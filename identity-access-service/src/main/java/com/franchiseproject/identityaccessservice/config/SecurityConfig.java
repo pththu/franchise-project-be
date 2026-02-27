@@ -1,5 +1,9 @@
 package com.franchiseproject.identityaccessservice.config;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,21 +22,26 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.interfaces.RSAPublicKey;
 
 @Configuration
 @EnableWebSecurity
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SecurityConfig {
 
-    @Value("${jwt.private-key}")
-    private String PRIVATE_KEY;
-    private final String api_prefix = "/api/v1/";
-    private final String[] PUBLIC_ENDPOINT = {
+//    @Value("${jwt.private-key}")
+//    String PRIVATE_KEY;
+    @Autowired
+    JwtKeyProperties jwtKeyProperties;
+    final String api_prefix = "/api/v1/";
+    final String[] PUBLIC_ENDPOINT = {
             api_prefix + "auth/login",
             api_prefix + "auth/register",
-            api_prefix + "auth/introspect"
+            api_prefix + "auth/introspect",
+            api_prefix + "users/change-password",
     };
 
-    private final String[] ADMIN_ENDPOINT = {
+    final String[] ADMIN_ENDPOINT = {
             api_prefix + "users"
     };
 
@@ -44,8 +53,14 @@ public class SecurityConfig {
                         .anyRequest().authenticated());
 
         http.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
-                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                oauth2.jwt(jwtConfigurer -> {
+                    try {
+                        jwtConfigurer.decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
         );
 
         http.csrf(AbstractHttpConfigurer::disable);
@@ -61,12 +76,19 @@ public class SecurityConfig {
         return jwtAuthenticationConverter;
     }
 
+    //    @Bean
+//    JwtDecoder jwtDecoder() {
+//        SecretKeySpec secretKeySpec = new SecretKeySpec(PRIVATE_KEY.getBytes(), "HS256");
+//        return NimbusJwtDecoder
+//                .withSecretKey(secretKeySpec)
+//                .macAlgorithm(MacAlgorithm.HS256)
+//                .build();
+//    }
     @Bean
-    JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(PRIVATE_KEY.getBytes(), "HS256");
+    JwtDecoder jwtDecoder() throws Exception {
+        RSAPublicKey rsaPublicKey = jwtKeyProperties.getPublicKeyObject();
         return NimbusJwtDecoder
-                .withSecretKey(secretKeySpec)
-                .macAlgorithm(MacAlgorithm.HS256)
+                .withPublicKey(rsaPublicKey)
                 .build();
     }
 

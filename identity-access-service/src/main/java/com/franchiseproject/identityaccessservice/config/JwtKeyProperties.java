@@ -23,9 +23,7 @@ import java.util.Base64;
 @Component
 public class JwtKeyProperties {
 
-    @Value("${jwt.private-key}")
     private String privateKey;
-    @Value("${jwt.public-key}")
     private String publicKey;
 
     public RSAPrivateKey getPrivateKeyObject() throws Exception {

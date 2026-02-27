@@ -50,9 +50,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
 
-    @NonFinal
-    @Value("${jwt.private-key}")
-    private String PRIVATE_KEY;
+//    @NonFinal
+//    @Value("${jwt.private-key}")
+//    private String PRIVATE_KEY;
 
     private JwtKeyProperties jwtKeyProperties;
 

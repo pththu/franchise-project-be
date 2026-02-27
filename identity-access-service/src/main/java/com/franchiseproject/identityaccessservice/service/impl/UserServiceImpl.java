@@ -29,6 +29,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     UserRepository userRepository;
     UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
 
     @Override
     public List<User> getAll() {
@@ -59,10 +60,9 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
 
-        System.out.println("User: " + user);
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-        String olbPasswordHash = passwordEncoder.encode(request.getOldPassword());
-        if (user.getPasswordHash().matches(olbPasswordHash))) {
+        System.out.println("User: " + user.getUsername());
+        System.out.println("Matches: " + passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash()));
+        if (passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
             user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
             userRepository.save(user);
             return true;
