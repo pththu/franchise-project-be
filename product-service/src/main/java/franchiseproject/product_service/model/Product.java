@@ -1,5 +1,6 @@
 package franchiseproject.product_service.model;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,14 +8,15 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
 @Table(name = "products")
-@Setter
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,12 +29,12 @@ public class Product {
     UUID id;
 
     @Column(name = "product_type", nullable = false)
-    String product_type;
+    String productType;
 
     @Column(name = "name", nullable = false)
     String name;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", nullable = false, columnDefinition = "text")
     String description;
 
     @Column(name = "price", precision = 12, scale = 2, nullable = false)
@@ -55,7 +57,7 @@ public class Product {
     @Column(name = "updated_at")
     Instant updatedAt;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     @JsonIgnoreProperties("product")
     Category category;

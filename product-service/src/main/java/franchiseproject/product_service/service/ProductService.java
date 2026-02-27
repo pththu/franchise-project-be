@@ -1,5 +1,8 @@
 package franchiseproject.product_service.service;
 
+import franchiseproject.product_service.dto.PageResponse;
+import franchiseproject.product_service.dto.ProductDetailDTO;
+import franchiseproject.product_service.dto.ProductListItemDTO;
 import franchiseproject.product_service.model.Product;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,7 +14,28 @@ public interface ProductService {
 
     List<Product> getAll();
 
+    List<ProductListItemDTO> getAllAsListItem();
+
     Product getById(UUID id);
+
+    ProductDetailDTO getDetail(UUID id);
+
+    Product create(Product product, UUID categoryId);
+
+    Product update(UUID id, Product product, UUID categoryId);
+
+    void delete(UUID id);
+
+    PageResponse<ProductListItemDTO> list(
+            String q,
+            String status,
+            UUID categoryId,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            int page,
+            int size,
+            String sort
+    );
 
     List<Product> search(
             String name,
