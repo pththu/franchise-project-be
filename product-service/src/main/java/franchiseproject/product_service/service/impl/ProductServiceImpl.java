@@ -17,7 +17,10 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -30,18 +33,15 @@ public class ProductServiceImpl implements ProductService {
     ProductRepository productRepository;
     CategoryRepository categoryRepository;
 
-    // ✅ (Optional) dùng nội bộ hoặc route cũ trả entity
     @Override
     @Transactional(readOnly = true)
     public List<Product> getAll() {
         return productRepository.findAll();
     }
 
-    // ✅ Dùng cho /api/products/getall (trả DTO để tránh 500 do serialize Entity)
     @Override
     @Transactional(readOnly = true)
     public List<ProductListItemDTO> getAllAsListItem() {
-        // category là LAZY, nhưng đang ở trong @Transactional => đọc được categoryId/name
         return productRepository.findAll().stream()
                 .map(p -> new ProductListItemDTO(
                         p.getId(),
@@ -67,12 +67,32 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ProductDetailDTO getDetail(UUID id) {
+        Product p = getById(id);
+
+        return new ProductDetailDTO(
+                p.getId(),
+                p.getProductType(),
+                p.getName(),
+                p.getDescription(),
+                p.getPrice(),
+                p.getUnit(),
+                p.getStatus(),
+                p.getImageUrl(),
+                p.getCategory() != null ? p.getCategory().getId() : null,
+                p.getCategory() != null ? p.getCategory().getName() : null,
+                p.getCreatedAt(),
+                p.getUpdatedAt()
+        );
+    }
+
+    @Override
     @Transactional
     public Product create(Product product, UUID categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category not found: " + categoryId));
 
-        // đảm bảo tạo mới
         product.setId(null);
         product.setCategory(category);
 
@@ -82,12 +102,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public Product update(UUID id, Product product, UUID categoryId) {
-        Product existing = productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Product not found: " + id));
+        Product existing = getById(id);
 
         if (categoryId != null) {
             Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new NotFoundException("Category not found: " + categoryId));
+                    .orElseThrow(() -> new NotFoundException("Category not found"));
             existing.setCategory(category);
         }
 
@@ -106,35 +125,11 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void delete(UUID id) {
         if (!productRepository.existsById(id)) {
-            throw new NotFoundException("Product not found: " + id);
+            throw new NotFoundException("Product not found");
         }
         productRepository.deleteById(id);
     }
 
-    // ✅ View product details (DTO)
-    @Override
-    @Transactional(readOnly = true)
-    public ProductDetailDTO getDetail(UUID id) {
-        Product p = productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Product not found: " + id));
-
-        return new ProductDetailDTO(
-                p.getId(),
-                p.getProductType(),
-                p.getName(),
-                p.getDescription(),
-                p.getPrice(),
-                p.getUnit(),
-                p.getStatus(),
-                p.getImageUrl(),
-                p.getCategory() != null ? p.getCategory().getId() : null,
-                p.getCategory() != null ? p.getCategory().getName() : null,
-                p.getCreatedAt(),
-                p.getUpdatedAt()
-        );
-    }
-
-    // ✅ View product list (paging + filter + search + sort)
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ProductListItemDTO> list(
@@ -183,19 +178,74 @@ public class ProductServiceImpl implements ProductService {
         );
     }
 
-    // sort format: "createdAt,desc" or "price,asc"
     private Sort parseSort(String sort) {
         if (sort == null || sort.isBlank()) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
         }
 
         String[] parts = sort.split(",");
-        String field = parts[0].trim();
+        String field = parts[0];
+
         Sort.Direction direction =
-                (parts.length > 1 && "asc".equalsIgnoreCase(parts[1].trim()))
+                (parts.length > 1 && parts[1].equalsIgnoreCase("asc"))
                         ? Sort.Direction.ASC
                         : Sort.Direction.DESC;
 
         return Sort.by(direction, field);
+    }
+
+    @Override
+    public Product uploadImage(UUID id, MultipartFile file) {
+        Product product = getById(id);
+
+        try {
+            String uploadDir = System.getProperty("user.dir") + "/uploads/";
+            File dir = new File(uploadDir);
+
+            if (!dir.exists()) dir.mkdirs();
+
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            File dest = new File(uploadDir + fileName);
+
+            file.transferTo(dest);
+
+            product.setImageUrl("/uploads/" + fileName);
+
+            return productRepository.save(product);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Upload failed");
+        }
+    }
+
+    @Override
+    public Product updateImage(UUID id, MultipartFile file) {
+
+        Product product = getById(id);
+
+        try {
+            String uploadDir = System.getProperty("user.dir") + "/uploads/";
+            File dir = new File(uploadDir);
+
+            if (!dir.exists()) dir.mkdirs();
+
+            if (product.getImageUrl() != null) {
+                String oldFileName = product.getImageUrl().replace("/uploads/", "");
+                File oldFile = new File(uploadDir + oldFileName);
+                if (oldFile.exists()) oldFile.delete();
+            }
+
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            File dest = new File(uploadDir + fileName);
+
+            file.transferTo(dest);
+
+            product.setImageUrl("/uploads/" + fileName);
+
+            return productRepository.save(product);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Update failed");
+        }
     }
 }

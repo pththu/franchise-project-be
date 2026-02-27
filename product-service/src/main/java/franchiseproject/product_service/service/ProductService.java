@@ -4,6 +4,7 @@ import franchiseproject.product_service.dto.PageResponse;
 import franchiseproject.product_service.dto.ProductDetailDTO;
 import franchiseproject.product_service.dto.ProductListItemDTO;
 import franchiseproject.product_service.model.Product;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -13,7 +14,6 @@ public interface ProductService {
 
     List<Product> getAll();
 
-    // ✅ thêm cái này
     List<ProductListItemDTO> getAllAsListItem();
 
     Product getById(UUID id);
@@ -36,4 +36,17 @@ public interface ProductService {
             int size,
             String sort
     );
+
+    List<Product> search(
+            String name,
+            String productType,
+            String status,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            UUID categoryId
+    );
+
+    Product uploadImage(UUID id, MultipartFile file);
+
+    Product updateImage(UUID id, MultipartFile file);
 }
