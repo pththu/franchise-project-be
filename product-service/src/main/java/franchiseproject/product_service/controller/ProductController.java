@@ -9,7 +9,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -24,7 +23,13 @@ public class ProductController {
 
     ProductService productService;
 
-    // ✅ NEW: View product list (paging + filter + search + sort)
+    // (Optional) route cũ để tương thích: GET /product/getall
+    @GetMapping("/getall")
+    public List<Product> findAll() {
+        return productService.getAll();
+    }
+
+    // ✅ View product list (paging + filter + search + sort): GET /product
     @GetMapping
     public PageResponse<ProductListItemDTO> list(
             @RequestParam(required = false) String q,
@@ -39,43 +44,34 @@ public class ProductController {
         return productService.list(q, status, categoryId, minPrice, maxPrice, page, size, sort);
     }
 
-    // view list (route cũ)
-    @GetMapping("/getall")
-    public List<Product> findAll() {
-        return productService.getAll();
-    }
-
-    // view details
+    // ✅ View product details: GET /product/{id}
     @GetMapping("/{id}")
-    public Product getById(@PathVariable UUID id) {
-        return productService.getById(id);
-    }
-
-    // create
-    @PostMapping
-    public ResponseEntity<Product> create(@RequestParam UUID categoryId,
-                                          @RequestBody Product product) {
-        Product created = productService.create(product, categoryId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
-
-    // update
-    @PutMapping("/{id}")
-    public Product update(@PathVariable UUID id,
-                          @RequestParam(required = false) UUID categoryId,
-                          @RequestBody Product product) {
-        return productService.update(id, product, categoryId);
-    }
-
-    // delete
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        productService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{id}/detail")
     public ProductDetailDTO getDetail(@PathVariable UUID id) {
         return productService.getDetail(id);
+    }
+
+    // ✅ CREATE: POST /product?categoryId=...
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ProductDetailDTO create(@RequestBody Product product,
+                                   @RequestParam UUID categoryId) {
+        Product saved = productService.create(product, categoryId);
+        return productService.getDetail(saved.getId());
+    }
+
+    // ✅ UPDATE: PUT /product/{id} (categoryId optional)
+    @PutMapping("/{id}")
+    public ProductDetailDTO update(@PathVariable UUID id,
+                                   @RequestBody Product product,
+                                   @RequestParam(required = false) UUID categoryId) {
+        productService.update(id, product, categoryId);
+        return productService.getDetail(id);
+    }
+
+    // ✅ DELETE: DELETE /product/{id}
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable UUID id) {
+        productService.delete(id);
     }
 }

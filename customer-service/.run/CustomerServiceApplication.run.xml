@@ -1,12 +1,11 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="CustomerServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
-      <env name="DB_PASSWORD" value="1IywPMOfBdPLn1E8FZfqkA2LBfnVwR9E" />
-      <env name="DB_URL" value="jdbc:postgresql://dpg-d644ehfpm1nc738hbvrg-a.singapore-postgres.render.com/auth_franchise_heoe" />
-      <env name="DB_USERNAME" value="sa" />
+      <env name="DB_PASSWORD" value="vinh0710" />
+      <env name="DB_URL" value="jdbc:postgresql://localhost:5432/franchise_db_74u0" />
+      <env name="DB_USERNAME" value="postgres" />
     </envs>
-    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />
-    <module name="customer-service" />
+    <module name="be" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.customerservice.CustomerServiceApplication" />
     <extension name="coverage">
       <pattern>
