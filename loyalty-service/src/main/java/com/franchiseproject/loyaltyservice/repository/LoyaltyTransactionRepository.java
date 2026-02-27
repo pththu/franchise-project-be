@@ -1,9 +1,12 @@
 package com.franchiseproject.loyaltyservice.repository;
 
+import com.franchiseproject.loyaltyservice.enums.LoyaltyTransactionType;
 import com.franchiseproject.loyaltyservice.model.LoyaltyTransaction;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
