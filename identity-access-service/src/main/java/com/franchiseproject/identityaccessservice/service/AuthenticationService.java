@@ -7,11 +7,12 @@ import com.franchiseproject.identityaccessservice.dto.response.AuthenticationRes
 import com.franchiseproject.identityaccessservice.dto.response.IntrospectResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.nimbusds.jose.JOSEException;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.text.ParseException;
 
 public interface AuthenticationService {
-    AuthenticationResponse login(AuthenticationRequest request) throws Exception;
+    AuthenticationResponse login(AuthenticationRequest request, HttpServletResponse response) throws Exception;
 
     User register(CustomerRegisterRequest request);
 
