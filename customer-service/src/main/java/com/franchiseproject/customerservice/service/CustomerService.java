@@ -12,11 +12,11 @@ import java.util.UUID;
 public interface CustomerService {
     List<Customer> getAll();
 
+//    Customer getCustomerById(UUID id);
+//
+//    Page<Customer> searchCustomers(String keyword, CustomerStatus status, Pageable pageable);
+
     Customer getCustomerById(UUID id);
 
     PageResponse<CustomerResponse> searchCustomers(String keyword, CustomerStatus status, Pageable pageable);
-
-    List<UUID> getOrderHistory(UUID customerId);
-
-    List<UUID> getFeedbackHistory(UUID customerId);
 }

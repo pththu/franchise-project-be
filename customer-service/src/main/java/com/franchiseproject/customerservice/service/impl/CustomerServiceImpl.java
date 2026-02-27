@@ -52,28 +52,4 @@ public class CustomerServiceImpl implements CustomerService {
                 .totalItems(pageResult.getTotalElements())
                 .build();
     }
-
-    @Override
-    public List<UUID> getOrderHistory(UUID customerId) {
-        if (!customerRepository.existsById(customerId)) {
-            throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
-        }
-
-        return List.of(
-                UUID.randomUUID(),
-                UUID.randomUUID()
-        );
-    }
-
-    @Override
-    public List<UUID> getFeedbackHistory(UUID customerId) {
-        if (!customerRepository.existsById(customerId)) {
-            throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
-        }
-
-        return List.of(
-                UUID.randomUUID(),
-                UUID.randomUUID()
-        );
-    }
 }
