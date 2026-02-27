@@ -207,7 +207,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderStatusLogRepository.save(
                 OrderStatusLog.builder()
-                        .statusId(null)
+                        .statusId(UUID.randomUUID())
                         .fromStatus(status)
                         .toStatus("CANCELLED")
                         .noteLog("Customer cancelled order")
