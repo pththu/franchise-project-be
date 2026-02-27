@@ -14,7 +14,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE , makeFinal = true)
-@RequestMapping("/product")
+@RequestMapping("api/products")
 public class ProductController {
 
     ProductService productService;
