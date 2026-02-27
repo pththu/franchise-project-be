@@ -17,4 +17,5 @@ public record ProductDetailDTO(
         String categoryName,
         Instant createdAt,
         Instant updatedAt
-) {}
+) {
+}

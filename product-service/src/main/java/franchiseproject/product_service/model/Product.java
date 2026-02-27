@@ -1,6 +1,5 @@
 package franchiseproject.product_service.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -49,16 +48,14 @@ public class Product {
     String imageUrl;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at")
     Instant createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     Instant updatedAt;
 
-    // 🔥 Sửa LAZY → EAGER để tránh LazyInitializationException
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "category_id", nullable = false)
-    @JsonIgnoreProperties({"products"})
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
     Category category;
 }

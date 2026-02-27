@@ -14,8 +14,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "categories")
-@Getter
 @Setter
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,21 +27,21 @@ public class Category {
     @Column(name = "id", unique = true, nullable = false)
     UUID id;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = false)
     String name;
 
-    @Column(name = "description", columnDefinition = "text", nullable = false)
+    @Column(name = "description", nullable = false)
     String description;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at")
     Instant createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     Instant updatedAt;
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "category")
     @JsonIgnore
     List<Product> products;
 }
