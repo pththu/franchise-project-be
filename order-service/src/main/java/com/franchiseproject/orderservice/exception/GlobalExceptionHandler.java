@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ec.getHttpStatus()).body(body);
     }
 
-    // Bean Validation (@Valid) trên @RequestBody
+//    // Bean Validation (@Valid) trên @RequestBody
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, List<String>> errors = ex.getBindingResult().getFieldErrors().stream()

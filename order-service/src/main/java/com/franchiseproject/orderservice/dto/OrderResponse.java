@@ -2,8 +2,11 @@ package com.franchiseproject.orderservice.dto;
 
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
+import com.franchiseproject.orderservice.model.OrderDetail;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -12,15 +15,20 @@ import java.util.UUID;
 
 @Builder
 @Getter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderResponse {
-    private UUID orderId;
-    private UUID franchiseId;
-    private UUID customerId;
-    private UUID staffId;
-    private BigDecimal totalDue;
-    private BigDecimal priceShip;
-    private OrderStatus orderStatus;
-    private TypeOrder typeOrder;
-    private Instant createdAt;
-    private List<OrderItemResponse> items;
+    UUID id;
+    UUID franchiseId;
+    UUID customerId;
+    UUID staffId;
+    UUID paymentTransactionId;
+    UUID promotionId;
+    String address;
+    BigDecimal totalDue;
+    TypeOrder typeOrder;
+    OrderStatus orderStatus;
+    BigDecimal priceShip;
+    Instant createAt;
+    Instant updateAt;
+    List<OrderItemResponse> orderDetails;
 }

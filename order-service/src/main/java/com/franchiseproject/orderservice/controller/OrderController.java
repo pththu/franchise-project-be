@@ -2,11 +2,10 @@ package com.franchiseproject.orderservice.controller;
 
 import com.franchiseproject.orderservice.dto.CheckoutRequest;
 import com.franchiseproject.orderservice.dto.CreateOrderRequest;
-import com.franchiseproject.orderservice.dto.OrderItemResponse;
 import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
-import com.franchiseproject.orderservice.dto.response.OrderByCustomerResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
+import com.franchiseproject.orderservice.mapper.OrderMapper;
 import com.franchiseproject.orderservice.model.Order;
 import com.franchiseproject.orderservice.service.OrderService;
 import jakarta.validation.Valid;
@@ -27,6 +26,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderController {
     OrderService orderService;
+    OrderMapper orderMapper;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllOrder() {
@@ -46,36 +46,10 @@ public class OrderController {
             @RequestBody @Valid CreateOrderRequest request
     ) {
         Order order = orderService.createOrder(request);
-        OrderResponse response = mapToResponse(order);
+        OrderResponse response = orderMapper.toOrderResponse(order);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
-    private OrderResponse mapToResponse(Order order) {
-
-        List<OrderItemResponse> items = order.getOrderDetails()
-                .stream()
-                .map(detail -> OrderItemResponse.builder()
-                        .productId(detail.getProductId())
-                        .productName(detail.getProductNameSnapshot())
-                        .price(detail.getPriceSnapshot())
-                        .quantity(detail.getQuantity())
-                        .build())
-                .toList();
-
-        return OrderResponse.builder()
-                .orderId(order.getId())
-                .franchiseId(order.getFranchiseId())
-                .customerId(order.getCustomerId())
-                .staffId(order.getStaffId())
-                .totalDue(order.getTotalDue())
-                .priceShip(order.getPriceShip())
-                .orderStatus(order.getOrderStatus())
-                .typeOrder(order.getTypeOrder())
-                .createdAt(order.getCreateAt())
-                .items(items)
-                .build();
-    }
 
     @PostMapping("/checkout")
     public ResponseEntity<?> checkoutOnline(
@@ -109,8 +83,8 @@ public class OrderController {
     }
 
     @GetMapping("/{customerId}")
-    public ApiResponse<List<OrderByCustomerResponse>> getOrderByCustomerId(@PathVariable UUID customerId) {
-        return ApiResponse.<List<OrderByCustomerResponse>>builder()
+    public ApiResponse<List<OrderResponse>> getOrderByCustomerId(@PathVariable UUID customerId) {
+        return ApiResponse.<List<OrderResponse>>builder()
                 .message("Tìm đơn hàng theo mã khách hàng thành công!!!")
                 .statusCode(200)
                 .data(orderService.getOrderByCustomerId(customerId))

@@ -1,16 +1,21 @@
 package com.franchiseproject.orderservice.dto;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Builder
 @Getter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderItemResponse {
-    private UUID productId;
-    private String productName;
-    private BigDecimal price;
-    private Integer quantity;
+    UUID id;
+    UUID productId;
+    String productNameSnapshot;
+    Integer quantity;
+    BigDecimal priceSnapshot;
+    BigDecimal cost;
 }

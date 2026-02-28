@@ -1,7 +1,6 @@
 package com.franchiseproject.orderservice.service.impl;
 
 import com.franchiseproject.orderservice.dto.*;
-import com.franchiseproject.orderservice.dto.response.OrderByCustomerResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
 import com.franchiseproject.orderservice.exception.BusinessException;
@@ -45,11 +44,7 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(CreateOrderRequest request) {
 
         if (request.items() == null || request.items().isEmpty()) {
-            throw new IllegalArgumentException("Order must contain at least one item");
-        }
-
-        if (request.priceShip() == null || request.priceShip().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Shipping price must be >= 0");
+            throw new AppException(ErrorCode.ITEM_ORDER_NOT_NULL);
         }
 
 
@@ -243,8 +238,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderByCustomerResponse> getOrderByCustomerId(UUID customerId) {
+    public List<OrderResponse> getOrderByCustomerId(UUID customerId) {
        List<Order> o =  orderRepository.findAllByCustomerId(customerId);
-       return o.stream().map(orderMapper::toOrderByCustomerResponse).toList();
+       return o.stream().map(orderMapper::toOrderResponse).toList();
     }
 }
