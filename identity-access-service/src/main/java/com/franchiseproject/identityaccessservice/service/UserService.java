@@ -5,6 +5,7 @@ import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRe
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserDeleteResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
@@ -20,4 +21,5 @@ public interface UserService {
     boolean changePassword(ChangePasswordRequest request);
     UserResponse getProfile(String username);
     UserUpdateResponse updateAccountInfomation(String username, UserUpdateRequest request);
+    UserDeleteResponse deleteAccountUser(UUID userId);
 }

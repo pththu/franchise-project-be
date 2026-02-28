@@ -6,6 +6,7 @@ import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRe
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserDeleteResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
@@ -104,6 +105,15 @@ public class UserController {
                 .statusCode(201)
                 .message("Update account infomation successs")
                 .data(userService.updateAccountInfomation(jwt.getSubject(), request))
+                .build();
+    }
+
+    @DeleteMapping("/delete-account")
+    public ApiResponse<UserDeleteResponse> deleteAccountUser(@PathParam("userId") UUID userId) {
+        return ApiResponse.<UserDeleteResponse>builder()
+                .statusCode(200)
+                .message("Delete account usser id success")
+                .data(userService.deleteAccountUser(userId))
                 .build();
     }
 }

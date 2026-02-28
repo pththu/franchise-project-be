@@ -5,6 +5,7 @@ import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRe
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserDeleteResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
@@ -121,6 +122,17 @@ public class UserServiceImpl implements UserService {
         return UserUpdateResponse.builder()
                 .isUpdated(true)
                 .userResponse(userMapper.toUserResponse(user))
+                .build();
+    }
+
+    @Override
+    public UserDeleteResponse deleteAccountUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+
+        user.setStatus(UserStatus.DELETED);
+        return UserDeleteResponse.builder()
+                .isDeleted(true)
                 .build();
     }
 }
