@@ -6,6 +6,7 @@ import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRe
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserDeleteResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
@@ -108,6 +109,12 @@ public class UserController {
                 .build();
     }
 
+    @DeleteMapping("/delete-account/{userId}")
+    public ApiResponse<UserDeleteResponse> deleteAccountUser(@PathVariable UUID userId) {
+        return ApiResponse.<UserDeleteResponse>builder()
+                .statusCode(200)
+                .message("Delete account usser id success")
+                .data(userService.deleteAccountUser(userId))
     @PutMapping("/lock")
     public ApiResponse<UserLockResponse> lockUser(@AuthenticationPrincipal Jwt jwt) {
         return ApiResponse.<UserLockResponse>builder()
