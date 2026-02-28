@@ -6,6 +6,7 @@ import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.response.OrderDetailResponse;
 import com.franchiseproject.orderservice.dto.response.OrderResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
+import com.franchiseproject.orderservice.mapper.OrderMapper;
 import com.franchiseproject.orderservice.model.Order;
 import com.franchiseproject.orderservice.service.OrderDetailService;
 import com.franchiseproject.orderservice.service.OrderService;
@@ -14,12 +15,9 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -30,16 +28,19 @@ public class OrderController {
     OrderService orderService;
     OrderDetailService orderDetailService;
     OrderStatusLogService orderStatusLogService;
+    OrderMapper orderMapper;
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getAllOrder() {
-        Map<String, Object> response = new HashMap<>();
+    public ApiResponse<List<OrderResponse>> getAllOrder() {
 
-        List<Order> orders = orderService.getAll();
-        response.put("message", "Get All Orders");
-        response.put("data", orders);
+        List<OrderResponse> orders = orderService.getAll();
 
-        return ResponseEntity.ok(response);
+        return ApiResponse.<List<OrderResponse>>builder()
+                .message("Lấy danh sách đơn hàng thành công")
+                .data(orders)
+                .statusCode(200)
+                .errors(null)
+                .build();
     }
 
     @PatchMapping("/{orderId}/status")
@@ -65,45 +66,19 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}")
-    public ResponseEntity<ApiResponse<OrderResponse>> updateOrder(
+    public ApiResponse<OrderResponse> updateOrder(
+            @PathVariable UUID orderId,
             @RequestBody @Valid UpdateOrderRequest request
     ) {
-        Order order = orderService.updateOrder(request);
-        OrderResponse response = mapToResponse(order);
+        Order order = orderService.updateOrder(orderId, request);
+        OrderResponse response = orderMapper.toOrderResponse(order);
 
-        return ResponseEntity.ok(
-                ApiResponse.<OrderResponse>builder()
+        return ApiResponse.<OrderResponse>builder()
                         .message("Cập nhật đơn hàng thành công")
                         .data(response)
                         .statusCode(200)
                         .errors(null)
-                        .build()
-        );
-    }
-
-    private OrderResponse mapToResponse(Order order) {
-        List<OrderDetailResponse> orderDetails = order.getOrderDetails()
-                .stream()
-                .map(detail -> OrderDetailResponse.builder()
-                        .productId(detail.getProductId())
-                        .productNameSnapshot(detail.getProductNameSnapshot())
-                        .priceSnapshot(detail.getPriceSnapshot())
-                        .quantity(detail.getQuantity())
-                        .build())
-                .toList();
-
-        return OrderResponse.builder()
-                .id(order.getId())
-                .franchiseId(order.getFranchiseId())
-                .customerId(order.getCustomerId())
-                .staffId(order.getStaffId())
-                .totalDue(order.getTotalDue())
-                .priceShip(order.getPriceShip())
-                .orderStatus(order.getOrderStatus())
-                .typeOrder(order.getTypeOrder())
-                .createAt(order.getCreateAt())
-                .orderDetails(orderDetails)
-                .build();
+                        .build();
     }
 
     // Thêm địa chỉ cho đơn hàng Online

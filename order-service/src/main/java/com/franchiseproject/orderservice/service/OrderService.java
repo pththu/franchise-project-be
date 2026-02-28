@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OrderService {
-    List<Order> getAll();
+    List<OrderResponse> getAll();
     void updateOrderStatus(UUID orderId, OrderStatus newStatus);
     List<OrderResponse> getOrderByCustomerId(UUID customerId);
     void addAddressOnlineOrder(AddAddressRequest request);
     String getAddressOnlineOrder(UUID customerId);
-    Order updateOrder(UpdateOrderRequest request);
+    Order updateOrder(UUID orderId, UpdateOrderRequest request);
 }
