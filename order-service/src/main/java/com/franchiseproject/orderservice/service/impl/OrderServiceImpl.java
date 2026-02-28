@@ -19,18 +19,14 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderItemRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
-//import com.franchiseproject.orderservice.dto.response.OrderResponse;
-import lombok.AllArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 
 
@@ -371,7 +367,6 @@ public class OrderServiceImpl implements OrderService {
         Object address = redisTemplate.opsForValue().get(key);
         return address != null ? address.toString() : null;
     }
-
 
     @Override
     public void assignStaff(UUID orderId, UUID staffId) {
