@@ -14,7 +14,9 @@ public enum ErrorCode {
     NOT_FOUND(404, "No Resource Found"),
     USER_NOT_EXISTED(404, "User is not existed"),
     UNAUTHORIZED(401, "Invalid username or password"),
-    CREATE_TOKEN_FAIL(500, "Failed to create token");
+    CREATE_TOKEN_FAIL(500, "Failed to create token"),
+    DATA_IS_NULL(400, "Data is null")
+    ;
 
     private int code;
     private String message;

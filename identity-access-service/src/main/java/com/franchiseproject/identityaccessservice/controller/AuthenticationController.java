@@ -102,7 +102,6 @@ public class AuthenticationController {
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-
         return ApiResponse.<String>builder()
                 .statusCode(200)
                 .message("Logout")
