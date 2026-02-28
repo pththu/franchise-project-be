@@ -15,6 +15,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,10 +33,9 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllOrder() {
         Map<String, Object> response = new HashMap<>();
-
         List<Order> orders = orderService.getAll();
         response.put("message", "Get All Orders");
-        response.put("data", orders);
+        response.put("data", orderService.getAll());
 
         return ResponseEntity.ok(response);
     }
@@ -89,5 +90,28 @@ public class OrderController {
                 .statusCode(200)
                 .data(orderService.getOrderByCustomerId(customerId))
                 .build();
+    }
+
+    @PutMapping("/{orderId}/assign-staff/{staffId}")
+    public ResponseEntity<?> assignStaff(
+            @PathVariable UUID orderId,
+            @PathVariable UUID staffId
+    ) {
+        orderService.assignStaff(orderId, staffId);
+        return ResponseEntity.ok("Assign staff success");
+    }
+    @PutMapping("/{orderId}/mark-special")
+    public ResponseEntity<?> markSpecial(@PathVariable UUID orderId) {
+        orderService.markSpecial(orderId);
+        return ResponseEntity.ok("Mark special success");
+    }
+    @PutMapping("/{orderId}/estimate-delivery")
+    public ResponseEntity<?> estimateDelivery(
+            @PathVariable UUID orderId,
+            @RequestParam("eta") String eta
+    ) {
+        Instant estimatedTime = Instant.parse(eta);
+        orderService.estimateDeliveryTime(orderId, estimatedTime);
+        return ResponseEntity.ok("Estimate delivery time success");
     }
 }

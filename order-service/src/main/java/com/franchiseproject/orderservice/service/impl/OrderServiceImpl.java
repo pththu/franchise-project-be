@@ -21,6 +21,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
     OrderStatusLogRepository orderStatusLogRepository;
     ProductClient productClient;
     OrderMapper  orderMapper;
+
     @Override
     @Transactional
     public List<Order> getAll() {
@@ -241,5 +243,33 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderResponse> getOrderByCustomerId(UUID customerId) {
        List<Order> o =  orderRepository.findAllByCustomerId(customerId);
        return o.stream().map(orderMapper::toOrderResponse).toList();
+    }
+
+    @Override
+    public void assignStaff(UUID orderId, UUID staffId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setAssignedStaffId(staffId);
+
+        orderRepository.save(order);
+    }
+    @Override
+    public void markSpecial(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setIsSpecial(true);
+
+        orderRepository.save(order);
+    }
+    @Override
+    public void estimateDeliveryTime(UUID orderId, Instant estimatedTime) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setEstimatedDeliveryTime(estimatedTime);
+
+        orderRepository.save(order);
     }
 }

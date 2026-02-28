@@ -36,7 +36,7 @@ public class Order {
     UUID franchiseId;
     @Column(name = "customer_id", nullable = false)
     UUID customerId;
-    @Column(name = "staff_id", nullable = false)
+    @Column(name = "staff_id")
     UUID staffId;
     @Column(name = "payment_transaction_id", nullable = false)
     UUID paymentTransactionId;
@@ -63,4 +63,10 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonIgnore
     List<OrderDetail> orderDetails;
+    @Column(name = "assigned_staff_id")
+    UUID assignedStaffId;
+    @Column(name = "is_special")
+    Boolean isSpecial;
+    @Column(name = "estimated_delivery_time")
+    Instant estimatedDeliveryTime;
 }
