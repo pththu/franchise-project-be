@@ -6,6 +6,7 @@ import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRe
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
@@ -104,6 +105,15 @@ public class UserController {
                 .statusCode(201)
                 .message("Update account infomation successs")
                 .data(userService.updateAccountInfomation(jwt.getSubject(), request))
+                .build();
+    }
+
+    @PutMapping("/lock")
+    public ApiResponse<UserLockResponse> lockUser(@AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.<UserLockResponse>builder()
+                .statusCode(200)
+                .message("User locked")
+                .data(userService.lockUser(jwt.getSubject()))
                 .build();
     }
 }
