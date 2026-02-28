@@ -2,7 +2,7 @@ package com.franchiseproject.orderservice.service;
 
 import com.franchiseproject.orderservice.dto.CheckoutRequest;
 import com.franchiseproject.orderservice.dto.CreateOrderRequest;
-import com.franchiseproject.orderservice.dto.response.OrderResponse;
+import com.franchiseproject.orderservice.dto.response.OrderByCustomerResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.model.Order;
 
@@ -15,5 +15,5 @@ public interface OrderService {
     UUID checkoutOnline(CheckoutRequest request);
     void cancelOrder(UUID orderId, UUID customerId);
     void updateOrderStatus(UUID orderId, OrderStatus newStatus);
-    List<OrderResponse> getOrderByCustomerId(UUID customerId);
+    List<OrderByCustomerResponse> getOrderByCustomerId(UUID customerId);
 }

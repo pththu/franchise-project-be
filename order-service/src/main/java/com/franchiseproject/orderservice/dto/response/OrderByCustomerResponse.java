@@ -2,7 +2,6 @@ package com.franchiseproject.orderservice.dto.response;
 
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
-import com.franchiseproject.orderservice.model.OrderDetail;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -15,7 +14,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderResponse {
+public class OrderByCustomerResponse {
     UUID id;
     UUID franchiseId;
     UUID customerId;

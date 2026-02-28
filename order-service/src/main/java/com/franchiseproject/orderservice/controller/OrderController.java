@@ -5,6 +5,7 @@ import com.franchiseproject.orderservice.dto.CreateOrderRequest;
 import com.franchiseproject.orderservice.dto.OrderItemResponse;
 import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
+import com.franchiseproject.orderservice.dto.response.OrderByCustomerResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.model.Order;
 import com.franchiseproject.orderservice.service.OrderService;
@@ -107,12 +108,12 @@ public class OrderController {
                 .build();
     }
 
-//    @GetMapping("/{customerId}")
-//    public ApiResponse<List<OrderResponse>> getOrderByCustomerId(@PathVariable UUID customerId) {
-//        return ApiResponse.<List<OrderResponse>>builder()
-//                .message("Tìm đơn hàng theo mã khách hàng thành công!!!")
-//                .statusCode(200)
-//                .data(orderService.getOrderByCustomerId(customerId))
-//                .build();
-//    }
+    @GetMapping("/{customerId}")
+    public ApiResponse<List<OrderByCustomerResponse>> getOrderByCustomerId(@PathVariable UUID customerId) {
+        return ApiResponse.<List<OrderByCustomerResponse>>builder()
+                .message("Tìm đơn hàng theo mã khách hàng thành công!!!")
+                .statusCode(200)
+                .data(orderService.getOrderByCustomerId(customerId))
+                .build();
+    }
 }
