@@ -6,6 +6,7 @@ import com.franchiseproject.identityaccessservice.dto.request.UserCreationReques
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserDeleteResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
@@ -135,5 +136,13 @@ public class UserServiceImpl implements UserService {
         return UserDeleteResponse.builder()
                 .isDeleted(true)
                 .build();
+    public UserLockResponse lockUser(String username) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        user.setStatus(UserStatus.SUSPENDED);
+        userRepository.save(user);
+        return UserLockResponse.builder().isLocked(true).build();
     }
 }

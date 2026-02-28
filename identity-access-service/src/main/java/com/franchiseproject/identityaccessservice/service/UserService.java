@@ -6,6 +6,7 @@ import com.franchiseproject.identityaccessservice.dto.request.UserCreationReques
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserDeleteResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
@@ -22,4 +23,5 @@ public interface UserService {
     UserResponse getProfile(String username);
     UserUpdateResponse updateAccountInfomation(String username, UserUpdateRequest request);
     UserDeleteResponse deleteAccountUser(UUID userId);
+    UserLockResponse lockUser(String username);
 }
