@@ -108,8 +108,8 @@ public class UserController {
                 .build();
     }
 
-    @DeleteMapping("/delete-account")
-    public ApiResponse<UserDeleteResponse> deleteAccountUser(@PathParam("userId") UUID userId) {
+    @DeleteMapping("/delete-account/{userId}")
+    public ApiResponse<UserDeleteResponse> deleteAccountUser(@PathVariable UUID userId) {
         return ApiResponse.<UserDeleteResponse>builder()
                 .statusCode(200)
                 .message("Delete account usser id success")

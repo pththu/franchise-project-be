@@ -131,6 +131,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
 
         user.setStatus(UserStatus.DELETED);
+        userRepository.save(user);
         return UserDeleteResponse.builder()
                 .isDeleted(true)
                 .build();
