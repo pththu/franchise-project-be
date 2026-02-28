@@ -3,7 +3,6 @@ package com.franchiseproject.loyaltyservice.service.impl;
 import com.franchiseproject.loyaltyservice.dto.request.ManualAdjustPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.response.ManualAdjustPointsResponse;
 import com.franchiseproject.loyaltyservice.enums.LoyaltyTransactionType;
-import com.franchiseproject.loyaltyservice.enums.LoyaltyTransactionType;
 import com.franchiseproject.loyaltyservice.exception.AppException;
 import com.franchiseproject.loyaltyservice.exception.ErrorCode;
 import com.franchiseproject.loyaltyservice.model.CustomerFranchise;

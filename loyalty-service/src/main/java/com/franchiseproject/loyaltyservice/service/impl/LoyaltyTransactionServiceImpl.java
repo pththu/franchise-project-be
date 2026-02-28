@@ -1,6 +1,5 @@
 package com.franchiseproject.loyaltyservice.service.impl;
 
-import com.franchiseproject.loyaltyservice.config.LoyaltyProperties;
 import com.franchiseproject.loyaltyservice.dto.request.EarnPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.request.RedeemPromotionRequest;
 import com.franchiseproject.loyaltyservice.dto.response.EarnPointsResponse;
@@ -14,9 +13,12 @@ import com.franchiseproject.loyaltyservice.mapper.LoyaltyMapper;
 import com.franchiseproject.loyaltyservice.model.CustomerFranchise;
 import com.franchiseproject.loyaltyservice.model.LoyaltyTransaction;
 import com.franchiseproject.loyaltyservice.model.Promotion;
+import com.franchiseproject.loyaltyservice.model.TierBenefit;
 import com.franchiseproject.loyaltyservice.repository.CustomerFranchiseRepository;
+import com.franchiseproject.loyaltyservice.repository.LoyaltyRuleRepository;
 import com.franchiseproject.loyaltyservice.repository.LoyaltyTransactionRepository;
 import com.franchiseproject.loyaltyservice.repository.PromotionRepository;
+import com.franchiseproject.loyaltyservice.repository.TierBenefitRepository;
 import com.franchiseproject.loyaltyservice.service.LoyaltyTransactionService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -38,7 +40,8 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     CustomerFranchiseRepository customerFranchiseRepository;
     PromotionRepository promotionRepository;
     LoyaltyMapper loyaltyMapper;
-    LoyaltyProperties loyaltyProperties;
+    LoyaltyRuleRepository loyaltyRuleRepository;
+    TierBenefitRepository tierBenefitRepository;
 
     @Override
     public List<TransactionHistoryResponse> getByCustomerId(UUID customerId) {
@@ -97,7 +100,7 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
                 .customerId(request.getCustomerId())
                 .franchiseId(cf.getFranchiseId())
                 .promotionId(request.getPromotionId())
-                .points(pointsRequired)
+                .points(-pointsRequired)
                 .balanceBefore(balanceBefore)
                 .balanceAfter(balanceAfter)
                 .type(LoyaltyTransactionType.REDEEM)
@@ -114,7 +117,10 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     @Override
     @Transactional
     public EarnPointsResponse earnPoints(EarnPointsRequest request) {
-        double amountPerPoint = loyaltyProperties.getRule().getAmountPerPoint();
+        double amountPerPoint = loyaltyRuleRepository.findById(1L)
+                .map(rule -> rule.getAmountPerPoint())
+                .orElse(10000.0);
+
         int pointsEarned = (int) (request.getOrderAmount() / amountPerPoint);
 
         if (pointsEarned <= 0) {
@@ -153,10 +159,22 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     }
 
     private LoyaltyTier determineTier(int totalPoints) {
-        if (totalPoints >= loyaltyProperties.getTiers().getDiamond()) return LoyaltyTier.DIAMOND;
-        if (totalPoints >= loyaltyProperties.getTiers().getPlatinum()) return LoyaltyTier.PLATINUM;
-        if (totalPoints >= loyaltyProperties.getTiers().getGold()) return LoyaltyTier.GOLD;
-        if (totalPoints >= loyaltyProperties.getTiers().getSilver()) return LoyaltyTier.SILVER;
+        int diamondPts = getRequiredPoints("DIAMOND", 3000);
+        int platinumPts = getRequiredPoints("PLATINUM", 2000);
+        int goldPts = getRequiredPoints("GOLD", 1000);
+        int silverPts = getRequiredPoints("SILVER", 500);
+
+        if (totalPoints >= diamondPts) return LoyaltyTier.DIAMOND;
+        if (totalPoints >= platinumPts) return LoyaltyTier.PLATINUM;
+        if (totalPoints >= goldPts) return LoyaltyTier.GOLD;
+        if (totalPoints >= silverPts) return LoyaltyTier.SILVER;
+
         return LoyaltyTier.BRONZE;
+    }
+
+    private int getRequiredPoints(String tierName, int defaultPoints) {
+        return tierBenefitRepository.findById(tierName)
+                .map(TierBenefit::getRequiredPoints)
+                .orElse(defaultPoints);
     }
 }
