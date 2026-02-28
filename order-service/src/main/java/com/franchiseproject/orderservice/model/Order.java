@@ -34,16 +34,19 @@ public class Order {
     UUID id;
     @Column(name = "franchise_id", nullable = false)
     UUID franchiseId;
-    @Column(name = "customer_id", nullable = false)
+    @Column(name = "customer_id")
     UUID customerId;
     @Column(name = "staff_id")
     UUID staffId;
-    @Column(name = "payment_transaction_id", nullable = false)
+    @Column(name = "payment_transaction_id")
     UUID paymentTransactionId;
+    @Column(name = "promotionId")
     UUID promotionId;
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "address", nullable = false, columnDefinition = "json")
+    @Column(name = "address")
     String address;
+//    @JdbcTypeCode(SqlTypes.JSON)
+//    @Column(columnDefinition = "jsonb")
+//    DeliveryAddress address;
     @Column(name = "total_due", precision = 12, scale = 2, nullable = false)
     BigDecimal totalDue;
     @Enumerated(EnumType.STRING)
@@ -52,7 +55,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     OrderStatus orderStatus;
-    @Column(name = "price_ship", precision = 12, scale = 2, nullable = false)
+    @Column(name = "price_ship", precision = 12, scale = 2)
     BigDecimal priceShip;
     @CreationTimestamp
     @Column(name = "created_at")

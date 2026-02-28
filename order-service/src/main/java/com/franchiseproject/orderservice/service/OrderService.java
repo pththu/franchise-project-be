@@ -1,7 +1,6 @@
 package com.franchiseproject.orderservice.service;
 
-import com.franchiseproject.orderservice.dto.CheckoutRequest;
-import com.franchiseproject.orderservice.dto.CreateOrderRequest;
+import com.franchiseproject.orderservice.dto.request.CreateOrderRequest;
 import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
@@ -14,8 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OrderService {
-    Order createOrder(CreateOrderRequest request);
-    UUID checkoutOnline(CheckoutRequest request);
+    OrderResponse createOrder(CreateOrderRequest request);
     void cancelOrder(UUID orderId, UUID customerId);
     void updateOrderStatus(UUID orderId, OrderStatus newStatus);
     List<OrderResponse> getOrderByCustomerId(UUID customerId);

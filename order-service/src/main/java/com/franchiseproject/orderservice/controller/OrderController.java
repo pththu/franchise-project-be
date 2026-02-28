@@ -1,7 +1,6 @@
 package com.franchiseproject.orderservice.controller;
 
-import com.franchiseproject.orderservice.dto.CheckoutRequest;
-import com.franchiseproject.orderservice.dto.CreateOrderRequest;
+import com.franchiseproject.orderservice.dto.request.CreateOrderRequest;
 import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
@@ -16,11 +15,10 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.Instant;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -51,31 +49,39 @@ public class OrderController {
 
     //createOrder cho staff tại các POS
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(
+    public ApiResponse<OrderResponse> createOrder(
             @RequestBody @Valid CreateOrderRequest request
     ) {
-        Order order = orderService.createOrder(request);
-        OrderResponse response = orderMapper.toOrderResponse(order);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        OrderResponse response = orderService.createOrder(request);
+        return ApiResponse.<OrderResponse>builder()
+                .message("Tạo thành công!")
+                .data(response)
+                .statusCode(200)
+                .errors(null)
+                .build();
     }
 
 
-    @PostMapping("/checkout")
-    public ResponseEntity<?> checkoutOnline(
-            @RequestBody CheckoutRequest request) {
-
-        UUID orderId = orderService.checkoutOnline(request);
-
-        return ResponseEntity.ok(orderId);
-    }
-
+    //    @PostMapping("/checkout")
+//    public ResponseEntity<?> checkoutOnline(
+//            @RequestBody CheckoutRequest request) {
+//
+//        UUID orderId = orderService.checkoutOnline(request);
+//
+//        return ResponseEntity.ok(orderId);
+//    }
+//
     @PutMapping("/{orderId}/cancel")
-    public ResponseEntity<?> cancelOrder(
+    public ApiResponse<OrderResponse> cancelOrder(
             @PathVariable UUID orderId,
             @RequestParam UUID customerId
     ) {
         orderService.cancelOrder(orderId, customerId);
-        return ResponseEntity.ok("Order cancelled successfully");
+        return ApiResponse.<OrderResponse>builder()
+                .message("Order has been cancelled")
+                .statusCode(200)
+                .errors(null)
+                .build();
     }
 
     @PatchMapping("/{orderId}/status")
@@ -108,11 +114,13 @@ public class OrderController {
         orderService.assignStaff(orderId, staffId);
         return ResponseEntity.ok("Assign staff success");
     }
+
     @PutMapping("/{orderId}/mark-special")
     public ResponseEntity<?> markSpecial(@PathVariable UUID orderId) {
         orderService.markSpecial(orderId);
         return ResponseEntity.ok("Mark special success");
     }
+
     @PutMapping("/{orderId}/estimate-delivery")
     public ResponseEntity<?> estimateDelivery(
             @PathVariable UUID orderId,
@@ -133,11 +141,11 @@ public class OrderController {
         OrderResponse response = orderMapper.toOrderResponse(order);
 
         return ApiResponse.<OrderResponse>builder()
-                        .message("Cập nhật đơn hàng thành công")
-                        .data(response)
-                        .statusCode(200)
-                        .errors(null)
-                        .build();
+                .message("Cập nhật đơn hàng thành công")
+                .data(response)
+                .statusCode(200)
+                .errors(null)
+                .build();
     }
 
     // Thêm địa chỉ cho đơn hàng Online

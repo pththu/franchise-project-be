@@ -1,24 +1,38 @@
-package com.franchiseproject.orderservice.dto;
+package com.franchiseproject.orderservice.dto.request;
 
 import com.franchiseproject.orderservice.enums.TypeOrder;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-public record CreateOrderRequest(
-        UUID franchiseId,
-        UUID customerId,
-        UUID staffId,
-        UUID paymentTransactionId,
-        UUID promotionId,
-        @NotBlank(message = "Địa chỉ không được rỗng")
-        String address,
-        @Positive(message = "Giá không được âm")
-        BigDecimal priceShip,
-        TypeOrder typeOrder,
-        List<CreateOrderItemRequest> items
-) {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class CreateOrderRequest {
+    @NotNull(message = "Không để trống franchise")
+    UUID franchiseId;
+
+    UUID customerId;
+    UUID staffId;
+    UUID promotionId;
+    String address;
+    UUID paymentTransactionId;
+
+    @Positive(message = "Chỉ được nhập >= 0")
+    BigDecimal priceShip;
+
+    @NotNull(message = "Không để trống")
+    TypeOrder typeOrder;
+
+    @NotNull(message = "Order phải có sản phẩm")
+    List<CreateOrderItemRequest> items;
 }

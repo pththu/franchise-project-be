@@ -6,6 +6,7 @@ import com.franchiseproject.orderservice.model.OrderDetail;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 @Builder
 @Getter
+@Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderResponse {
     UUID id;
@@ -23,6 +25,7 @@ public class OrderResponse {
     UUID staffId;
     UUID paymentTransactionId;
     UUID promotionId;
+    String transactionReference;
     String address;
     BigDecimal totalDue;
     TypeOrder typeOrder;

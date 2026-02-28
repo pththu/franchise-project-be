@@ -1,4 +1,4 @@
-package com.franchiseproject.orderservice.dto;
+package com.franchiseproject.orderservice.dto.response;
 
 import lombok.Data;
 
@@ -10,4 +10,5 @@ public class ProductResponse {
     UUID id;
     String name;
     BigDecimal price;
+    Integer quantity;
 }
