@@ -3,8 +3,10 @@ package com.franchiseproject.identityaccessservice.service.impl;
 import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
+import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
@@ -17,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -81,5 +85,42 @@ public class UserServiceImpl implements UserService {
     public UserResponse getProfile(String username) {
         return userMapper.toUserResponse(userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND)));
+    }
+
+    @Override
+    public UserUpdateResponse updateAccountInfomation(String username, UserUpdateRequest request) {
+
+        log.info("request" +request.getFullName());
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        String fullName = request.getFullName();
+        String phone = request.getPhone();
+        String gender = request.getGender();
+
+        if (fullName != null && phone != null && gender != null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
+        }
+
+        if (fullName != null && !fullName.isEmpty() && !user.getFullName().equals(fullName)) {
+            user.setFullName(fullName);
+            log.info("fullname 1");
+        }
+        if (phone != null && !phone.isEmpty() && !user.getPhone().equals(phone)) {
+            user.setPhone(phone);
+            log.info("2");
+        }
+        if (gender != null && user.isGender() != Boolean.getBoolean(gender)) {
+            log.info("3");
+            user.setGender(Boolean.getBoolean(gender));
+        }
+
+        log.info("user :" + user.getFullName());
+        userRepository.save(user);
+
+        return UserUpdateResponse.builder()
+                .isUpdated(true)
+                .userResponse(userMapper.toUserResponse(user))
+                .build();
     }
 }

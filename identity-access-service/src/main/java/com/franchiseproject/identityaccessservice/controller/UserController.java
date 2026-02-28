@@ -4,12 +4,17 @@ import com.franchiseproject.identityaccessservice.dto.ApiResponse;
 import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
+import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.exception.AppException;
+import com.franchiseproject.identityaccessservice.exception.ErrorCode;
 import com.franchiseproject.identityaccessservice.mapper.UserMapper;
 import com.franchiseproject.identityaccessservice.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -90,6 +95,15 @@ public class UserController {
                 .statusCode(200)
                 .message("View account detail")
                 .data(userService.getProfile(jwt.getSubject()))
+                .build();
+    }
+
+    @PutMapping("/update-account")
+    public ApiResponse<UserUpdateResponse> updateAccountInfomation(@RequestBody UserUpdateRequest request, @AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.<UserUpdateResponse>builder()
+                .statusCode(201)
+                .message("Update account infomation successs")
+                .data(userService.updateAccountInfomation(jwt.getSubject(), request))
                 .build();
     }
 }
