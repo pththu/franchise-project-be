@@ -19,7 +19,7 @@ class Query(BaseModel):
     top_k: int = 5
 
 
-semantic_search = Semantic_Search(model_name = "intfloat/multilingual-e5-base", vector_path = "be/AI-service/Vector/vectors.txt")
+semantic_search = Semantic_Search(model_name = "intfloat/multilingual-e5-base", vector_path = "Vector/vectors.txt")
 
 @app.post("/search")
 def search_api(q: Query):
@@ -31,5 +31,5 @@ def search_api(q: Query):
 
 @app.post("/update")
 def update_api():
-    result = semantic_search.update_vectors_store(db_url = "127.0.0.1:3001/product/getall")
+    result = semantic_search.update_vectors_store(db_url = "http://127.0.0.1:3001/product/getall")
     return result

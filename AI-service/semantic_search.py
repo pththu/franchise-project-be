@@ -99,7 +99,7 @@ class Semantic_Search:
 
         return results
     
-    def update_vectors_store(self, db_url = "127.0.0.1:3001/product/getall"):
+    def update_vectors_store(self, db_url = "http://127.0.0.1:3001/product/getall"):
         """
             data: list(dict(products))
 
@@ -114,26 +114,24 @@ class Semantic_Search:
         vectors_store = []
 
         for item in data:
-            desc_txt = f"passage: {item.description}"
-            core_txt = f"passage: {item.name} được làm từ {', '.join(item.category)} có giá là {item.price}"
+            desc_txt = f"passage: {item['description']}"
+            core_txt = f"passage: {item['name']} được làm từ: {', '.join(item['categoryName'])}"
 
             desc_vec = self.model.encode(desc_txt, normalize_embeddings=True)
             core_vec = self.model.encode(core_txt, normalize_embeddings=True)
 
             vector = {
-                        "id": item.id,
+                        "id": item["id"],
                         "v_core": core_vec,
                         "v_desc": desc_vec
                      }
 
             vectors_store.append(vector)
-        
-            with open("Vector/vectors.txt", "w") as f:
-                f.write(len(vectors_store))  
-                f.write(len(vectors_store[0]["v_core"]))  
+        with open("Vector/vectors.txt", "w") as f:
+            f.write(str(len(vectors_store)) + "\n")
 
-                for it in vectors_store:
-                    f.write(str(it["id"]) + "\n")
-                    f.write(" ".join(str(x) for x in it["v_core"]) + "\n")
-                    f.write(" ".join(str(x) for x in it["v_desc"]) + "\n")
-            return "Đã Update Vector Store thành công !!!"
+            for it in vectors_store:
+                f.write(str(it["id"]) + "\n")
+                f.write(" ".join(str(x) for x in it["v_core"]) + "\n")
+                f.write(" ".join(str(x) for x in it["v_desc"]) + "\n")
+        return "Đã Update Vector Store thành công !!!"
