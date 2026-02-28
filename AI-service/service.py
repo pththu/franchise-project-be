@@ -1,9 +1,7 @@
 # uvicorn service:app --host 0.0.0.0 --port 3012
 from fastapi import FastAPI
 from pydantic import BaseModel
-from vector_store import VectorStore
-from embedding import embed_query
-from search import semantic_search
+from semantic_search import Semantic_Search
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -16,15 +14,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-store = VectorStore("Vector/vectors.bin")
-
 class Query(BaseModel):
     text: str
     top_k: int = 5
 
+
+semantic_search = Semantic_Search(model_name = "intfloat/multilingual-e5-base", vector_path = "be/AI-service/Vector/vectors.txt")
+
 @app.post("/search")
 def search_api(q: Query):
-    q_vec = embed_query(q.text)
-    results = semantic_search(q_vec, store, q.top_k)
-    return results
+    if not q.text: 
+        return {"Error": "Query không được để trống!"}
+    else:
+        results = semantic_search.search(q.text, q.top_k)
+        return results
 
+@app.post("/update")
+def update_api():
+    result = semantic_search.update_vectors_store(db_url = "127.0.0.1:3001/product/getall")
+    return result
