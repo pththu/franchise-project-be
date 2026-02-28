@@ -4,10 +4,14 @@ import com.franchiseproject.orderservice.dto.CheckoutRequest;
 import com.franchiseproject.orderservice.dto.CreateOrderRequest;
 import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
+import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
+import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.mapper.OrderMapper;
 import com.franchiseproject.orderservice.model.Order;
+import com.franchiseproject.orderservice.service.OrderDetailService;
 import com.franchiseproject.orderservice.service.OrderService;
+import com.franchiseproject.orderservice.service.OrderStatusLogService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,11 +19,10 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.Instant;
-import java.util.HashMap;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -28,16 +31,21 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderController {
     OrderService orderService;
+    OrderDetailService orderDetailService;
+    OrderStatusLogService orderStatusLogService;
     OrderMapper orderMapper;
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getAllOrder() {
-        Map<String, Object> response = new HashMap<>();
-        List<Order> orders = orderService.getAll();
-        response.put("message", "Get All Orders");
-        response.put("data", orderService.getAll());
+    public ApiResponse<List<OrderResponse>> getAllOrder() {
 
-        return ResponseEntity.ok(response);
+        List<OrderResponse> orders = orderService.getAll();
+
+        return ApiResponse.<List<OrderResponse>>builder()
+                .message("Lấy danh sách đơn hàng thành công")
+                .data(orders)
+                .statusCode(200)
+                .errors(null)
+                .build();
     }
 
 
@@ -113,5 +121,47 @@ public class OrderController {
         Instant estimatedTime = Instant.parse(eta);
         orderService.estimateDeliveryTime(orderId, estimatedTime);
         return ResponseEntity.ok("Estimate delivery time success");
+    }
+
+
+    @PutMapping("/{orderId}")
+    public ApiResponse<OrderResponse> updateOrder(
+            @PathVariable UUID orderId,
+            @RequestBody @Valid UpdateOrderRequest request
+    ) {
+        Order order = orderService.updateOrder(orderId, request);
+        OrderResponse response = orderMapper.toOrderResponse(order);
+
+        return ApiResponse.<OrderResponse>builder()
+                        .message("Cập nhật đơn hàng thành công")
+                        .data(response)
+                        .statusCode(200)
+                        .errors(null)
+                        .build();
+    }
+
+    // Thêm địa chỉ cho đơn hàng Online
+    @PostMapping("/online/address")
+    public ApiResponse<Void> addAddressOnlineOrder(
+            @Valid @RequestBody AddAddressRequest request) {
+        orderService.addAddressOnlineOrder(request);
+        return ApiResponse.<Void>builder()
+                .message("Thêm địa chỉ cho đơn hàng Online thành công")
+                .data(null)
+                .statusCode(200)
+                .errors(null)
+                .build();
+    }
+
+    // Lấy địa chỉ của đơn hàng Online
+    @GetMapping("/online/{customerId}/address")
+    public ApiResponse<String> getAddressOnlineOrder(
+            @PathVariable UUID customerId) {
+        return ApiResponse.<String>builder()
+                .message("Lấy địa chỉ đơn hàng Online thành công")
+                .data(orderService.getAddressOnlineOrder(customerId))
+                .statusCode(200)
+                .errors(null)
+                .build();
     }
 }
