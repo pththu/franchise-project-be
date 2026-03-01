@@ -23,5 +23,5 @@ public interface UserService {
     UserResponse getProfile(String username);
     UserUpdateResponse updateAccountInfomation(String username, UserUpdateRequest request);
     UserDeleteResponse deleteAccountUser(UUID userId);
-    UserLockResponse lockUser(String username);
+
 }

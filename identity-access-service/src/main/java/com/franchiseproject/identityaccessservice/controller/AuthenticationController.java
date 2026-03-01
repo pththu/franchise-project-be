@@ -6,6 +6,7 @@ import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRe
 import com.franchiseproject.identityaccessservice.dto.request.IntrospectRequest;
 import com.franchiseproject.identityaccessservice.dto.response.AuthenticationResponse;
 import com.franchiseproject.identityaccessservice.dto.response.IntrospectResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.exception.AppException;
 import com.franchiseproject.identityaccessservice.exception.ErrorCode;
@@ -19,12 +20,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.time.Duration;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -106,6 +109,15 @@ public class AuthenticationController {
                 .statusCode(200)
                 .message("Logout")
                 .data("Logout: " + authenticationService.logout())
+                .build();
+    }
+
+    @PutMapping("/{userId}/lock")
+    public ApiResponse<UserLockResponse> lockUser(@PathVariable UUID userId) {
+        return ApiResponse.<UserLockResponse>builder()
+                .statusCode(200)
+                .message("User locked")
+                .data(authenticationService.lockUser(userId))
                 .build();
     }
 }
