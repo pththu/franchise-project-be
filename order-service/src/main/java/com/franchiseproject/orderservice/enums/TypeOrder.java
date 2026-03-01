@@ -2,5 +2,6 @@ package com.franchiseproject.orderservice.enums;
 
 public enum TypeOrder {
     Online, //Loại order online
-    POS     //Tại quầy
+    POS,//Tại quầy
+    SPECIAL//Đơn đặt biệt
 }
