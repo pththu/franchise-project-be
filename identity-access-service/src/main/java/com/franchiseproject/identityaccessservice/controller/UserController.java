@@ -118,12 +118,5 @@ public class UserController {
                 .build();
     }
 
-    @PutMapping("/lock")
-    public ApiResponse<UserLockResponse> lockUser(@AuthenticationPrincipal Jwt jwt) {
-        return ApiResponse.<UserLockResponse>builder()
-                .statusCode(200)
-                .message("User locked")
-                .data(userService.lockUser(jwt.getSubject()))
-                .build();
-    }
+
 }
