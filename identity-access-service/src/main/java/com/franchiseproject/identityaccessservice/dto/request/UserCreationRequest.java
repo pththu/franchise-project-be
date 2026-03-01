@@ -22,5 +22,5 @@ public class UserCreationRequest {
     boolean gender;
     String avatarUrl;
     UUID franchiseId;
-    UUID roleId;
+    String roleName;
 }

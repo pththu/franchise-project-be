@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/roles")
+@RequestMapping("/api/auth/roles")
+//@RequestMapping("/api/v1/roles")
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 public class RoleController {

@@ -1,19 +1,15 @@
 package com.franchiseproject.identityaccessservice.controller;
 
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
-import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
-import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
-import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserDeleteResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
+import com.franchiseproject.identityaccessservice.dto.request.*;
+import com.franchiseproject.identityaccessservice.dto.response.*;
+import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.enums.UserStatus;
 import com.franchiseproject.identityaccessservice.exception.AppException;
 import com.franchiseproject.identityaccessservice.exception.ErrorCode;
 import com.franchiseproject.identityaccessservice.mapper.UserMapper;
+import com.franchiseproject.identityaccessservice.service.RoleService;
 import com.franchiseproject.identityaccessservice.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
@@ -23,6 +19,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,12 +28,15 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/auth/users")
+//@RequestMapping("/api/v1/users")
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserController {
     UserService userService;
+    RoleService roleService;
     UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
 
     @GetMapping
     public ApiResponse<List<UserResponse>> getAll() {
@@ -57,16 +57,46 @@ public class UserController {
     }
 
     @PostMapping("")
-    public ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest request) {
-        return ApiResponse.<User>builder()
+    public ApiResponse<UserCreationResponse> createUser(@RequestBody @Valid UserCreationRequest request, @AuthenticationPrincipal Jwt jwt) {
+
+        Role role = roleService.getByName(request.getRoleName());
+
+        if (role == null) {
+            throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
+        }
+
+        String roleName = jwt.getClaimAsString("scope");
+        System.out.println("ROLE: " + roleName);
+        System.out.println("ROLE: " + role.getName());
+        switch (role.getName()) {
+            case "ADMIN":
+                throw new AppException(ErrorCode.FORBIDDEN);
+            case "MANAGER":
+                if (!roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+            case "STAFF":
+                if (!roleName.equals("MANAGER") && !roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+            case "CUSTOMER":
+                if (!roleName.equals("STAFF") && !roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+        }
+
+        User user = userMapper.toUser(request);
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setRole(role);
+        user.setStatus(UserStatus.ACTIVE);
+
+        return ApiResponse.<UserCreationResponse>builder()
                 .statusCode(201)
                 .message("Created")
-                .data(userService.createOne(request))
+                .data(userService.createOne(user))
                 .build();
     }
 
     /**
      * view account detail
+     *
      * @param userId
      * @return
      */
@@ -75,7 +105,7 @@ public class UserController {
         return ApiResponse.<UserResponse>builder()
                 .statusCode(201)
                 .message("Get One")
-                .data(userService.getById(userId))
+                .data(userMapper.toUserResponse(userService.getById(userId)))
                 .build();
     }
 
@@ -115,12 +145,37 @@ public class UserController {
                 .statusCode(200)
                 .message("Delete account usser id success")
                 .data(userService.deleteAccountUser(userId))
-    @PutMapping("/lock")
-    public ApiResponse<UserLockResponse> lockUser(@AuthenticationPrincipal Jwt jwt) {
-        return ApiResponse.<UserLockResponse>builder()
-                .statusCode(200)
-                .message("User locked")
-                .data(userService.lockUser(jwt.getSubject()))
                 .build();
     }
+
+    @PutMapping("/{userId}/assign-role")
+    public ApiResponse<AssignRoleResponse> assignRole(
+            @PathVariable UUID userId,
+            @RequestBody AssignRoleRequest request,
+            @AuthenticationPrincipal Jwt jwt ) {
+
+        String assignerRole = jwt.getClaimAsString("scope");
+        User user = userService.getById(userId);
+        Role role = roleService.getByName(request.getRoleName());
+        if (role == null || user == null) throw new AppException(ErrorCode.NOT_FOUND);
+
+        switch (role.getName()) {
+            case "ADMIN":
+            case "CUSTOMER":
+                throw new AppException(ErrorCode.FORBIDDEN);
+            case "MANAGER":
+                if (!assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+            case "STAFF":
+                if (!assignerRole.equals("MANAGER") && !assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+        }
+
+        return ApiResponse.<AssignRoleResponse>builder()
+                .statusCode(200)
+                .message("Assign role sucess")
+                .data(userService.assignRole(role, user))
+                .build();
+    }
+
 }

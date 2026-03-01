@@ -4,11 +4,7 @@ import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequ
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
-import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserDeleteResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
+import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
@@ -50,22 +46,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse getById(UUID userId) {
-        return userMapper.toUserResponse(userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found")));
+    public User getById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     @Override
-    public User createOne(UserCreationRequest request) {
-
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new AppException(ErrorCode.USER_EXISTED);
-        }
-        User user = userMapper.toUser(request);
-        user.setStatus(UserStatus.ACTIVE);
-
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-        return userRepository.save(user);
+    public UserCreationResponse createOne(User user) {
+        userRepository.save(user);
+        return UserCreationResponse.builder()
+                .isCreated(true)
+                .userResponse(userMapper.toUserResponse(user))
+                .build();
     }
 
     @Override
@@ -92,7 +84,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserUpdateResponse updateAccountInfomation(String username, UserUpdateRequest request) {
 
-        log.info("request" +request.getFullName());
+        log.info("request" + request.getFullName());
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -136,13 +128,16 @@ public class UserServiceImpl implements UserService {
         return UserDeleteResponse.builder()
                 .isDeleted(true)
                 .build();
-    public UserLockResponse lockUser(String username) {
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
 
-        user.setStatus(UserStatus.SUSPENDED);
+    @Override
+    public AssignRoleResponse assignRole(Role role, User user) {
+        if (role == null || user == null) throw new AppException(ErrorCode.DATA_IS_NULL);
+        user.setRole(role);
         userRepository.save(user);
-        return UserLockResponse.builder().isLocked(true).build();
+        return AssignRoleResponse.builder()
+                .isAssigned(true)
+                .build();
     }
 }
