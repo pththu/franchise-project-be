@@ -6,6 +6,7 @@ import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRe
 import com.franchiseproject.identityaccessservice.dto.request.IntrospectRequest;
 import com.franchiseproject.identityaccessservice.dto.response.AuthenticationResponse;
 import com.franchiseproject.identityaccessservice.dto.response.IntrospectResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
@@ -61,14 +62,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return true;
     }
 
-    public AuthenticationResponse login(AuthenticationRequest request, HttpServletResponse response)
+    public AuthenticationResponse login(User user, HttpServletResponse response)
             throws Exception {
-        var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        boolean result = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
-        if (!result) throw new AppException(ErrorCode.UNAUTHORIZED);
-
         var accessToken = generateAccessToken(user.getUsername(), user.getRole().getName());
         var refeshToken = generateRefreshToken(user.getUsername());
 
@@ -168,5 +163,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (Exception e) {
             throw new AppException(ErrorCode.CREATE_TOKEN_FAIL);
         }
+    }
+
+    @Override
+    public UserLockResponse lockUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        user.setStatus(UserStatus.SUSPENDED);
+        userRepository.save(user);
+        return UserLockResponse.builder().isLocked(true).build();
     }
 }

@@ -48,12 +48,17 @@ public class SecurityConfig {
             api_prefix + "users/delete-account"
     };
 
+    final String[] ADMIN_ENDPOINT_PUT = {
+            api_prefix + "auth/*/lock"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
                         .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINT_GET).hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, ADMIN_ENDPOINT_DEL).hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, ADMIN_ENDPOINT_PUT).hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated());
 
         http.oauth2ResourceServer(oauth2 ->

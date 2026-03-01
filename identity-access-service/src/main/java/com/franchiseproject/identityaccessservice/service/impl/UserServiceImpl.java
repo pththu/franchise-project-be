@@ -130,14 +130,4 @@ public class UserServiceImpl implements UserService {
                 .build();
 
     }
-
-    public UserLockResponse lockUser(String username) {
-
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        user.setStatus(UserStatus.SUSPENDED);
-        userRepository.save(user);
-        return UserLockResponse.builder().isLocked(true).build();
-    }
 }
