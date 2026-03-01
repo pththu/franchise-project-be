@@ -5,15 +5,14 @@ import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequ
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
-import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserDeleteResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
+import com.franchiseproject.identityaccessservice.dto.response.*;
+import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.enums.UserStatus;
 import com.franchiseproject.identityaccessservice.exception.AppException;
 import com.franchiseproject.identityaccessservice.exception.ErrorCode;
 import com.franchiseproject.identityaccessservice.mapper.UserMapper;
+import com.franchiseproject.identityaccessservice.service.RoleService;
 import com.franchiseproject.identityaccessservice.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
@@ -23,6 +22,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +36,9 @@ import java.util.UUID;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserController {
     UserService userService;
+    RoleService roleService;
     UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
 
     @GetMapping
     public ApiResponse<List<UserResponse>> getAll() {
@@ -57,16 +59,46 @@ public class UserController {
     }
 
     @PostMapping("")
-    public ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest request) {
-        return ApiResponse.<User>builder()
+    public ApiResponse<UserCreationResponse> createUser(@RequestBody @Valid UserCreationRequest request, @AuthenticationPrincipal Jwt jwt) {
+
+        Role role = roleService.getByName(request.getRoleName());
+
+        if (role == null) {
+            throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
+        }
+
+        String roleName = jwt.getClaimAsString("scope");
+        System.out.println("ROLE: " + roleName);
+        System.out.println("ROLE: " + role.getName());
+        switch (role.getName()) {
+            case "ADMIN":
+                throw new AppException(ErrorCode.FORBIDDEN);
+            case "MANAGER":
+                if (!roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+            case "STAFF":
+                if (!roleName.equals("MANAGER") && !roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+            case "CUSTOMER":
+                if (!roleName.equals("STAFF") && !roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+        }
+
+        User user = userMapper.toUser(request);
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setRole(role);
+        user.setStatus(UserStatus.ACTIVE);
+
+        return ApiResponse.<UserCreationResponse>builder()
                 .statusCode(201)
                 .message("Created")
-                .data(userService.createOne(request))
+                .data(userService.createOne(user))
                 .build();
     }
 
     /**
      * view account detail
+     *
      * @param userId
      * @return
      */

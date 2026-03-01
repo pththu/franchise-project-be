@@ -1,6 +1,7 @@
 package com.franchiseproject.identityaccessservice.exception;
 
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -51,6 +52,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = NoResourceFoundException.class)
     public ResponseEntity<ApiResponse> handlingNoResourceFoundException (NoResourceFoundException exception) {
         ErrorCode errorCode = ErrorCode.NOT_FOUND;
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.builder()
+                        .statusCode(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(value = DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse> handlingDataIntegrityViolationException (DataIntegrityViolationException exception) {
+        ErrorCode errorCode = ErrorCode.DUPLICATE_KEY;
         return ResponseEntity.badRequest()
                 .body(ApiResponse.builder()
                         .statusCode(errorCode.getCode())
