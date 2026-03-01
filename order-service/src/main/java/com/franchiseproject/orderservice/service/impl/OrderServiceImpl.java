@@ -69,17 +69,14 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> details = orderDetailService.buildOrderDetails(request.getItems(), apiProducts, order);
         BigDecimal totalItems = orderDetailService.calculateTotal(details);
 
-        BigDecimal discount = productClient.validateAndCalculate(request.getCustomerId(),
-                request.getPromotionId(),
-                totalItems
-        );
+        BigDecimal discount = productClient.validateAndCalculate(request.getCustomerId(), request.getPromotionId(), totalItems);
         BigDecimal finalTotal = totalItems.add(request.getPriceShip().subtract(discount));//cần ý kiến nghiệp vụ về priceShip
         order.setTotalDue(finalTotal);
         order.setOrderDetails(details);
         order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
         orderRepository.save(order);
 
-        PaymentResponse payment = paymentClient.createTransaction(order.getId(), order.getCustomerId(), finalTotal);
+        PaymentResponse payment = paymentClient.createTransaction(order.getId(), order.getCustomerId(), finalTotal);    
         order.setPaymentTransactionId(payment.getPaymentTransactionId());
 
         Order savedOrder = orderRepository.save(order);
@@ -92,15 +89,14 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void cancelOrder(UUID orderId, UUID customerId) {
 
-
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new BusinessException("ORDER_003", "Order not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         OrderStatus oldStatus = order.getOrderStatus();
         String status = oldStatus.name();
 
         if (!order.getCustomerId().equals(customerId)) {
-            throw new BusinessException("ORDER_004", "You cannot cancel this order");
+            throw new AppException(ErrorCode.WRONG_CUSTOMER_ID);
         }
 
         OrderStatus currentStatus = order.getOrderStatus();
@@ -110,7 +106,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         if (!currentStatus.canBeCancelledByCustomer()) {
-            throw new BusinessException("ORDER_05", "Order cannot be cancelled");
+            throw new AppException(ErrorCode.NO_CANCEL);
         }
         if (currentStatus == OrderStatus.PAID) {
             order.setOrderStatus(OrderStatus.REFUNDED);

@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ErrorCode {
+    NO_CANCEL(404, "Order này không thể bị hủy", HttpStatus.BAD_REQUEST),
+    WRONG_CUSTOMER_ID(404, "Không tìm thấy Id khách hàng", HttpStatus.NOT_FOUND),
     NO_TRANSACTION(404, "Giao dịch thất bại", HttpStatus.NOT_FOUND),
     NO_PRODUCTS(404,"Không có sản phẩm được trả về", HttpStatus.NOT_FOUND),
     NOT_ENOUGH_QUANTITY_PRODUCT(404, "Số lượng sản phẩm không đủ", HttpStatus.NOT_FOUND),
