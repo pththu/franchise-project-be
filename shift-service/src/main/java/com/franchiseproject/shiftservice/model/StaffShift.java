@@ -1,5 +1,6 @@
 package com.franchiseproject.shiftservice.model;
 
+import com.franchiseproject.shiftservice.enums.ShiftStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,9 +30,9 @@ public class StaffShift {
     private LocalDate workDate;
 
     private LocalTime checkInTime;
-
     private LocalTime checkOutTime;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status; // ASSIGNED, CHECKED_IN, CHECKED_OUT, ABSENT
+    private ShiftStatus status;
 }
