@@ -48,7 +48,7 @@ public class OrderController {
 
 
     //createOrder cho staff tại các POS
-    @PostMapping
+    @PostMapping("/create-order")
     public ApiResponse<OrderResponse> createOrder(
             @RequestBody @Valid CreateOrderRequest request
     ) {
@@ -61,16 +61,6 @@ public class OrderController {
                 .build();
     }
 
-
-    //    @PostMapping("/checkout")
-//    public ResponseEntity<?> checkoutOnline(
-//            @RequestBody CheckoutRequest request) {
-//
-//        UUID orderId = orderService.checkoutOnline(request);
-//
-//        return ResponseEntity.ok(orderId);
-//    }
-//
     @PutMapping("/{orderId}/cancel")
     public ApiResponse<OrderResponse> cancelOrder(
             @PathVariable UUID orderId,

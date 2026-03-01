@@ -15,16 +15,34 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class PaymentClient {
-    private final RestClient paymentRestClient;
+    //    private final RestClient paymentRestClient;
+//
+//    public PaymentResponse createTransaction(UUID orderId, UUID customerId,BigDecimal finalTotal) {
+//        PaymentTransactionRequest request = new PaymentTransactionRequest(orderId, customerId,finalTotal);
+//        PaymentResponse paymentResponse = paymentRestClient.post()
+//                .uri("/api/payments/validate")
+//                .body(request)
+//                .retrieve()
+//                .body(PaymentResponse.class);
+//        return Optional.ofNullable(paymentResponse)
+//                .orElseThrow(() -> new AppException(ErrorCode.NO_TRANSACTION));
+//    }
+    //Mock Test
+    public PaymentResponse createTransaction(UUID orderId,
+                                             UUID customerId,
+                                             BigDecimal finalTotal) {
 
-    public PaymentResponse createTransaction(UUID orderId, UUID customerId,BigDecimal finalTotal) {
-        PaymentTransactionRequest request = new PaymentTransactionRequest(orderId, customerId,finalTotal);
-        PaymentResponse paymentResponse = paymentRestClient.post()
-                .uri("/api/payments/validate")
-                .body(request)
-                .retrieve()
-                .body(PaymentResponse.class);
-        return Optional.ofNullable(paymentResponse)
-                .orElseThrow(() -> new AppException(ErrorCode.NO_TRANSACTION));
+        if (orderId == null || customerId == null || finalTotal == null) {
+            throw new AppException(ErrorCode.NO_TRANSACTION);
+        }
+
+        // MOCK RESPONSE
+        return PaymentResponse.builder()
+                .paymentTransactionId(UUID.randomUUID())
+                .orderId(orderId)
+                .customerId(customerId)
+                .amount(finalTotal)
+                .statusTransaction("SUCCESS")
+                .build();
     }
 }

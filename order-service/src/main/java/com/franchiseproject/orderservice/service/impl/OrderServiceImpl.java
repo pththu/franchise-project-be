@@ -76,7 +76,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
         orderRepository.save(order);
 
-        PaymentResponse payment = paymentClient.createTransaction(order.getId(), order.getCustomerId(), finalTotal);    
+        PaymentResponse payment = paymentClient.createTransaction(order.getId(), order.getCustomerId(), finalTotal);
         order.setPaymentTransactionId(payment.getPaymentTransactionId());
 
         Order savedOrder = orderRepository.save(order);

@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 
 @Service
 @AllArgsConstructor
@@ -62,7 +64,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                             .order(order)
                             .build();
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -80,7 +82,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         List<UUID> productIds = items.stream()
                 .map(CreateOrderItemRequest::getProductId)
                 .distinct()
-                .toList();
+                .collect(Collectors.toList());
 
         return productClient.getProductsByIds(productIds);
     }
