@@ -1,4 +1,4 @@
-package com.franchiseproject.shiftservice.dto;
+package com.franchiseproject.shiftservice.dto.request;
 
 import lombok.Data;
 
@@ -7,6 +7,7 @@ import java.util.UUID;
 
 @Data
 public class AssignShiftRequest {
+
     private UUID staffId;
     private UUID shiftConfigId;
     private LocalDate workDate;
