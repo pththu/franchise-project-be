@@ -36,6 +36,8 @@ public class LoyaltyTransaction {
     int balanceAfter;
     @Enumerated(EnumType.STRING)
     LoyaltyTransactionType type;
+    @Column(name = "description", columnDefinition = "TEXT")
+    String description;
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     Instant createdAt;

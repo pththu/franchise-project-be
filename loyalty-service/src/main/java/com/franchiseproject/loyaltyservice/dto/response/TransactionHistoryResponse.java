@@ -20,5 +20,6 @@ public class TransactionHistoryResponse {
     int balanceBefore;
     int balanceAfter;
     LoyaltyTransactionType type;
+    String description;
     Instant createdAt;
 }

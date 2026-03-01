@@ -57,6 +57,7 @@ public class PointAdjustmentServiceImpl implements PointAdjustmentService {
                 .balanceBefore(balanceBefore)
                 .balanceAfter(newBalance)
                 .type(LoyaltyTransactionType.MANUAL)
+                .description(request.getReason())
                 .createdAt(Instant.now())
                 .build();
         loyaltyTransactionRepository.save(transaction);
