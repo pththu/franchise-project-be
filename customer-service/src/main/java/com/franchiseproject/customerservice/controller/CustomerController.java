@@ -26,7 +26,8 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/customers")
+@RequestMapping("/api/customers/customers")
+@CrossOrigin(origins = "http://localhost:5173")
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class CustomerController {
@@ -74,16 +75,6 @@ public class CustomerController {
                 .statusCode(200)
                 .message("Get customer detail successfully")
                 .data(detailResponse)
-                .build();
-    }
-
-    // View Customer's Order History
-    @GetMapping("/{id}/orders-history")
-    public ApiResponse<List<UUID>> getOrderHistory(@PathVariable UUID id) {
-        return ApiResponse.<List<UUID>>builder()
-                .statusCode(200)
-                .message("Get order history successfully")
-                .data(customerService.getOrderHistory(id))
                 .build();
     }
 }

@@ -54,6 +54,11 @@ public class RoleServiceImpl implements RoleService {
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
     }
 
+    @Override
+    public Role getByName(String name) {
+        return roleRepository.findByName(name);
+    }
+
 
     @Override
     public boolean deleteRole(UUID id) {

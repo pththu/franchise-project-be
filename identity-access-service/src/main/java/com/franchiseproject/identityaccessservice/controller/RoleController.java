@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/roles")
+@RequestMapping("/api/auth/roles")
+//@RequestMapping("/api/v1/roles")
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 public class RoleController {
@@ -35,6 +36,15 @@ public class RoleController {
                 .statusCode(200)
                 .message("Get role by id")
                 .data(roleService.getById(id))
+                .build();
+    }
+
+    @GetMapping("/search/{roleName}")
+    public ApiResponse<Role> getByName(@PathVariable String roleName) {
+        return ApiResponse.<Role>builder()
+                .statusCode(200)
+                .message("Get role by name")
+                .data(roleService.getByName(roleName))
                 .build();
     }
 

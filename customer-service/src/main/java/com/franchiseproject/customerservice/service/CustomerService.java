@@ -19,6 +19,4 @@ public interface CustomerService {
     Customer getCustomerById(UUID id);
 
     PageResponse<CustomerResponse> searchCustomers(String keyword, CustomerStatus status, Pageable pageable);
-
-    List<UUID> getOrderHistory(UUID customerId);
 }

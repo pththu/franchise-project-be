@@ -13,12 +13,14 @@ import java.util.UUID;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, UUID> {
-    @Query("SELECT c FROM Customer c WHERE " +
-            "(:keyword IS NULL OR :keyword = '' OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "OR LOWER(c.email) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+    @Query("SELECT DISTINCT c FROM Customer c " +
+            "LEFT JOIN c.customerFranchises cf " +
+            "WHERE (:keyword IS NULL OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(c.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:status IS NULL OR c.status = :status)")
-    Page<Customer> searchCustomers(@Param("keyword") String keyword,
-                                   @Param("status") CustomerStatus status,
-                                   Pageable pageable);
+    Page<Customer> searchCustomers(
+            @Param("keyword") String keyword,
+            @Param("status") CustomerStatus status,
+            Pageable pageable
+    );
 }
