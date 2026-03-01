@@ -156,19 +156,17 @@ public class UserController {
         String assignerRole = jwt.getClaimAsString("scope");
         User user = userService.getById(userId);
         Role role = roleService.getByName(request.getRoleName());
-        if (role == null || user == null) throw new AppException(ErrorCode.DATA_IS_NULL);
+        if (role == null || user == null) throw new AppException(ErrorCode.NOT_FOUND);
 
         switch (role.getName()) {
             case "ADMIN":
+            case "CUSTOMER":
                 throw new AppException(ErrorCode.FORBIDDEN);
             case "MANAGER":
                 if (!assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
                 break;
             case "STAFF":
                 if (!assignerRole.equals("MANAGER") && !assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
-                break;
-            case "CUSTOMER":
-                if (!assignerRole.equals("STAFF") && !assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
                 break;
         }
 
