@@ -7,8 +7,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -32,15 +34,19 @@ public class Order {
     UUID id;
     @Column(name = "franchise_id", nullable = false)
     UUID franchiseId;
-    @Column(name = "customer_id", nullable = false)
+    @Column(name = "customer_id")
     UUID customerId;
-    @Column(name = "staff_id", nullable = false)
+    @Column(name = "staff_id")
     UUID staffId;
-    @Column(name = "payment_transaction_id", nullable = false)
+    @Column(name = "payment_transaction_id")
     UUID paymentTransactionId;
+    @Column(name = "promotionId")
     UUID promotionId;
-    @Column(name = "address", nullable = false, columnDefinition = "json")
+    @Column(name = "address")
     String address;
+//    @JdbcTypeCode(SqlTypes.JSON)
+//    @Column(columnDefinition = "jsonb")
+//    DeliveryAddress address;
     @Column(name = "total_due", precision = 12, scale = 2, nullable = false)
     BigDecimal totalDue;
     @Enumerated(EnumType.STRING)
@@ -49,7 +55,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     OrderStatus orderStatus;
-    @Column(name = "price_ship", precision = 12, scale = 2, nullable = false)
+    @Column(name = "price_ship", precision = 12, scale = 2)
     BigDecimal priceShip;
     @CreationTimestamp
     @Column(name = "created_at")
@@ -60,4 +66,10 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonIgnore
     List<OrderDetail> orderDetails;
+    @Column(name = "assigned_staff_id")
+    UUID assignedStaffId;
+    @Column(name = "is_special")
+    Boolean isSpecial;
+    @Column(name = "estimated_delivery_time")
+    Instant estimatedDeliveryTime;
 }

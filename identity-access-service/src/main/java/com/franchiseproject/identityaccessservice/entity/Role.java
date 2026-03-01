@@ -1,4 +1,4 @@
-package com.franchiseproject.identityaccessservice.model;
+package com.franchiseproject.identityaccessservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

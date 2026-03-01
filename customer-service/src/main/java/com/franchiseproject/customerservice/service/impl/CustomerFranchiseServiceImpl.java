@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -19,5 +20,10 @@ public class CustomerFranchiseServiceImpl implements CustomerFranchiseService {
     @Override
     public List<CustomerFranchise> getAll() {
         return customerFranchiseRepository.findAll();
+    }
+
+    @Override
+    public List<CustomerFranchise> getLoyaltyInfoByCustomerId(UUID customerId) {
+        return customerFranchiseRepository.findByCustomerId(customerId);
     }
 }
