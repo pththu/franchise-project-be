@@ -7,6 +7,7 @@ import com.franchiseproject.identityaccessservice.dto.request.IntrospectRequest;
 import com.franchiseproject.identityaccessservice.dto.response.AuthenticationResponse;
 import com.franchiseproject.identityaccessservice.dto.response.IntrospectResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.enums.UserStatus;
 import com.franchiseproject.identityaccessservice.exception.AppException;
 import com.franchiseproject.identityaccessservice.exception.ErrorCode;
 import com.franchiseproject.identityaccessservice.service.AuthenticationService;
@@ -20,6 +21,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +35,7 @@ import java.time.Duration;
 public class AuthenticationController {
     AuthenticationService authenticationService;
     UserService userService;
+    PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
     public ApiResponse<User> register(@RequestBody @Valid CustomerRegisterRequest request) {
@@ -47,7 +50,24 @@ public class AuthenticationController {
     public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request, HttpServletResponse response)
             throws Exception {
 
-        AuthenticationResponse authResponse = authenticationService.login(request, response);
+        User user = userService.getByUsername(request.getUsername());
+
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+
+        boolean result = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
+        if (!result) throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        if (user.getStatus().equals(UserStatus.DELETED)) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+
+        if (user.getStatus().equals(UserStatus.SUSPENDED)) {
+            throw new AppException(ErrorCode.USER_lOCKED);
+        }
+
+        AuthenticationResponse authResponse = authenticationService.login(user, response);
         ResponseCookie cookie = ResponseCookie.from("access_token", authResponse.getAccessToken())
                 .httpOnly(true)
                 .secure(true)

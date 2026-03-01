@@ -61,14 +61,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return true;
     }
 
-    public AuthenticationResponse login(AuthenticationRequest request, HttpServletResponse response)
+    public AuthenticationResponse login(User user, HttpServletResponse response)
             throws Exception {
-        var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        boolean result = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
-        if (!result) throw new AppException(ErrorCode.UNAUTHORIZED);
-
         var accessToken = generateAccessToken(user.getUsername(), user.getRole().getName());
         var refeshToken = generateRefreshToken(user.getUsername());
 

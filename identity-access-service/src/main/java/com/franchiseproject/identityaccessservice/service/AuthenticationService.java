@@ -13,7 +13,7 @@ import java.text.ParseException;
 
 public interface AuthenticationService {
     boolean logout ();
-    AuthenticationResponse login(AuthenticationRequest request, HttpServletResponse response) throws Exception;
+    AuthenticationResponse login(User user, HttpServletResponse response) throws Exception;
     User register(CustomerRegisterRequest request);
     IntrospectResponse introspect(IntrospectRequest request) throws Exception;
 }
