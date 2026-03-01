@@ -33,7 +33,8 @@ public class SecurityConfig {
 
     @Autowired
     JwtKeyProperties jwtKeyProperties;
-    final String api_prefix = "/api/v1/";
+//    final String api_prefix = "/api/v1/";
+    final String api_prefix = "/api/auth/";
     final String[] PUBLIC_ENDPOINT = {
             api_prefix + "auth/login",
             api_prefix + "auth/register",

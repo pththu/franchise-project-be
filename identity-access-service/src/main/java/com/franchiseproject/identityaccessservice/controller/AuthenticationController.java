@@ -32,7 +32,8 @@ import java.time.Duration;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+//@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth/auth")
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 public class AuthenticationController {
