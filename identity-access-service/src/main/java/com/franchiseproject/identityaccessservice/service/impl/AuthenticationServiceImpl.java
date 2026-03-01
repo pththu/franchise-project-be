@@ -58,7 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public boolean logout() {
-        return false;
+        return true;
     }
 
     public AuthenticationResponse login(AuthenticationRequest request, HttpServletResponse response)

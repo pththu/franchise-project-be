@@ -105,6 +105,7 @@ public class AuthenticationController {
         return ApiResponse.<String>builder()
                 .statusCode(200)
                 .message("Logout")
+                .data("Logout: " + authenticationService.logout())
                 .build();
     }
 }
