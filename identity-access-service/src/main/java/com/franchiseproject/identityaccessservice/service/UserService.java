@@ -4,11 +4,7 @@ import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequ
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
-import com.franchiseproject.identityaccessservice.dto.response.ChangePasswordResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserDeleteResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
-import com.franchiseproject.identityaccessservice.dto.response.UserUpdateResponse;
+import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.User;
 
 import java.util.List;
@@ -18,7 +14,7 @@ public interface UserService {
     User getByUsername(String username);
     List<User> getAll ();
     UserResponse getById (UUID userId);
-    User createOne (UserCreationRequest request);
+    UserCreationResponse createOne (User user);
     boolean changePassword(ChangePasswordRequest request);
     UserResponse getProfile(String username);
     UserUpdateResponse updateAccountInfomation(String username, UserUpdateRequest request);

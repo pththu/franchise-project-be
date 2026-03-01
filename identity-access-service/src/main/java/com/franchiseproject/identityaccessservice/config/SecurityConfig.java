@@ -38,7 +38,6 @@ public class SecurityConfig {
             api_prefix + "auth/login",
             api_prefix + "auth/register",
             api_prefix + "auth/introspect",
-
     };
 
     final String[] ADMIN_ENDPOINT_GET = {
@@ -53,8 +52,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
-                        .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINT_GET).hasAuthority("ROLE_admin")
-                        .requestMatchers(HttpMethod.DELETE, ADMIN_ENDPOINT_DEL).hasAuthority("ROLE_admin")
+                        .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINT_GET).hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, ADMIN_ENDPOINT_DEL).hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated());
 
         http.oauth2ResourceServer(oauth2 ->
