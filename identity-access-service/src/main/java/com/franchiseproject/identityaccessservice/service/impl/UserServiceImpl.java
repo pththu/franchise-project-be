@@ -46,9 +46,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse getById(UUID userId) {
-        return userMapper.toUserResponse(userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found")));
+    public User getById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     @Override
@@ -129,5 +129,15 @@ public class UserServiceImpl implements UserService {
                 .isDeleted(true)
                 .build();
 
+    }
+
+    @Override
+    public AssignRoleResponse assignRole(Role role, User user) {
+        if (role == null || user == null) throw new AppException(ErrorCode.DATA_IS_NULL);
+        user.setRole(role);
+        userRepository.save(user);
+        return AssignRoleResponse.builder()
+                .isAssigned(true)
+                .build();
     }
 }

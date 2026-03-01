@@ -1,10 +1,7 @@
 package com.franchiseproject.identityaccessservice.controller;
 
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
-import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
-import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
+import com.franchiseproject.identityaccessservice.dto.request.*;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
@@ -107,7 +104,7 @@ public class UserController {
         return ApiResponse.<UserResponse>builder()
                 .statusCode(201)
                 .message("Get One")
-                .data(userService.getById(userId))
+                .data(userMapper.toUserResponse(userService.getById(userId)))
                 .build();
     }
 
@@ -150,5 +147,36 @@ public class UserController {
                 .build();
     }
 
+    @PutMapping("/{userId}/assign-role")
+    public ApiResponse<AssignRoleResponse> assignRole(
+            @PathVariable UUID userId,
+            @RequestBody AssignRoleRequest request,
+            @AuthenticationPrincipal Jwt jwt ) {
+
+        String assignerRole = jwt.getClaimAsString("scope");
+        User user = userService.getById(userId);
+        Role role = roleService.getByName(request.getRoleName());
+        if (role == null || user == null) throw new AppException(ErrorCode.DATA_IS_NULL);
+
+        switch (role.getName()) {
+            case "ADMIN":
+                throw new AppException(ErrorCode.FORBIDDEN);
+            case "MANAGER":
+                if (!assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+            case "STAFF":
+                if (!assignerRole.equals("MANAGER") && !assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+            case "CUSTOMER":
+                if (!assignerRole.equals("STAFF") && !assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                break;
+        }
+
+        return ApiResponse.<AssignRoleResponse>builder()
+                .statusCode(200)
+                .message("Assign role sucess")
+                .data(userService.assignRole(role, user))
+                .build();
+    }
 
 }
