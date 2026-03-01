@@ -136,6 +136,9 @@ public class UserServiceImpl implements UserService {
         return UserDeleteResponse.builder()
                 .isDeleted(true)
                 .build();
+
+    }
+    
     public UserLockResponse lockUser(String username) {
 
         User user = userRepository.findByUsername(username)

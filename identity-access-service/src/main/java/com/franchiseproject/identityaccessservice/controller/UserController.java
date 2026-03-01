@@ -115,6 +115,9 @@ public class UserController {
                 .statusCode(200)
                 .message("Delete account usser id success")
                 .data(userService.deleteAccountUser(userId))
+                .build();
+    }
+
     @PutMapping("/lock")
     public ApiResponse<UserLockResponse> lockUser(@AuthenticationPrincipal Jwt jwt) {
         return ApiResponse.<UserLockResponse>builder()
