@@ -5,7 +5,6 @@
       <env name="DB_USERNAME" value="sa" />
       <env name="DB_PASSWORD" value="1IywPMOfBdPLn1E8FZfqkA2LBfnVwR9E" />
     </envs>
-    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />
     <module name="identity-access-service" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.identityaccessservice.IdentityAccessServiceApplication" />
     <extension name="coverage">
