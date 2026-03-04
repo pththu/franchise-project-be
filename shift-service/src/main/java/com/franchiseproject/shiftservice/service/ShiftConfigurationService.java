@@ -1,23 +1,41 @@
 package com.franchiseproject.shiftservice.service;
 
+import com.franchiseproject.shiftservice.dto.request.AssignShiftRequest;
+import com.franchiseproject.shiftservice.dto.request.CreateShiftRequest;
+import com.franchiseproject.shiftservice.dto.response.PersonalStatisticResponse;
+import com.franchiseproject.shiftservice.dto.response.ShiftResponse;
+import com.franchiseproject.shiftservice.dto.response.ShiftStatisticResponse;
+import com.franchiseproject.shiftservice.dto.response.StaffShiftResponse;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 public interface ShiftConfigurationService {
 
-    UUID createShiftConfiguration();
+    ShiftResponse createShiftConfiguration(CreateShiftRequest request);
 
-    List<UUID> getShiftConfigurationsByFranchise(UUID franchiseId);
+    ShiftResponse updateShiftConfiguration(UUID id, CreateShiftRequest request);
 
-    UUID assignShift(UUID staffId, UUID shiftConfigId, LocalDate workDate);
+    ShiftResponse deleteShiftConfiguration(UUID id);
 
-    void checkIn(UUID shiftId);
+    List<ShiftResponse> getShiftConfigurationsByFranchise(UUID franchiseId);
 
-    void checkOut(UUID shiftId);
+    StaffShiftResponse assignShift(AssignShiftRequest request);
 
-    List<UUID> getSchedule(UUID staffId, LocalDate date);
+    StaffShiftResponse updateAssignedShift(UUID staffShiftId, AssignShiftRequest request);
 
-    void markAbsent(UUID shiftId);
+    StaffShiftResponse checkIn(UUID shiftId);
+
+    StaffShiftResponse checkOut(UUID shiftId);
+
+    StaffShiftResponse markAbsent(UUID shiftId);
+
+    List<StaffShiftResponse> getSchedule(UUID staffId, LocalDate date);
+
+    List<StaffShiftResponse> getScheduleByDate(LocalDate date);
+
+    ShiftStatisticResponse getStatisticByDate(LocalDate date);
+
+    PersonalStatisticResponse getPersonalStatistic(UUID staffId);
 }
-
