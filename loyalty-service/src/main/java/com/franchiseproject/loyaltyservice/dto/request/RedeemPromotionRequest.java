@@ -20,7 +20,4 @@ public class RedeemPromotionRequest {
 
     @NotNull(message = "PROMOTION_ID_REQUIRED")
     UUID promotionId;
-
-    @NotNull(message = "POINTS_IS_REQUIRED")
-    Integer pointsToRedeem;
 }

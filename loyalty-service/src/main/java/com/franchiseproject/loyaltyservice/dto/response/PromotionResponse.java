@@ -21,4 +21,5 @@ public class PromotionResponse {
     BigDecimal discountValue;
     LocalDateTime startTime;
     LocalDateTime endTime;
+    Integer pointsToRedeem;
 }

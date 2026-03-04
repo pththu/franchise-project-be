@@ -48,4 +48,6 @@ public class Promotion {
     LocalDateTime createdAt;
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
+    @Column(name = "points_to_redeem")
+    Integer pointsToRedeem;
 }
