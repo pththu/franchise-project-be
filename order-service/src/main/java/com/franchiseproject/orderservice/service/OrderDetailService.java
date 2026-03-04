@@ -2,6 +2,7 @@ package com.franchiseproject.orderservice.service;
 
 import com.franchiseproject.orderservice.dto.request.CreateOrderItemRequest;
 import com.franchiseproject.orderservice.dto.request.CreateOrderRequest;
+import com.franchiseproject.orderservice.dto.request.UpdateOrderItemRequest;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.model.Order;
 import com.franchiseproject.orderservice.model.OrderDetail;
@@ -21,4 +22,6 @@ public interface OrderDetailService {
     BigDecimal calculateTotal(List<OrderDetail> details);
 
     Map<UUID, ProductResponse> fetchProducts(List<CreateOrderItemRequest> request);
+    
+    Map<UUID, ProductResponse> fetchProductsForUpdate(List<UpdateOrderItemRequest> request);
 }

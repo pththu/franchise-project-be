@@ -7,7 +7,6 @@ import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.mapper.OrderMapper;
-import com.franchiseproject.orderservice.model.Order;
 import com.franchiseproject.orderservice.service.OrderDetailService;
 import com.franchiseproject.orderservice.service.OrderService;
 import com.franchiseproject.orderservice.service.OrderStatusLogService;
@@ -127,8 +126,7 @@ public class OrderController {
             @PathVariable UUID orderId,
             @RequestBody @Valid UpdateOrderRequest request
     ) {
-        Order order = orderService.updateOrder(orderId, request);
-        OrderResponse response = orderMapper.toOrderResponse(order);
+        OrderResponse response = orderService.updateOrder(orderId, request);
 
         return ApiResponse.<OrderResponse>builder()
                 .message("Cập nhật đơn hàng thành công")
