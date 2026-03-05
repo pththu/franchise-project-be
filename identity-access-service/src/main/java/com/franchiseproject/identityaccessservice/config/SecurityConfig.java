@@ -36,6 +36,8 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SecurityConfig {
 
+    @Value("${spring.security.oauth2.client.provider.cognito.issuerUri}")
+    String issuer;
     List<String> allowedOrigins = List.of(
             "http://localhost:5173",
             "http://localhost:3000",
@@ -126,6 +128,11 @@ public class SecurityConfig {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withIssuerLocation(issuer).build();
     }
 
 //    @Bean

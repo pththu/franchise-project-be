@@ -21,8 +21,8 @@ spring:
       client:
         registration:
           cognito:
-            client-id: 2uss9kc6ivur5kdsknq994op0k
-            client-secret: qeg5nbgmqhgh11fkbjif0d5enlb63fjequ639mqicoqa8u4hh12
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
             scope:
               - email
               - openid
@@ -33,17 +33,17 @@ spring:
             redirect-uri: https://d84l1y8p4kdic.cloudfront.net
         provider:
           cognito:
-            issuerUri: https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_bXpfambW9
-            user-name-attribute: username
+            issuerUri: ${issuerURI}
+            user-name-attribute: ${ATTRIBUTE}
 
 aws:
-  region: ap-southeast-1          # Singapore - gần VN nhất
-  accessKeyId: AKIAYRAKBS3AFTVOCHV5
-  secretAccessKey: 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
+  region: ${REGION}          # Singapore - gần VN nhất
+  accessKeyId: ${ACCESS_KEY_ID}
+  secretAccessKey: ${SECRET_ACCESS_KEY}
   cognito:
-    userPoolId: ap-southeast-1_bXpfambW9      # vd: ap-southeast-1_AbCdEfGhI
-    clientId: 2uss9kc6ivur5kdsknq994op0k           # App Client ID
-    clientSecret: qeg5nbgmqhgh11fkbjif0d5enlb63fjequ639mqicoqa8u4hh12
+    userPoolId: ${USER_POOL_ID}      # vd: ap-southeast-1_AbCdEfGhI
+    clientId: ${CLIENT_ID}           # App Client ID
+    clientSecret: ${CLIENT_SECRET}
 
 app:
   cors:
