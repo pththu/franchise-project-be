@@ -1,7 +1,7 @@
 package com.franchiseproject.orderservice.service.impl;
 
 import com.franchiseproject.orderservice.dto.request.CreateOrderItemRequest;
-import com.franchiseproject.orderservice.dto.request.CreateOrderRequest;
+import com.franchiseproject.orderservice.dto.request.UpdateOrderItemRequest;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
@@ -87,5 +87,15 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         return productClient.getProductsByIds(productIds);
     }
 
+    @Override
+    @Transactional
+    public Map<UUID, ProductResponse> fetchProductsForUpdate(List<UpdateOrderItemRequest> items) {
+        List<UUID> productIds = items.stream()
+                .map(UpdateOrderItemRequest::getProductId)
+                .distinct()
+                .toList();
 
+        return productClient.getProductsByIds(productIds);
+
+    }
 }

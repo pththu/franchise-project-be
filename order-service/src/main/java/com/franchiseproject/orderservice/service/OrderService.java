@@ -23,5 +23,5 @@ public interface OrderService {
     List<OrderResponse> getAll();
     void addAddressOnlineOrder(AddAddressRequest request);
     String getAddressOnlineOrder(UUID customerId);
-    Order updateOrder(UUID orderId, UpdateOrderRequest request);
+    OrderResponse updateOrder(UUID orderId, UpdateOrderRequest request);
 }

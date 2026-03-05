@@ -5,8 +5,6 @@ import com.franchiseproject.orderservice.dto.request.*;
 import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
-import com.franchiseproject.orderservice.enums.TypeOrder;
-import com.franchiseproject.orderservice.exception.BusinessException;
 import com.franchiseproject.orderservice.infrastructure.client.PaymentClient;
 import com.franchiseproject.orderservice.infrastructure.client.ProductClient;
 import com.franchiseproject.orderservice.exception.AppException;
@@ -15,7 +13,6 @@ import com.franchiseproject.orderservice.mapper.OrderMapper;
 import com.franchiseproject.orderservice.model.Order;
 import com.franchiseproject.orderservice.model.OrderDetail;
 import com.franchiseproject.orderservice.model.OrderStatusLog;
-import com.franchiseproject.orderservice.repository.OrderDetailRepository;
 import com.franchiseproject.orderservice.repository.OrderRepository;
 import com.franchiseproject.orderservice.repository.OrderStatusLogRepository;
 import com.franchiseproject.orderservice.service.OrderDetailService;
@@ -35,7 +32,6 @@ import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisTemplate;
 
-import static java.util.stream.Collectors.toList;
 
 
 @Service
@@ -170,103 +166,115 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Order updateOrder(UUID orderId, UpdateOrderRequest request) {
+    public OrderResponse updateOrder(UUID orderId, UpdateOrderRequest request) {
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        // Kiểm tra trạng thái order có thể cập nhật không
         OrderStatus currentStatus = order.getOrderStatus();
-        if (currentStatus == OrderStatus.COMPLETED ||
-                currentStatus == OrderStatus.CANCELLED ||
-                currentStatus == OrderStatus.FAILED ||
-                currentStatus == OrderStatus.REFUNDED) {
+
+        //  Không cho update nếu đã finalized
+        if (currentStatus == OrderStatus.COMPLETED
+                || currentStatus == OrderStatus.CANCELLED
+                || currentStatus == OrderStatus.REFUNDED
+                || currentStatus == OrderStatus.FAILED) {
             throw new AppException(ErrorCode.ORDER_ALREADY_FINALIZED);
         }
 
-        // Validate items
+        //  Validate items
         if (request.getItems() == null || request.getItems().isEmpty()) {
-
+            throw new AppException(ErrorCode.ITEM_ORDER_NOT_NULL);
         }
 
-        // Validate shipping price
-        if (request.getPriceShip() == null || request.getPriceShip().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Shipping price must be >= 0");
+        //  Validate shipping price
+        BigDecimal shipping = request.getPriceShip() != null
+                ? request.getPriceShip()
+                : BigDecimal.ZERO;
+
+        if (shipping.compareTo(BigDecimal.ZERO) < 0) {
+            throw new AppException(ErrorCode.INVALID_SHIPPING_PRICE);
         }
 
-        // Cập nhật thông tin order
-        if (request.getStaffId() != null) {
-            order.setStaffId(request.getStaffId());
-        }
-        if (request.getPaymentTransactionId() != null) {
-            order.setPaymentTransactionId(request.getPaymentTransactionId());
-        }
-        if (request.getPromotionId() != null) {
-            order.setPromotionId(request.getPromotionId());
-        }
-        if (request.getAddress() != null) {
-            order.setAddress(request.getAddress());
-        }
-        if (request.getTypeOrder() != null) {
-            order.setTypeOrder(request.getTypeOrder());
-        }
+        //  Lấy product thật từ product-service
+        Map<UUID, ProductResponse> apiProducts =
+                orderDetailService.fetchProductsForUpdate(request.getItems());
 
-        order.setPriceShip(request.getPriceShip());
-
-        // Xóa các order details cũ
+        //  Xóa detail cũ (đảm bảo có orphanRemoval = true)
         order.getOrderDetails().clear();
 
-        // Tạo order details mới
-        BigDecimal totalItems = BigDecimal.ZERO;
-        List<OrderDetail> newOrderDetails = new ArrayList<>();
+        List<OrderDetail> newDetails = new ArrayList<>();
 
         for (UpdateOrderItemRequest item : request.getItems()) {
 
+            ProductResponse product = apiProducts.get(item.getProductId());
+
+            if (product == null) {
+                throw new AppException(ErrorCode.MISSING_PRODUCTS);
+            }
+
             if (item.getQuantity() == null || item.getQuantity() <= 0) {
-                throw new IllegalArgumentException("Quantity must be greater than 0");
+                throw new AppException(ErrorCode.OUT_OF_STOCK);
             }
-
-            if (item.getPrice() == null || item.getPrice().compareTo(BigDecimal.ZERO) < 0) {
-                throw new IllegalArgumentException("Price must be >= 0");
-            }
-
-            BigDecimal itemTotal = item.getPrice()
-                    .multiply(BigDecimal.valueOf(item.getQuantity()));
-
-            totalItems = totalItems.add(itemTotal);
 
             OrderDetail detail = OrderDetail.builder()
-                    .productId(item.getProductId())
-                    .productNameSnapshot(item.getProductName())
-                    .priceSnapshot(item.getPrice())
-                    .cost(item.getCost())
+                    .productId(product.getId())
+                    .productNameSnapshot(product.getName())
+                    .priceSnapshot(product.getPrice()) // không tin client
                     .quantity(item.getQuantity())
                     .order(order)
                     .build();
 
-            newOrderDetails.add(detail);
+            newDetails.add(detail);
         }
 
-        // Cập nhật tổng tiền
-        BigDecimal finalTotal = totalItems.add(request.getPriceShip());
-        order.setTotalDue(finalTotal);
-        order.setOrderDetails(newOrderDetails);
+        //  Tính lại totalItems
+        BigDecimal totalItems = newDetails.stream()
+                .map(d -> d.getPriceSnapshot()
+                        .multiply(BigDecimal.valueOf(d.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Lưu order đã cập nhật
+        //  Tính lại discount
+        BigDecimal discount = productClient.validateAndCalculate(
+                order.getCustomerId(),
+                order.getPromotionId(),
+                totalItems
+        );
+
+        BigDecimal finalTotal = totalItems
+                .add(shipping)
+                .subtract(discount);
+
+        //  Update thông tin order
+        order.setPriceShip(shipping);
+        order.setTotalDue(finalTotal);
+        order.setOrderDetails(newDetails);
+
+        if (request.getStaffId() != null) {
+            order.setStaffId(request.getStaffId());
+        }
+
+        if (request.getAddress() != null) {
+            order.setAddress(request.getAddress());
+        }
+
+        if (request.getTypeOrder() != null) {
+            order.setTypeOrder(request.getTypeOrder());
+        }
+
         Order updatedOrder = orderRepository.save(order);
 
-        // Log việc cập nhật order
-        OrderStatusLog log = OrderStatusLog.builder()
-                .statusId(UUID.randomUUID())
-                .fromStatus(currentStatus.name())
-                .toStatus(currentStatus.name())
-                .noteLog("Order updated - total due changed to " + finalTotal)
-                .order(updatedOrder)
-                .build();
+        //  Log update
+        orderStatusLogRepository.save(
+                OrderStatusLog.builder()
+                        .statusId(UUID.randomUUID())
+                        .fromStatus(currentStatus.name())
+                        .toStatus(currentStatus.name())
+                        .noteLog("Order updated. New total: " + finalTotal)
+                        .order(updatedOrder)
+                        .build()
+        );
 
-        orderStatusLogRepository.save(log);
-
-        return updatedOrder;
+        return orderMapper.toOrderResponse(updatedOrder);
     }
 
     @Override
