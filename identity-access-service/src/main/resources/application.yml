@@ -16,6 +16,41 @@ spring:
     show-sql: true
     properties:
       hibernate.jdbc.time_zone: UTC
+  security:
+    oauth2:
+      client:
+        registration:
+          cognito:
+            client-id: 2uss9kc6ivur5kdsknq994op0k
+            client-secret: qeg5nbgmqhgh11fkbjif0d5enlb63fjequ639mqicoqa8u4hh12
+            scope:
+              - email
+              - openid
+              - phone
+            # Spring Security by default uses a redirect-uri in the format: {baseUrl}/login/oauth2/code/{registrationId}
+            # For example: http://localhost:8080/login/oauth2/code/cognito
+            # See more: https://docs.spring.io/spring-security/reference/servlet/oauth2/login/core.html#oauth2login-sample-redirect-uri
+            redirect-uri: https://d84l1y8p4kdic.cloudfront.net
+        provider:
+          cognito:
+            issuerUri: https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_bXpfambW9
+            user-name-attribute: username
+
+aws:
+  region: ap-southeast-1          # Singapore - gần VN nhất
+  accessKeyId: AKIAYRAKBS3AFTVOCHV5
+  secretAccessKey: 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
+  cognito:
+    userPoolId: ap-southeast-1_bXpfambW9      # vd: ap-southeast-1_AbCdEfGhI
+    clientId: 2uss9kc6ivur5kdsknq994op0k           # App Client ID
+    clientSecret: qeg5nbgmqhgh11fkbjif0d5enlb63fjequ639mqicoqa8u4hh12
+
+app:
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+      - http://localhost:3000
+      - https://yourdomain.com
 
 jwt:
   secret: ${SECRET_KEY}
