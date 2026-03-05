@@ -56,17 +56,17 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     /*** REDEEM PROMOTION ***/
     @Override
     @Transactional
-    public RedeemPromotionResponse redeemPromotion(RedeemPromotionRequest request) {
-        int pointsRequired = request.getPointsToRedeem();
+        public RedeemPromotionResponse redeemPromotion(RedeemPromotionRequest request) {
+        Promotion promotion = promotionRepository.findById(request.getPromotionId())
+                .orElseThrow(   () -> new AppException(ErrorCode.PROMOTION_NOT_FOUND));
+
+        int pointsRequired = promotion.getPointsToRedeem() != null ? promotion.getPointsToRedeem() : 0;
 
         if (pointsRequired <= 0) {
             throw new AppException(ErrorCode.INVALID_POINTS_AMOUNT);
         }
 
-        Promotion promotion = promotionRepository.findById(request.getPromotionId())
-                .orElseThrow(() -> new AppException(ErrorCode.PROMOTION_NOT_FOUND));
-
-        LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now();
         if ((promotion.getStartTime() != null && now.isBefore(promotion.getStartTime())) ||
                 (promotion.getEndTime() != null && now.isAfter(promotion.getEndTime()))) {
             throw new AppException(ErrorCode.PROMOTION_EXPIRED);

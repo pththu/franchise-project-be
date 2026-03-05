@@ -39,6 +39,7 @@ public class PromotionServiceImpl implements PromotionService {
                         .discountValue(p.getDiscountValue())
                         .startTime(p.getStartTime())
                         .endTime(p.getEndTime())
+                        .pointsToRedeem(p.getPointsToRedeem())
                         .build())
                 .toList();
     }
