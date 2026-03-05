@@ -19,7 +19,6 @@ import java.util.UUID;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
-
     RoleRepository roleRepository;
     RoleMapper roleMapper;
 
@@ -56,9 +55,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Role getByName(String name) {
-        return roleRepository.findByName(name);
+        return roleRepository.findByName(name)
+                .orElseThrow(() -> new RuntimeException("Cannot find Role ADMINl"));
     }
-
 
     @Override
     public boolean deleteRole(UUID id) {

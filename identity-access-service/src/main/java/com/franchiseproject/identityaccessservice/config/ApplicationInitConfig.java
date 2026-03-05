@@ -25,7 +25,8 @@ public class ApplicationInitConfig {
     ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository) {
         return args -> {
             if (userRepository.findByUsername("admin").isEmpty()) {
-                Role role = roleRepository.findByName("admin");
+                Role role = roleRepository.findByName("admin")
+                        .orElseThrow(() -> new RuntimeException("Cannot find Role ADMIN"));
                 User user = User.builder()
                         .username("admin")
                         .passwordHash(passwordEncoder.encode("sapassword"))
@@ -36,7 +37,7 @@ public class ApplicationInitConfig {
                         .build();
 
                 userRepository.save(user);
-                log.warn("admin user has been created with default password: sapassword");
+                log.warn("Admin user has been created with default password: sapassword");
             }
         };
     }
