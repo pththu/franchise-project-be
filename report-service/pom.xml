@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.franchiseproject</groupId>
-    <artifactId>shift-service</artifactId>
+    <artifactId>report-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>shift-service</name>
-    <description>shift-service</description>
+    <name>report-service</name>
+    <description>report-service</description>
     <url/>
     <licenses>
         <license/>
