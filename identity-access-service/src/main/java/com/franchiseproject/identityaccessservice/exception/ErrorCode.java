@@ -22,7 +22,10 @@ public enum ErrorCode {
     UNAUTHORIZED(401, "Invalid username or password"),
     DATA_IS_NULL(400, "Data is null"),
     CREATE_TOKEN_FAIL(500, "Failed to create token"),
-    ;
+
+    PERMISSION_EXISTED(400, "This permission (API and Method) already exists!"),
+    PERMISSION_NOT_FOUND(404, "Permissions not found!"),
+    INVALID_INPUT(400, "Invalid input data!");
 
     private int code;
     private String message;

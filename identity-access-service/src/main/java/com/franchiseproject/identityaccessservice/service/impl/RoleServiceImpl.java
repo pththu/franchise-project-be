@@ -75,8 +75,18 @@ public class RoleServiceImpl implements RoleService {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
 
+        if (request.getPermissionIds() == null || request.getPermissionIds().isEmpty()) {
+            role.setPermissions(new java.util.HashSet<>());
+            return roleRepository.save(role);
+        }
+
         List<com.franchiseproject.identityaccessservice.entity.Permission> permissions =
                 permissionRepository.findAllById(request.getPermissionIds());
+
+        long uniqueRequestedIds = request.getPermissionIds().stream().distinct().count();
+        if (permissions.size() != uniqueRequestedIds) {
+            throw new AppException(ErrorCode.PERMISSION_NOT_FOUND);
+        }
 
         role.setPermissions(new java.util.HashSet<>(permissions));
 

@@ -1,5 +1,6 @@
 package com.franchiseproject.identityaccessservice.dto.request;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -12,5 +13,6 @@ import java.util.UUID;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RolePermissionRequest {
+    @NotEmpty(message = "Permissions cannot be empty!")
     List<UUID> permissionIds;
 }

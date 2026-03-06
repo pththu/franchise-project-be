@@ -4,6 +4,7 @@ import com.franchiseproject.identityaccessservice.dto.ApiResponse;
 import com.franchiseproject.identityaccessservice.dto.request.PermissionRequest;
 import com.franchiseproject.identityaccessservice.dto.response.PermissionResponse;
 import com.franchiseproject.identityaccessservice.service.PermissionService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,7 +31,7 @@ public class PermissionController {
     }
 
     @PostMapping
-    public ApiResponse<PermissionResponse> create(@RequestBody PermissionRequest request) {
+    public ApiResponse<PermissionResponse> create(@RequestBody @Valid PermissionRequest request) {
         return ApiResponse.<PermissionResponse>builder()
                 .statusCode(201)
                 .message("Permission created")
@@ -39,7 +40,7 @@ public class PermissionController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<PermissionResponse> update(@PathVariable UUID id, @RequestBody PermissionRequest request) {
+    public ApiResponse<PermissionResponse> update(@PathVariable UUID id, @RequestBody @Valid PermissionRequest request) {
         return ApiResponse.<PermissionResponse>builder()
                 .statusCode(200)
                 .message("Permission updated")
