@@ -33,8 +33,6 @@ public interface ShiftConfigurationService {
 
     List<StaffShiftResponse> getSchedule(UUID staffId, LocalDate date);
 
-    List<StaffShiftResponse> getScheduleByDate(LocalDate date);
-
     ShiftStatisticResponse getStatisticByDate(LocalDate date);
 
     PersonalStatisticResponse getPersonalStatistic(UUID staffId);

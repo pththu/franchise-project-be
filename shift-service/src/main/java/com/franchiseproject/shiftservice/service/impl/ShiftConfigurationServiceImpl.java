@@ -201,14 +201,12 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
 
     @Override
     public List<StaffShiftResponse> getSchedule(UUID staffId, LocalDate date) {
-        return staffShiftRepository.findByStaffIdAndWorkDate(staffId, date)
-                .stream()
-                .map(staffShiftMapper::toResponse)
-                .toList();
-    }
-
-    @Override
-    public List<StaffShiftResponse> getScheduleByDate(LocalDate date) {
+        if (staffId != null) {
+            return staffShiftRepository.findByStaffIdAndWorkDate(staffId, date)
+                    .stream()
+                    .map(staffShiftMapper::toResponse)
+                    .toList();
+        }
         return staffShiftRepository.findByWorkDate(date)
                 .stream()
                 .map(staffShiftMapper::toResponse)

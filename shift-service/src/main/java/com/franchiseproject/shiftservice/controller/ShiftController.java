@@ -85,10 +85,7 @@ public class ShiftController {
             @RequestParam(required = false) UUID staffId,
             @RequestParam LocalDate date
     ) {
-        if (staffId != null) {
             return service.getSchedule(staffId, date);
-        }
-        return service.getScheduleByDate(date);
     }
 
     // ================= STATISTICS =================
