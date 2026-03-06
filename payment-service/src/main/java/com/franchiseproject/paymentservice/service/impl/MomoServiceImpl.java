@@ -50,11 +50,8 @@ public class MomoServiceImpl implements MomoService {
         paymentTransactionRepository.save(paymentTransaction);
 
         String rawSignature = String.format(
-                "accessKey=$s&amount=$s&extraData=$s\n" +
-                        "&ipnUrl=%s&orderId=%s&orderInfo=%s\n" +
-                        "&partnerCode=%s&redirectUrl=%s\n" +
-                        "&requestId=%s&requestType=%s",
-                momoProperties.getAccess_key(), paymentTransactionRequest.getFinalTotal(), null,
+                "accessKey=%s&amount=%s&extraData=%s&ipnUrl=%s&orderId=%s&orderInfo=%s&partnerCode=%s&redirectUrl=%s&requestId=%s&requestType=%s",
+                momoProperties.getAccess_key(), paymentTransactionRequest.getFinalTotal().longValueExact(), "",
                 momoProperties.getIpn_url(), paymentTransactionRequest.getOrderId(), orderInfo, momoProperties.getPartner_code(),
                 momoProperties.getReturn_url(), paymentTransaction.getId(), momoProperties.getRequest_type());
 
