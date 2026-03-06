@@ -29,11 +29,11 @@ public class PaymentMethod {
     boolean active;
 
     @CreationTimestamp
-    @Column(name= "created_at", updatable = false)
+    @Column(name = "created_at", updatable = false)
     LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "paymentMethod")
-    List<UserPaymentMethod> userPaymentMethods;
+//    @OneToMany(mappedBy = "paymentMethod")
+//    List<UserPaymentMethod> userPaymentMethods;
 
     @OneToMany(mappedBy = "paymentMethod")
     List<PaymentTransaction> paymentMethods;

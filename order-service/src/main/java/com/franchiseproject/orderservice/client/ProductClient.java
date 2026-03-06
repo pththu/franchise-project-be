@@ -1,4 +1,4 @@
-package com.franchiseproject.orderservice.infrastructure.client;
+package com.franchiseproject.orderservice.client;
 
 import com.franchiseproject.orderservice.dto.request.DiscountRequest;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;

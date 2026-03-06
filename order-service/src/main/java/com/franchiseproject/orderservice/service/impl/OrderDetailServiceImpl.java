@@ -5,7 +5,7 @@ import com.franchiseproject.orderservice.dto.request.UpdateOrderItemRequest;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
-import com.franchiseproject.orderservice.infrastructure.client.ProductClient;
+import com.franchiseproject.orderservice.client.ProductClient;
 import com.franchiseproject.orderservice.model.Order;
 import com.franchiseproject.orderservice.model.OrderDetail;
 import com.franchiseproject.orderservice.repository.OrderDetailRepository;

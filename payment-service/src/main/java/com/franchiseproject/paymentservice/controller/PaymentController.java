@@ -25,4 +25,5 @@ public class PaymentController {
     public PaymentMethod save(@RequestBody PaymentMethod paymentMethod){
         return paymentMethodService.create(paymentMethod);
     }
+
 }
