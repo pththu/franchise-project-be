@@ -5,6 +5,7 @@ import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.exception.AppException;
 import com.franchiseproject.identityaccessservice.exception.ErrorCode;
 import com.franchiseproject.identityaccessservice.mapper.RoleMapper;
+import com.franchiseproject.identityaccessservice.repository.PermissionRepository;
 import com.franchiseproject.identityaccessservice.repository.RoleRepository;
 import com.franchiseproject.identityaccessservice.service.RoleService;
 import lombok.AccessLevel;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class RoleServiceImpl implements RoleService {
     RoleRepository roleRepository;
     RoleMapper roleMapper;
+    PermissionRepository permissionRepository;
 
     @Override
     public List<Role> getAll() {
@@ -66,5 +68,18 @@ public class RoleServiceImpl implements RoleService {
         }
         roleRepository.deleteById(id);
         return true;
+    }
+
+    @Override
+    public Role assignPermissions(UUID roleId, com.franchiseproject.identityaccessservice.dto.request.RolePermissionRequest request) {
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+
+        List<com.franchiseproject.identityaccessservice.entity.Permission> permissions =
+                permissionRepository.findAllById(request.getPermissionIds());
+
+        role.setPermissions(new java.util.HashSet<>(permissions));
+
+        return roleRepository.save(role);
     }
 }
