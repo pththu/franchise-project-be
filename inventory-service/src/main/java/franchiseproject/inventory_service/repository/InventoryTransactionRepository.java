@@ -1,6 +1,5 @@
 package franchiseproject.inventory_service.repository;
 
-import franchiseproject.inventory_service.model.FranchiseIngredient;
 import franchiseproject.inventory_service.model.InventoryTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 
