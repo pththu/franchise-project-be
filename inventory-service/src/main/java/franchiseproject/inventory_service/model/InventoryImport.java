@@ -8,31 +8,40 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "franchise_ingredient")
+@Table(name = "inventory_import")
 @Setter
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FranchiseIngredient {
+public class InventoryImport {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(name = "id", unique = true, nullable = false, updatable = false)
     UUID id;
 
-    @Column(name = "product_id", nullable = false)
-    UUID productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "franchise_id", nullable = false)
+    Franchise franchise;
 
-    @Column(name = "quantity")
-    Integer quantity;
+    @Column(name = "code", nullable = false, unique = true, length = 50)
+    String code;
 
-    @Column(name = "unit")
-    String unit;
+    @Column(name = "note", length = 500)
+    String note;
+
+    @Column(name = "status", nullable = false, length = 50)
+    String status;
+
+    @Column(name = "created_by")
+    UUID createdBy;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -42,10 +51,7 @@ public class FranchiseIngredient {
     @Column(name = "updated_at")
     Instant updatedAt;
 
-    @Column(name = "min_stock")
-    Integer minStock;
-
-    @ManyToOne
-    @JoinColumn(name = "franchise_id", nullable = false, columnDefinition = "UUID")
-    Franchise franchise;
+    @OneToMany(mappedBy = "inventoryImport", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    List<InventoryImportItem> items = new ArrayList<>();
 }

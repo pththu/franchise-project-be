@@ -1,6 +1,7 @@
 package franchiseproject.inventory_service.model;
-import lombok.*;
+
 import jakarta.persistence.*;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -19,26 +20,35 @@ import java.util.UUID;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Franchise {
+
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
-    @Column(unique = true,nullable = false)
-UUID id;
-@Column(name = "name")
-String name;
+    @Column(name = "id", unique = true, nullable = false, updatable = false)
+    UUID id;
+
+    @Column(name = "name")
+    String name;
+
     @Column(name = "address")
-String address;
+    String address;
+
     @Column(name = "opened_at")
-Instant openedAt;
-    @Column(name = "close_at")
-Instant closedAt;
+    Instant openedAt;
+
+    @Column(name = "closed_at")
+    Instant closedAt;
+
     @Column(name = "is_active")
-Boolean isActive;
-    @Column(name = "create_at")
+    Boolean isActive;
+
     @CreationTimestamp
-Instant createAt;
-    @Column(name = "update_at")
+    @Column(name = "created_at")
+    Instant createdAt;
+
     @UpdateTimestamp
-Instant updateAt;
+    @Column(name = "updated_at")
+    Instant updatedAt;
+
     @OneToMany(mappedBy = "franchise", cascade = CascadeType.ALL)
     List<FranchiseIngredient> franchiseIngredients;
 }
