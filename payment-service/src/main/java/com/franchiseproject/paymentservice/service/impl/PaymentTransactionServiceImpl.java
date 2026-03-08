@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentTransactionServiceImpl implements PaymentTransactionService {
-    PaymentTransactionRepository paymentTransactionRepository;4
+    PaymentTransactionRepository paymentTransactionRepository;
     PaymentTransactionMapper paymentTransactionMapper;
 
 
