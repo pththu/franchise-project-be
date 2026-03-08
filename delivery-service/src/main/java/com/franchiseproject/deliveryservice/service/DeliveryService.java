@@ -11,5 +11,5 @@ import java.util.UUID;
 public interface DeliveryService {
     List<Delivery> findAll();
     DeliveryResponse createDelivery(CreateDeliveryRequest request);
-    DeliveryResponse assignShipper(UUID deliveryId, UpdateDeliveryRequest request);
+    DeliveryResponse updateDelivery(UUID deliveryId, UpdateDeliveryRequest request);
 }

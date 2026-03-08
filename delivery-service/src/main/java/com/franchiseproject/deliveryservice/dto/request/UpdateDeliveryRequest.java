@@ -1,5 +1,6 @@
 package com.franchiseproject.deliveryservice.dto.request;
 
+import com.franchiseproject.deliveryservice.enums.DeliverySatus;
 import com.franchiseproject.deliveryservice.model.DeliveryHistory;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -20,6 +21,7 @@ public class UpdateDeliveryRequest {
     @NotNull(message = "Không để trống id quản lý")
     UUID staffId;
     UUID shipperId;
+    DeliverySatus status;
     double weight;
     Instant scheduledAt;
     List<DeliveryHistory> deliveryHistory;

@@ -42,9 +42,22 @@ public class DeliveryController {
     public ApiResponse<DeliveryResponse> assignShipper(
             @PathVariable UUID deliveryId,
             @RequestBody UpdateDeliveryRequest request) {
-        DeliveryResponse response = deliveryService.assignShipper(deliveryId, request);
+        DeliveryResponse response = deliveryService.updateDelivery(deliveryId, request);
         return ApiResponse.<DeliveryResponse>builder()
                 .message("Gán nhân viên giao hàng thành công")
+                .data(response)
+                .statusCode(200)
+                .errors(null)
+                .build();
+    }
+
+    @PutMapping("/update-delivery/{deliveryId}")
+    public ApiResponse<DeliveryResponse> updateDelivery(
+            @PathVariable UUID deliveryId,
+            @RequestBody UpdateDeliveryRequest request) {
+        DeliveryResponse response = deliveryService.updateDelivery(deliveryId, request);
+        return ApiResponse.<DeliveryResponse>builder()
+                .message("Cập nhật đơn giao hàng thành công")
                 .data(response)
                 .statusCode(200)
                 .errors(null)

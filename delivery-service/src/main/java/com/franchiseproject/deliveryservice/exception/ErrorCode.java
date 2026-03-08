@@ -9,7 +9,8 @@ import org.springframework.http.HttpStatus;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public enum ErrorCode {
     VALIDATION_FAILED(400, "Dữ liệu không hợp lệ", HttpStatus.BAD_REQUEST),
-    DELIVERY_NOT_FOUND(404, "Không tìm thấy đơn giao hàng", HttpStatus.NOT_FOUND),;
+    DELIVERY_NOT_FOUND(404, "Không tìm thấy đơn giao hàng", HttpStatus.NOT_FOUND),
+    DELIVERY_ALREADY_FINALIZED(400, "Đơn giao hàng đã được hoàn thành hoặc đánh giá", HttpStatus.BAD_REQUEST),;
     int code;
     String message;
     HttpStatus httpStatus;

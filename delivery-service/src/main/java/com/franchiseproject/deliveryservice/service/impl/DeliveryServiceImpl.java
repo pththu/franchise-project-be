@@ -51,12 +51,18 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional
-    public DeliveryResponse assignShipper(UUID deliveryId, UpdateDeliveryRequest request) {
+    public DeliveryResponse updateDelivery(UUID deliveryId, UpdateDeliveryRequest request) {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new AppException(ErrorCode.DELIVERY_NOT_FOUND));
-        delivery.setShipperId(request.getShipperId());
-        delivery.setScheduledAt(request.getScheduledAt());
-        delivery.setStatus(DeliverySatus.ASSIGNED);
+        if (delivery.getStatus() == DeliverySatus.DELIVERED
+                || delivery.getStatus() == DeliverySatus.FAILED
+                || delivery.getStatus() == DeliverySatus.RATING) {
+            throw new AppException(ErrorCode.DELIVERY_ALREADY_FINALIZED);
+        }
+        delivery.setShipperId(request.getShipperId() == null ? delivery.getShipperId() : request.getShipperId());
+        delivery.setWeight(request.getWeight() == 0 ? delivery.getWeight() : request.getWeight());
+        delivery.setScheduledAt(request.getScheduledAt() == null ? delivery.getScheduledAt() : request.getScheduledAt());
+        delivery.setStatus(request.getStatus());
 
         delivery = deliveryRepository.save(delivery);
 
