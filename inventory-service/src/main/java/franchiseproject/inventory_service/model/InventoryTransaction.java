@@ -45,7 +45,7 @@ public class InventoryTransaction {
     @UpdateTimestamp
     @Column(name = "update_at")
     Instant updateAt;
-    @ManyToOne()
-    @JoinColumn(name = "franchise_ingredient_id", columnDefinition = "UUID", insertable = false, updatable = false)
+    @ManyToOne
+    @JoinColumn(name = "franchise_ingredient_id")
     FranchiseIngredient franchiseIngredient;
 }
