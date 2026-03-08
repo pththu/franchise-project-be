@@ -2,6 +2,7 @@ package com.franchiseproject.deliveryservice.controller;
 
 import com.franchiseproject.deliveryservice.dto.ApiResponse;
 import com.franchiseproject.deliveryservice.dto.request.CreateDeliveryRequest;
+import com.franchiseproject.deliveryservice.dto.request.UpdateDeliveryRequest;
 import com.franchiseproject.deliveryservice.dto.response.DeliveryResponse;
 import com.franchiseproject.deliveryservice.model.Delivery;
 import com.franchiseproject.deliveryservice.service.DeliveryService;
@@ -11,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @RestController
@@ -30,6 +32,19 @@ public class DeliveryController {
         DeliveryResponse response = deliveryService.createDelivery(request);
         return ApiResponse.<DeliveryResponse>builder()
                 .message("Tạo đơn giao hàng thành công")
+                .data(response)
+                .statusCode(200)
+                .errors(null)
+                .build();
+    }
+
+    @PutMapping("/assign-shipper/{deliveryId}")
+    public ApiResponse<DeliveryResponse> assignShipper(
+            @PathVariable UUID deliveryId,
+            @RequestBody UpdateDeliveryRequest request) {
+        DeliveryResponse response = deliveryService.assignShipper(deliveryId, request);
+        return ApiResponse.<DeliveryResponse>builder()
+                .message("Gán nhân viên giao hàng thành công")
                 .data(response)
                 .statusCode(200)
                 .errors(null)

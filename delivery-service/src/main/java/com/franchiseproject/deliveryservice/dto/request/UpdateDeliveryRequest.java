@@ -16,9 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CreateDeliveryRequest {
-    @NotNull(message = "Không để trống id đơn hàng")
-    UUID orderId;
+public class UpdateDeliveryRequest {
     @NotNull(message = "Không để trống id quản lý")
     UUID staffId;
     UUID shipperId;

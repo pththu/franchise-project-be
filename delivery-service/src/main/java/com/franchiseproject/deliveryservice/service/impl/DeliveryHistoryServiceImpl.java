@@ -24,7 +24,7 @@ public class DeliveryHistoryServiceImpl implements DeliveryHistoryService {
     DeliveryHistoryMapper deliveryHistoryMapper;
 
     @Override
-    public void createDeliveryHistory(Delivery delivery) {
+    public void createDeliveryHistory(Delivery delivery, UUID staffId) {
         Instant now;
         if (delivery.getStatus().equals(DeliverySatus.DELIVERED)) {
             now = Instant.now();
@@ -36,7 +36,7 @@ public class DeliveryHistoryServiceImpl implements DeliveryHistoryService {
                 .delivery(delivery)
                 .status(delivery.getStatus())
                 .note(note)
-                .updatedBy(delivery.getStaffId())
+                .updatedBy(staffId)
                 .receivedAt(delivery.getStatus().equals(DeliverySatus.DELIVERED) ? Instant.now() : null)
                 .build();
         deliveryHistoryRepository.save(history);
@@ -51,7 +51,7 @@ public class DeliveryHistoryServiceImpl implements DeliveryHistoryService {
     private String noteHandler(Delivery delivery, Instant time) {
         return switch (delivery.getStatus()) {
             case CREATED -> "Delivery created";
-            case ASSIGNED -> "Delivery assigned to staff with id: " + delivery.getStaffId();
+            case ASSIGNED -> "Delivery assigned to shipper with id: " + delivery.getShipperId();
             case SHIPPING -> "Delivery is on the way";
             case DELIVERED -> {
                 if (time != null) {

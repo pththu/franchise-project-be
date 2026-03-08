@@ -29,8 +29,8 @@ public class Delivery {
     UUID deliveryId;
     @Column(name="order_id")
     UUID orderId;
-    @Column(name="staff_id")
-    UUID staffId;
+    @Column(name="shipper_id")
+    UUID shipperId;
     @Column(name="weight")
     double weight;
     @Column(name="scheduled_at")

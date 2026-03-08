@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface DeliveryHistoryService {
-    void createDeliveryHistory(Delivery delivery);
+    void createDeliveryHistory(Delivery delivery, UUID staffId);
     List<DeliveryHistoryResponse> getDeliveryHistoryByDeliveryId(UUID deliveryId);
 
 }

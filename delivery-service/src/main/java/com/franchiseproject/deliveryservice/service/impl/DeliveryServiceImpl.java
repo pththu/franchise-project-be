@@ -1,19 +1,24 @@
 package com.franchiseproject.deliveryservice.service.impl;
 
 import com.franchiseproject.deliveryservice.dto.request.CreateDeliveryRequest;
+import com.franchiseproject.deliveryservice.dto.request.UpdateDeliveryRequest;
 import com.franchiseproject.deliveryservice.dto.response.DeliveryHistoryResponse;
 import com.franchiseproject.deliveryservice.dto.response.DeliveryResponse;
 import com.franchiseproject.deliveryservice.enums.DeliverySatus;
+import com.franchiseproject.deliveryservice.exception.AppException;
+import com.franchiseproject.deliveryservice.exception.ErrorCode;
 import com.franchiseproject.deliveryservice.mapper.DeliveryMapper;
 import com.franchiseproject.deliveryservice.model.Delivery;
 import com.franchiseproject.deliveryservice.repository.DeliveryRepository;
 import com.franchiseproject.deliveryservice.service.DeliveryHistoryService;
 import com.franchiseproject.deliveryservice.service.DeliveryService;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -33,14 +38,33 @@ public class DeliveryServiceImpl implements DeliveryService {
     public DeliveryResponse createDelivery(CreateDeliveryRequest request) {
         Delivery delivery = Delivery.builder()
                 .orderId(request.getOrderId())
-                .staffId(request.getStaffId())
+                .shipperId(request.getShipperId())
                 .weight(request.getWeight())
                 .scheduledAt(request.getScheduledAt())
                 .status(DeliverySatus.CREATED)
                 .build();
+
         delivery = deliveryRepository.save(delivery);
 
-        deliveryHistoryService.createDeliveryHistory(delivery);
+        return buildResponse(delivery, request.getStaffId());
+    }
+
+    @Override
+    @Transactional
+    public DeliveryResponse assignShipper(UUID deliveryId, UpdateDeliveryRequest request) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new AppException(ErrorCode.DELIVERY_NOT_FOUND));
+        delivery.setShipperId(request.getShipperId());
+        delivery.setScheduledAt(request.getScheduledAt());
+        delivery.setStatus(DeliverySatus.ASSIGNED);
+
+        delivery = deliveryRepository.save(delivery);
+
+        return buildResponse(delivery, request.getStaffId());
+    }
+
+    private DeliveryResponse buildResponse(Delivery delivery, UUID staffId) {
+        deliveryHistoryService.createDeliveryHistory(delivery, staffId);
 
         List<DeliveryHistoryResponse> histories =
                 deliveryHistoryService.getDeliveryHistoryByDeliveryId(delivery.getDeliveryId());
@@ -49,5 +73,4 @@ public class DeliveryServiceImpl implements DeliveryService {
         response.setDeliveryHistory(histories);
         return response;
     }
-
 }
