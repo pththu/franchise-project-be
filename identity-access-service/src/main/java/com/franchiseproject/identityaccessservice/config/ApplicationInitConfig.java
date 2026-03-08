@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.UUID;
+
 @Configuration
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -28,11 +30,13 @@ public class ApplicationInitConfig {
                 Role role = roleRepository.findByName("admin")
                         .orElseThrow(() -> new RuntimeException("Cannot find Role ADMIN"));
                 User user = User.builder()
+                        .id(UUID.randomUUID())
                         .username("admin")
                         .passwordHash(passwordEncoder.encode("sapassword"))
                         .role(role)
                         .email("hthu03.thu@gmail.com")
                         .fullName("Quản trị viên")
+                        .isVerifyEmail(true)
                         .status(UserStatus.ACTIVE)
                         .build();
 
