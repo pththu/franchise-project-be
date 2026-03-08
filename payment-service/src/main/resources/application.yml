@@ -18,11 +18,11 @@ spring:
 
 # VNPay Config
 vnpay:
-  tmn-code: YOUR_TMN_CODE
-  hash-secret: YOUR_HASH_SECRET
-  payment-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  tmn-code: ${TMN_CODE}
+  hash-secret: ${HASH_SECRET}
+  payment-url: ${PAYMENT_URL}
   return-url: http://localhost:3011/api/payments/vnpay-return
-  ipn-url: http://your-public-domain.com/api/payment/vnpay-ipn
+  ipn-url: https://abc123.ngrok-free.app/api/payments/vnpay-ipn
   version: 2.1.0
   command: pay
   currency-code: VND

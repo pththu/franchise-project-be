@@ -12,47 +12,50 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class VnpayServiceImpl implements VnpayService {
-
     VNPayConfig vnPayConfig;
 
     @Override
     public CreatePaymentResponse createPaymentUrl(CreatePaymentRequest request,
-                                            HttpServletRequest httpRequest) throws Exception {
+                                                  HttpServletRequest httpRequest) throws Exception {
         String txnRef = VNPayUtil.generateTxnRef();
-        String createDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+        String createDate = formatter.format(new Date());
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+        calendar.add(Calendar.MINUTE, 15);
+        String expireDate = formatter.format(calendar.getTime());
 
-        String orderInfo = "Thanh toan don hang " + request.getOrderId()
-                + " - User: " + request.getUserId();
+        String orderInfo = "test123";
 
-        Map<String, String> params = new HashMap<>();
-        params.put("vnp_Version",     vnPayConfig.getVersion());
-        params.put("vnp_Command",     vnPayConfig.getCommand());
-        params.put("vnp_TmnCode",     vnPayConfig.getTmnCode());
-        params.put("vnp_Amount",      String.valueOf(request.getAmount() * 100));
-        params.put("vnp_CurrCode",    vnPayConfig.getCurrencyCode());
-        params.put("vnp_TxnRef",      txnRef);
-        params.put("vnp_OrderInfo",   orderInfo);
-        params.put("vnp_OrderType",   "other");
-        params.put("vnp_Locale",      vnPayConfig.getLocale());
-        params.put("vnp_ReturnUrl",   vnPayConfig.getReturnUrl());
-        params.put("vnp_IpAddr",      VNPayUtil.getIpAddress(httpRequest));
-        params.put("vnp_CreateDate",  createDate);
+        Map<String, String> params = new TreeMap<>();
+        params.put("vnp_Version", vnPayConfig.getVersion());
+        params.put("vnp_Command", vnPayConfig.getCommand());
+        params.put("vnp_TmnCode", vnPayConfig.getTmnCode());
+        params.put("vnp_Amount", String.valueOf((long) request.getAmount() * 100));
+        params.put("vnp_CurrCode", vnPayConfig.getCurrencyCode());
+        params.put("vnp_TxnRef", txnRef);
+        params.put("vnp_OrderInfo", orderInfo);
+        params.put("vnp_OrderType", "other");
+        params.put("vnp_Locale", vnPayConfig.getLocale());
+        params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        params.put("vnp_IpAddr", VNPayUtil.getIpAddress(httpRequest));
+        params.put("vnp_CreateDate", createDate);
+        params.put("vnp_ExpireDate", expireDate);
 
-        // Tạo chuỗi hash (KHÔNG encode)
-        String hashData = VNPayUtil.buildQueryString(params, false);
-        String secureHash = VNPayUtil.hmacSHA512(vnPayConfig.getHashSecret(), hashData);
-
-        // Tạo URL đầy đủ (encode)
         String queryString = VNPayUtil.buildQueryString(params, true);
-        String paymentUrl = vnPayConfig.getPaymentUrl() + "?" + queryString
+        String secureHash = VNPayUtil.hmacSHA512(
+                vnPayConfig.getHashSecret(),
+                queryString
+        );
+        String paymentUrl = vnPayConfig.getPaymentUrl() + "?"
+                + queryString
+                + "&vnp_SecureHashType=HmacSHA512"
                 + "&vnp_SecureHash=" + secureHash;
 
         return CreatePaymentResponse.builder()
@@ -63,10 +66,14 @@ public class VnpayServiceImpl implements VnpayService {
 
     @Override
     public boolean validateReturnData(Map<String, String> params) throws Exception {
-        String receivedHash = params.remove("vnp_SecureHash");
-        params.remove("vnp_SecureHashType");
-        String hashData = VNPayUtil.buildQueryString(params, false);
-        String calculatedHash = VNPayUtil.hmacSHA512(vnPayConfig.getHashSecret(), hashData);
+        Map<String, String> fields = new HashMap<>(params);
+        String receivedHash = fields.remove("vnp_SecureHash");
+        fields.remove("vnp_SecureHashType");
+        String hashData = VNPayUtil.buildQueryString(fields, false);
+        String calculatedHash = VNPayUtil.hmacSHA512(
+                vnPayConfig.getHashSecret(),
+                hashData
+        );
         return calculatedHash.equalsIgnoreCase(receivedHash);
     }
 }
