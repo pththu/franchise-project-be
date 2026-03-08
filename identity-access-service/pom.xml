@@ -30,6 +30,7 @@
         <java.version>17</java.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <com.nimbusds.version>10.7</com.nimbusds.version>
+        <aws.sdk.version>2.41.32</aws.sdk.version>
     </properties>
     <dependencies>
         <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-resource-server -->
@@ -97,6 +98,35 @@
             <artifactId>nimbus-jose-jwt</artifactId>
             <version>${com.nimbusds.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <!-- AWS SDK v2 - Cognito -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cognitoidentityprovider</artifactId>
+            <version>${aws.sdk.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- JWT (for local token validation fallback) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
         </dependency>
 
     </dependencies>
