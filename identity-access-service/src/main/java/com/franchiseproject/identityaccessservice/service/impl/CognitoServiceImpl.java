@@ -1,5 +1,7 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
+import com.franchiseproject.identityaccessservice.exception.AppException;
+import com.franchiseproject.identityaccessservice.exception.ErrorCode;
 import com.franchiseproject.identityaccessservice.service.CognitoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,11 +33,9 @@ public class CognitoServiceImpl implements CognitoService {
     @Value("${aws.cognito.clientSecret}")
     private String clientSecret;
 
-    // ─────────────────────────────────────────────────────────────
-    // REGISTER: Đăng ký user mới trên Cognito
-    // ─────────────────────────────────────────────────────────────
     /**
-     * @return cognitoSub (UUID định danh user trong Cognito)
+     * Đăng ký user mới trên Cognito
+     * @return cognitoSub = UUID định danh user trong Cognito
      */
     @Override
     public String registerUser(String username, String password, String email,
@@ -45,7 +45,7 @@ public class CognitoServiceImpl implements CognitoService {
             userAttributes.put("email", email);
             userAttributes.put("name", fullName);
             userAttributes.put("phone_number", normalizePhone(phone));
-            // email_verified sẽ được set qua flow confirmSignUp
+            // email_verified được set qua flow confirmSignUp
 
             SignUpRequest request = SignUpRequest.builder()
                     .clientId(clientId)
@@ -67,12 +67,13 @@ public class CognitoServiceImpl implements CognitoService {
             return response.userSub(); // cognitoSub
 
         } catch (UsernameExistsException e) {
-            throw new RuntimeException("USERNAME_EXISTS");
+            throw new AppException(ErrorCode.USERNAME_EXISTED);
         } catch (InvalidPasswordException e) {
-            throw new RuntimeException("INVALID_PASSWORD: " + e.getMessage());
+            log.info("INVALID_PASSWORD: " + e.getMessage());
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         } catch (Exception e) {
             log.error("Cognito register error: {}", e.getMessage());
-            throw new RuntimeException("COGNITO_ERROR: " + e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
 
@@ -93,9 +94,9 @@ public class CognitoServiceImpl implements CognitoService {
             log.info("Cognito confirmSignUp success: username={}", username);
 
         } catch (CodeMismatchException e) {
-            throw new RuntimeException("INVALID_CODE");
+            throw new AppException(ErrorCode.INVALID_CODE);
         } catch (ExpiredCodeException e) {
-            throw new RuntimeException("EXPIRED_CODE");
+            throw new AppException(ErrorCode.CODE_EXPRIED);
         } catch (NotAuthorizedException e) {
             throw new RuntimeException("ALREADY_CONFIRMED");
         } catch (Exception e) {
@@ -138,6 +139,8 @@ public class CognitoServiceImpl implements CognitoService {
             throw new RuntimeException("USER_NOT_CONFIRMED");
         } catch (UserNotFoundException e) {
             throw new RuntimeException("USER_NOT_FOUND");
+        } catch (InvalidLambdaResponseException e) {
+            throw new RuntimeException("LAMBDA_ERROR: " + e.getMessage());
         } catch (RuntimeException e) {
             throw e; // re-throw known exceptions
         } catch (Exception e) {
