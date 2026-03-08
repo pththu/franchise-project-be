@@ -33,9 +33,6 @@ public class PaymentMethod {
     LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "paymentMethod")
-    List<UserPaymentMethod> userPaymentMethods;
-
-    @OneToMany(mappedBy = "paymentMethod")
     List<PaymentTransaction> paymentMethods;
 
 }
