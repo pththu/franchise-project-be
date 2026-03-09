@@ -114,9 +114,11 @@ class Semantic_Search:
         vectors_store = []
 
         for item in data:
-            desc_txt = f"passage: {item['description']}"
-            core_txt = f"passage: {item['name']} được làm từ: {', '.join(item['categoryName'])}"
-
+            try:
+                desc_txt = f"passage: {item['description']}"
+                core_txt = f"passage: {item['name']} được làm từ: {', '.join(item['categoryName'])}"
+            except:
+                return "Lỗi: Không đủ các trường để tạo vector !!!"
             desc_vec = self.model.encode(desc_txt, normalize_embeddings=True)
             core_vec = self.model.encode(core_txt, normalize_embeddings=True)
 
