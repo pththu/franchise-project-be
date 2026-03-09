@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,24 +22,36 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.interfaces.RSAPublicKey;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SecurityConfig {
 
-    @Autowired
-    JwtKeyProperties jwtKeyProperties;
-//    final String api_prefix = "/api/v1/";
+    @Value("${spring.security.oauth2.client.provider.cognito.issuerUri}")
+    String issuer;
+    List<String> allowedOrigins = List.of(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://0.0.0.0"
+    );
+
     final String api_prefix = "/api/auth/";
     final String[] PUBLIC_ENDPOINT = {
-            api_prefix + "auth/login",
-            api_prefix + "auth/register",
-            api_prefix + "auth/introspect",
+            api_prefix + "login",
+            api_prefix + "register",
+            api_prefix + "introspect",
+            api_prefix + "verify",
+            api_prefix + "resend-code",
+            api_prefix + "refresh"
     };
 
     final String[] ADMIN_ENDPOINT_GET = {
@@ -50,11 +63,12 @@ public class SecurityConfig {
     };
 
     final String[] ADMIN_ENDPOINT_PUT = {
-            api_prefix + "auth/*/lock"
+            api_prefix + "*/lock"
     };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.cors(Customizer.withDefaults());
         http.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
                         .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINT_GET).hasAuthority("ROLE_ADMIN")
@@ -62,13 +76,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, ADMIN_ENDPOINT_PUT).hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated());
 
+
         http.oauth2ResourceServer(oauth2 ->
                 oauth2
                         .bearerTokenResolver(bearerTokenResolver())
                         .jwt(jwtConfigurer -> {
                             try {
-                                jwtConfigurer.decoder(jwtDecoder())
-                                        .jwtAuthenticationConverter(jwtAuthenticationConverter());
+//                                jwtConfigurer.decoder(jwtDecoder())
+//                                        .jwtAuthenticationConverter(jwtAuthenticationConverter());
+                                jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter());
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
                             }
@@ -77,6 +93,32 @@ public class SecurityConfig {
 
         http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        // Cognito stores groups in "cognito:groups" claim
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("cognito:groups");
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(allowedOrigins);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     @Bean
@@ -89,12 +131,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    JwtDecoder jwtDecoder() throws Exception {
-        RSAPublicKey rsaPublicKey = jwtKeyProperties.getPublicKeyObject();
-        return NimbusJwtDecoder
-                .withPublicKey(rsaPublicKey)
-                .build();
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withIssuerLocation(issuer).build();
     }
+
+//    @Bean
+//    JwtDecoder jwtDecoder() throws Exception {
+//        RSAPublicKey rsaPublicKey = jwtKeyProperties.getPublicKeyObject();
+//        return NimbusJwtDecoder
+//                .withPublicKey(rsaPublicKey)
+//                .build();
+//    }
 
     @Bean
     PasswordEncoder passwordEncoder() {
