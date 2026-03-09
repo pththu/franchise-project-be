@@ -1,7 +1,7 @@
 package franchiseproject.inventory_service.service.impl;
 
 
-import franchiseproject.inventory_service.dto.FranchiseResponse;
+import franchiseproject.inventory_service.dto.FranchiseOfInventoryResponse;
 import franchiseproject.inventory_service.dto.InventoryResponse;
 import franchiseproject.inventory_service.mapper.InventoryMapper;
 import franchiseproject.inventory_service.model.FranchiseIngredient;
@@ -33,11 +33,11 @@ public class InventoryImpl implements InventoryService {
 
     // 2 View Inventory Details
     @Override
-    public List<FranchiseResponse> viewInventoryDetail() {
+    public List<FranchiseOfInventoryResponse> viewInventoryDetail() {
 
         return franchiseRepository.findAll()
                 .stream()
-                .map(f -> FranchiseResponse.builder()
+                .map(f -> FranchiseOfInventoryResponse.builder()
                         .id(f.getId())
                         .franchiseName(f.getName())
                         .build())

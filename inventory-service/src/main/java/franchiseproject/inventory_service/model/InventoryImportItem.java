@@ -8,38 +8,35 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "franchises")
+@Table(name = "inventory_import_item")
 @Setter
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Franchise {
+public class InventoryImportItem {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(name = "id", unique = true, nullable = false, updatable = false)
     UUID id;
 
-    @Column(name = "name")
-    String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_import_id", nullable = false)
+    InventoryImport inventoryImport;
 
-    @Column(name = "address")
-    String address;
+    @Column(name = "product_id", nullable = false)
+    UUID productId;
 
-    @Column(name = "opened_at")
-    Instant openedAt;
+    @Column(name = "quantity", nullable = false)
+    Integer quantity;
 
-    @Column(name = "closed_at")
-    Instant closedAt;
-
-    @Column(name = "is_active")
-    Boolean isActive;
+    @Column(name = "unit")
+    String unit;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -48,7 +45,4 @@ public class Franchise {
     @UpdateTimestamp
     @Column(name = "updated_at")
     Instant updatedAt;
-
-    @OneToMany(mappedBy = "franchise", cascade = CascadeType.ALL)
-    List<FranchiseIngredient> franchiseIngredients;
 }

@@ -1,8 +1,7 @@
 package franchiseproject.inventory_service.controller;
 
-import franchiseproject.inventory_service.dto.FranchiseResponse;
+import franchiseproject.inventory_service.dto.FranchiseOfInventoryResponse;
 import franchiseproject.inventory_service.dto.InventoryResponse;
-import franchiseproject.inventory_service.mapper.InventoryMapper;
 import franchiseproject.inventory_service.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +26,7 @@ public class InventoryController {
 
     // 2 View Inventory Detail
     @GetMapping("/franchise")
-    public List<FranchiseResponse> getAllFranchises() {
+    public List<FranchiseOfInventoryResponse> getAllFranchises() {
         return inventoryService.viewInventoryDetail();
     }
 

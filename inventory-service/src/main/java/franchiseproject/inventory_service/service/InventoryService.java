@@ -1,6 +1,6 @@
 package franchiseproject.inventory_service.service;
 
-import franchiseproject.inventory_service.dto.FranchiseResponse;
+import franchiseproject.inventory_service.dto.FranchiseOfInventoryResponse;
 import franchiseproject.inventory_service.dto.InventoryResponse;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface InventoryService {
     List<InventoryResponse> viewInventoryByFranchise(UUID franchiseId);
 
-    List<FranchiseResponse> viewInventoryDetail();
+    List<FranchiseOfInventoryResponse> viewInventoryDetail();
 
     List<InventoryResponse> viewLowStockItems();
 

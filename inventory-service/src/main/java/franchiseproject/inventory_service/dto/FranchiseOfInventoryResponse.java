@@ -3,22 +3,17 @@ package franchiseproject.inventory_service.dto;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FranchiseResponse {
+public class FranchiseOfInventoryResponse {
+
     UUID id;
-    String name;
-    String address;
-    Instant openedAt;
-    Instant closedAt;
-    Boolean isActive;
-    Instant createdAt;
-    Instant updatedAt;
+
+    String franchiseName;
 }

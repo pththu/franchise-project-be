@@ -4,21 +4,23 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FranchiseResponse {
+public class InventoryImportDetailResponse {
     UUID id;
-    String name;
-    String address;
-    Instant openedAt;
-    Instant closedAt;
-    Boolean isActive;
+    UUID franchiseId;
+    String code;
+    String note;
+    String status;
+    UUID createdBy;
     Instant createdAt;
     Instant updatedAt;
+    List<InventoryImportItemResponse> items;
 }
