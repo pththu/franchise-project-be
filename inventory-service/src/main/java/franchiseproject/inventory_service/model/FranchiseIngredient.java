@@ -1,5 +1,6 @@
 package franchiseproject.inventory_service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -12,8 +13,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "franchise_ingredient")
-@Setter
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,6 +35,9 @@ public class FranchiseIngredient {
     @Column(name = "unit")
     String unit;
 
+    @Column(name = "min_stock")
+    Integer minStock;
+
     @CreationTimestamp
     @Column(name = "created_at")
     Instant createdAt;
@@ -42,10 +46,8 @@ public class FranchiseIngredient {
     @Column(name = "updated_at")
     Instant updatedAt;
 
-    @Column(name = "min_stock")
-    Integer minStock;
-
+    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "franchise_id", nullable = false, columnDefinition = "UUID")
+    @JoinColumn(name = "franchise_id", nullable = false)
     Franchise franchise;
 }
