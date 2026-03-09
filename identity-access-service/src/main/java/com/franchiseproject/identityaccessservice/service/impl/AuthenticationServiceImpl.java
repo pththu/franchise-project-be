@@ -44,19 +44,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public String register(UserRegisterRequest req) {
 
-        // 1. Kiểm tra duplicate trong DB của mình
         if (userRepository.existsByUsername(req.getUsername())) {
-            throw new IllegalArgumentException("Username already exists");
+            throw new AppException(ErrorCode.USER_EXISTED);
         }
+
         if (userRepository.existsByEmail(req.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new AppException(ErrorCode.EMAIL_IS_EXISTS);
         }
 
         Role role = roleRepository.findByName(req.getRoleName())
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
 
-        // 2. Gọi Cognito để tạo user: Cognito sẽ gửi email verification code ngay sau đây
         String cognitoSub;
+
         try {
             cognitoSub = cognitoService.registerUser(
                     req.getUsername(),
@@ -67,16 +67,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             );
 
             log.info("cognitoSub: {}", cognitoSub);
-        } catch (RuntimeException e) {
-            String msg = e.getMessage();
-            if (msg.contains("USERNAME_EXISTS")) {
-                throw new AppException(ErrorCode.USER_EXISTED);
-            }
-            log.info("Register failed: ", msg);
+
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Register failed", e);
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
 
-        // 3. Lưu user vào DB local (status = PENDING_VERIFICATION)
         User user = User.builder()
                 .id(UUID.fromString(cognitoSub))
                 .username(req.getUsername())
@@ -91,9 +89,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
 
         userRepository.save(user);
+
         log.info("User registered: username={}, cognitoSub={}", user.getUsername(), cognitoSub);
 
-        // 4. Trả về username để FE redirect sang màn verify
         return req.getUsername();
     }
 
@@ -104,7 +102,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public void verifyEmail(VerifyRequest req) {
 
-        // 1. Gọi Cognito confirm
+        // 1. Confirm email với Cognito
         try {
             cognitoService.confirmSignUp(req.getUsername(), req.getCode());
         } catch (RuntimeException e) {
@@ -117,12 +115,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
         }
 
-        // 2. Update status trong DB
-        userRepository.findByUsername(req.getUsername()).ifPresent(user -> {
-            user.setVerifyEmail(true);
-            userRepository.save(user);
-            log.info("User verified and activated: {}", req.getUsername());
-        });
+        // 2. Lấy user từ DB
+        User user = userRepository.findByUsername(req.getUsername())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // 3. Add user vào Cognito group theo role
+        cognitoService.addUserToGroup(user.getUsername(), user.getRole().getName());
+
+        // 4. Update trạng thái verify
+        user.setVerifyEmail(true);
+        userRepository.save(user);
+
+        log.info("User verified and added to group: {}", user.getUsername());
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -138,23 +142,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     // ─────────────────────────────────────────────────────────────
     public TokenResponse login(AuthenticationRequest req) {
 
+        String identifier = req.getIdentifier();
+        String password = req.getPassword();
         // 1. Kiểm tra user tồn tại trong DB
-        User user = userRepository.findByUsername(req.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+        log.info("identitfier: " + identifier);
+        User user = userRepository.findByUsernameOrEmail(identifier, identifier)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
+        log.info("identitfier 02" + identifier);
+        log.info("user 02" + user.getEmail());
+        log.info("user getUsername: " + user.getUsername());
 
         // 2. Kiểm tra status
         if (!user.isVerifyEmail()) {
-            throw new IllegalStateException("PENDING_VERIFICATION");
+            throw new AppException(ErrorCode.USER_NOT_CONFIRMED);
         }
         if (user.getStatus() == UserStatus.SUSPENDED) {
-            throw new IllegalStateException("Account has been suspended");
+            throw new AppException(ErrorCode.USER_lOCKED);
         }
 
         // 3. Authenticate với Cognito
         AuthenticationResultType authResult;
         try {
-            authResult = cognitoService.login(req.getUsername(), req.getPassword());
+            authResult = cognitoService.login(user.getUsername(), password);
         } catch (RuntimeException e) {
+            log.info("e: ", e);
             String msg = e.getMessage();
             if (msg.contains("INVALID_CREDENTIALS")) {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
@@ -183,7 +194,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public TokenResponse refreshToken(String username, String refreshToken) {
         AuthenticationResultType result = cognitoService.refreshToken(username, refreshToken);
-
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
