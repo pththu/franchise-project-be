@@ -8,6 +8,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface PaymenMethodRepository extends JpaRepository<PaymentMethod, UUID> {
-    Optional<PaymentMethod> findByCodeAndIsActiveTrue(UUID paymentMethodId);
+public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, UUID> {
+    Optional<PaymentMethod> findByIdAndActiveTrue(UUID id);
 }

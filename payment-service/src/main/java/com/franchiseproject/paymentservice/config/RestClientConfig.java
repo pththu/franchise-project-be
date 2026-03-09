@@ -30,4 +30,12 @@ public class RestClientConfig {
                 })
                 .build();
     }
+
+    @Bean
+    public RestClient orderRestClient() {
+        return RestClient.builder()
+                .baseUrl("http://localhost:3007")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+    }
 }

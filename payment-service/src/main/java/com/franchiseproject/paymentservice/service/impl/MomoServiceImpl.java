@@ -4,14 +4,14 @@ import com.franchiseproject.paymentservice.client.MomoClient;
 import com.franchiseproject.paymentservice.config.MomoProperties;
 import com.franchiseproject.paymentservice.dto.request.CreateMomoRequest;
 import com.franchiseproject.paymentservice.dto.request.OptionPaymentMethodRequest;
-import com.franchiseproject.paymentservice.dto.request.PaymentTransactionRequest;
 import com.franchiseproject.paymentservice.dto.response.CreateMomoResponse;
+import com.franchiseproject.paymentservice.dto.response.OrderResponse;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
 import com.franchiseproject.paymentservice.entity.PaymentTransaction;
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
 import com.franchiseproject.paymentservice.exception.AppException;
 import com.franchiseproject.paymentservice.exception.ErrorCode;
-import com.franchiseproject.paymentservice.repository.PaymenMethodRepository;
+//import com.franchiseproject.paymentservice.repository.PaymenMethodRepository;
 import com.franchiseproject.paymentservice.repository.PaymentTransactionRepository;
 import com.franchiseproject.paymentservice.service.MomoService;
 import com.franchiseproject.paymentservice.service.PaymentMethodService;
@@ -26,6 +26,8 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,27 +35,26 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MomoServiceImpl implements MomoService {
 
-    PaymenMethodRepository paymenMethodRepository;
     PaymentTransactionRepository paymentTransactionRepository;
     MomoProperties momoProperties;
     MomoClient momoClient;
-    PaymentMethodService paymentMethodService;
 
     @Override
     @Transactional
-    public CreateMomoResponse buildCreateMomoQR(PaymentTransactionRequest paymentTransactionRequest, OptionPaymentMethodRequest optionPaymentMethodRequest) {
+    public CreateMomoResponse buildCreateMomoQR(OrderResponse orderResponse, PaymentMethod paymentMethod) {
 
-        String orderInfo = "Thanh Toán Đơn Hàng" + paymentTransactionRequest.getOrderId();
+        String orderInfo = "Thanh Toán Đơn Hàng: " + orderResponse.getOrderId();
 
-        PaymentMethod paymentMethod = paymentMethodService.getAvailiablePaymentMethod(optionPaymentMethodRequest);
-        PaymentTransaction paymentTransaction = buildPaymentTransaction(paymentTransactionRequest, paymentMethod);
+        checkOrderStatus(orderResponse);
+
+        PaymentTransaction paymentTransaction = buildPaymentTransaction(orderResponse, paymentMethod);
         paymentTransactionRepository.save(paymentTransaction);
 
         String rawSignature = String.format(
                 "accessKey=%s&amount=%s&extraData=%s&ipnUrl=%s&orderId=%s&orderInfo=%s&partnerCode=%s&redirectUrl=%s&requestId=%s&requestType=%s",
-                momoProperties.getAccess_key(), paymentTransactionRequest.getFinalTotal().longValueExact(), "",
-                momoProperties.getIpn_url(), paymentTransactionRequest.getOrderId(), orderInfo, momoProperties.getPartner_code(),
-                momoProperties.getReturn_url(), paymentTransaction.getId(), momoProperties.getRequest_type());
+                momoProperties.getAccess_key(), orderResponse.getFinalTotal().longValueExact(), "",
+                momoProperties.getIpn_url(), orderResponse.getOrderId().toString(), orderInfo, momoProperties.getPartner_code(),
+                momoProperties.getReturn_url(), paymentTransaction.getId().toString(), momoProperties.getRequest_type());
 
         String prettySignature = "";
 
@@ -73,23 +74,25 @@ public class MomoServiceImpl implements MomoService {
                 .requestType(momoProperties.getRequest_type())
                 .ipnUrl(momoProperties.getIpn_url())
                 .redirectUrl(momoProperties.getReturn_url())
-                .orderId(paymentTransactionRequest.getOrderId().toString())
+                .orderId(orderResponse.getOrderId().toString())
                 .orderInfo(orderInfo)
                 .requestId(paymentTransaction.getId().toString())
-                .extraData(null)
-                .amount(paymentTransactionRequest.getFinalTotal().longValueExact())
+                .extraData("")
+                .amount(orderResponse.getFinalTotal().longValueExact())
                 .signature(prettySignature)
                 .lang("vi")
                 .build();
 
+
+
         return momoClient.createMomoQR(request);
     }
 
-    private PaymentTransaction buildPaymentTransaction(PaymentTransactionRequest paymentTransactionRequest, PaymentMethod paymentMethod) {
+    private PaymentTransaction buildPaymentTransaction(OrderResponse orderResponse, PaymentMethod paymentMethod) {
         return PaymentTransaction.builder()
-                .userId(paymentTransactionRequest.getCustomerId())
-                .orderId(paymentTransactionRequest.getOrderId())
-                .amount(paymentTransactionRequest.getFinalTotal())
+                .userId(orderResponse.getCustomerId())
+                .orderId(orderResponse.getOrderId())
+                .amount(orderResponse.getFinalTotal())
                 .status(StatusTransaction.PENDING)
                 .paymentMethod(paymentMethod)
                 .transactionRef(null)
@@ -111,4 +114,27 @@ public class MomoServiceImpl implements MomoService {
         }
         return hexString.toString();
     }
+
+    private void checkOrderStatus(OrderResponse orderResponse) {
+        if (!orderResponse.getOrderStatus().equals("WAITING_PAYMENT")) {
+            throw new AppException(ErrorCode.ORDER_NOT_PAYABLE);
+        }
+    }
+
+    public boolean verifySignature(String rawData, String signature, String secretKey) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
+            mac.init(secretKeySpec);
+
+            byte[] hash = mac.doFinal(rawData.getBytes());
+            String generatedSignature = Base64.getEncoder().encodeToString(hash);
+
+            return generatedSignature.equals(signature);
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 }

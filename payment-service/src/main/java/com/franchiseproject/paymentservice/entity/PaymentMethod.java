@@ -1,5 +1,6 @@
 package com.franchiseproject.paymentservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -36,6 +37,7 @@ public class PaymentMethod {
 //    List<UserPaymentMethod> userPaymentMethods;
 
     @OneToMany(mappedBy = "paymentMethod")
-    List<PaymentTransaction> paymentMethods;
+    @JsonManagedReference
+    List<PaymentTransaction> paymentTransactions;
 
 }

@@ -8,7 +8,10 @@ import org.springframework.http.HttpStatus;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ErrorCode {
-    PAYMENT_METHOD_NOT_AVAILABLE(405, "Method đang bị khóa", HttpStatus.METHOD_NOT_ALLOWED),
+    PAYMENT_METHOD_NOT_SUPPORTED(400, "Phương thức thanh toán không được hỗ trợ", HttpStatus.BAD_REQUEST),
+    ORDER_NOT_PAYABLE(409, "Order không yêu cầu thanh toán", HttpStatus.CONFLICT),
+    NOT_FOUND_ORDER(404, "Không Tìm Thấy Đơn Hàng", HttpStatus.NOT_FOUND),
+    PAYMENT_METHOD_NOT_AVAILABLE(409, "Method đang bị khóa", HttpStatus.CONFLICT),
     VALIDATION_FAILED(400, "Dữ liệu không hợp lệ", HttpStatus.BAD_REQUEST);
     int code;
     String message;

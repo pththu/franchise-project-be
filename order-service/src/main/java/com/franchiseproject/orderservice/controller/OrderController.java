@@ -2,9 +2,11 @@ package com.franchiseproject.orderservice.controller;
 
 import com.franchiseproject.orderservice.dto.request.CreateOrderRequest;
 import com.franchiseproject.orderservice.dto.OrderResponse;
+import com.franchiseproject.orderservice.dto.request.PaymentResultRequest;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
+import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.mapper.OrderMapper;
 import com.franchiseproject.orderservice.service.OrderDetailService;
@@ -17,6 +19,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import java.util.List;
@@ -160,4 +163,27 @@ public class OrderController {
                 .errors(null)
                 .build();
     }
+
+
+    /// Mock Test Api với Payment-Service
+    @GetMapping("/{orderId}/get-orders")
+    public PaymentResponse getOrder(@PathVariable UUID orderId) {
+
+        return PaymentResponse.builder()
+                .orderId(orderId)
+                .customerId(UUID.randomUUID())
+                .finalTotal(new BigDecimal("120000"))
+                .orderStatus("WAITING_PAYMENT")
+                .build();
+    }
+
+    @PostMapping("/payment-result")
+    public ResponseEntity<String> receivePaymentResult(@RequestBody PaymentResultRequest request) {
+
+        System.out.println("Received payment result: " + request);
+
+        return ResponseEntity.ok("Payment result received");
+    }
+
+
 }

@@ -41,8 +41,8 @@ public class PaymentClient {
                 .paymentTransactionId(UUID.randomUUID())
                 .orderId(orderId)
                 .customerId(customerId)
-                .amount(finalTotal)
-                .statusTransaction("SUCCESS")
+                .finalTotal(finalTotal)
+                .orderStatus("SUCCESS")
                 .build();
     }
 }

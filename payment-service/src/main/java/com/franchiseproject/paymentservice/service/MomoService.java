@@ -2,9 +2,10 @@ package com.franchiseproject.paymentservice.service;
 
 import com.franchiseproject.paymentservice.dto.request.CreateMomoRequest;
 import com.franchiseproject.paymentservice.dto.request.OptionPaymentMethodRequest;
-import com.franchiseproject.paymentservice.dto.request.PaymentTransactionRequest;
 import com.franchiseproject.paymentservice.dto.response.CreateMomoResponse;
+import com.franchiseproject.paymentservice.dto.response.OrderResponse;
+import com.franchiseproject.paymentservice.entity.PaymentMethod;
 
 public interface MomoService {
-    CreateMomoResponse buildCreateMomoQR(PaymentTransactionRequest paymentTransactionRequest, OptionPaymentMethodRequest optionPaymentMethodRequest);
+    CreateMomoResponse buildCreateMomoQR(OrderResponse orderResponse, PaymentMethod paymentMethod);
 }
