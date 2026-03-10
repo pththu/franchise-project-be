@@ -12,4 +12,5 @@ public interface DeliveryService {
     List<Delivery> findAll();
     DeliveryResponse createDelivery(CreateDeliveryRequest request);
     DeliveryResponse updateDelivery(UUID deliveryId, UpdateDeliveryRequest request);
+    DeliveryResponse getDeliveryByOrderId(UUID orderId);
 }

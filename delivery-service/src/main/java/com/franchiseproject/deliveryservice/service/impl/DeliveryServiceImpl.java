@@ -69,6 +69,15 @@ public class DeliveryServiceImpl implements DeliveryService {
         return buildResponse(delivery, request.getStaffId());
     }
 
+    @Override
+    public DeliveryResponse getDeliveryByOrderId(UUID orderId) {
+        Delivery delivery = deliveryRepository.findByOrderId(orderId);
+        if (delivery == null) {
+            throw new AppException(ErrorCode.DELIVERY_NOT_FOUND);
+        }
+        return deliveryMapper.toDeliveryResponse(delivery);
+    }
+
     private DeliveryResponse buildResponse(Delivery delivery, UUID staffId) {
         deliveryHistoryService.createDeliveryHistory(delivery, staffId);
 

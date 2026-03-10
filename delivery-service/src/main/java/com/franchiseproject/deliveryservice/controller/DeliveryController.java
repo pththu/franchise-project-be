@@ -27,6 +27,17 @@ public class DeliveryController {
         return deliveryService.findAll();
     }
 
+    @GetMapping("/get-delivery-by-order/{orderId}")
+    public ApiResponse<DeliveryResponse> getDeliveryByOrderId(@PathVariable UUID orderId) {
+        DeliveryResponse response = deliveryService.getDeliveryByOrderId(orderId);
+        return ApiResponse.<DeliveryResponse>builder()
+                .message("Lấy thông tin đơn giao hàng thành công")
+                .data(response)
+                .statusCode(200)
+                .errors(null)
+                .build();
+    }
+
     @PostMapping("/create-delivery")
     public ApiResponse<DeliveryResponse> createDelivery(@RequestBody CreateDeliveryRequest request) {
         DeliveryResponse response = deliveryService.createDelivery(request);
