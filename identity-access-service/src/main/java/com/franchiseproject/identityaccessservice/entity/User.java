@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.data.domain.Persistable;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -16,19 +18,19 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User {
+public class User implements Persistable<UUID> {
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
+//    @GeneratedValue
+//    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(columnDefinition = "UUID", nullable = false, unique = true)
     UUID id;
     @Column(unique = true, nullable = false)
     String username;
     @Column(name = "full_name", nullable = false)
     String fullName;
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash", nullable = true)
     String passwordHash;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true, unique = true)
     String email;
     @Column(unique = true)
     String phone;
@@ -50,4 +52,18 @@ public class User {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     Instant createdAt;
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public boolean isNew() {
+        return false;
+    }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.isNew = false;
+    }
 }
