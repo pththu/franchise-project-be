@@ -27,6 +27,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -43,32 +44,31 @@ public class MomoServiceImpl implements MomoService {
     @Transactional
     public CreateMomoResponse buildCreateMomoQR(OrderResponse orderResponse, PaymentMethod paymentMethod) {
 
-        String orderInfo = "Thanh Toán Đơn Hàng: " + orderResponse.getOrderId();
-
+        String prettySignature = "";
+        String orderInfo = "ThanhToanHoaDon_" + orderResponse.getOrderId();
+        long amount = orderResponse.getFinalTotal().longValueExact();
         checkOrderStatus(orderResponse);
 
         PaymentTransaction paymentTransaction = buildPaymentTransaction(orderResponse, paymentMethod);
         paymentTransactionRepository.save(paymentTransaction);
 
         String rawSignature = String.format(
-                "accessKey=%s&amount=%s&extraData=%s&ipnUrl=%s&orderId=%s&orderInfo=%s&partnerCode=%s&redirectUrl=%s&requestId=%s&requestType=%s",
-                momoProperties.getAccess_key(), orderResponse.getFinalTotal().longValueExact(), "",
-                momoProperties.getIpn_url(), orderResponse.getOrderId().toString(), orderInfo, momoProperties.getPartner_code(),
-                momoProperties.getReturn_url(), paymentTransaction.getId().toString(), momoProperties.getRequest_type());
+                "accessKey=%s&amount=%d&extraData=%s&ipnUrl=%s&orderId=%s&orderInfo=%s&partnerCode=%s&redirectUrl=%s&requestId=%s&requestType=%s",
+                momoProperties.getAccess_key(), amount, "", momoProperties.getIpn_url(),
+                orderResponse.getOrderId(), orderInfo, momoProperties.getPartner_code(),
+                momoProperties.getReturn_url(), paymentTransaction.getId(), momoProperties.getRequest_type());
 
-        String prettySignature = "";
-
+        log.info("MoMo rawSignature: {}", rawSignature);
         try {
             prettySignature = signHmacSHA256(rawSignature, momoProperties.getSecret_key());
         } catch (Exception e) {
-            log.error("Error signing HMACSHA256" + e);
-            return null;
+            log.error("Error signing HMACSHA256", e);
+            throw new AppException(ErrorCode.SIGNATURE_FAILED);
         }
-
+        log.info("MoMo signature: {}", prettySignature);
         if (prettySignature.isBlank()) {
             throw new AppException(ErrorCode.VALIDATION_FAILED);
         }
-
         CreateMomoRequest request = CreateMomoRequest.builder()
                 .partnerCode(momoProperties.getPartner_code())
                 .requestType(momoProperties.getRequest_type())
@@ -78,11 +78,10 @@ public class MomoServiceImpl implements MomoService {
                 .orderInfo(orderInfo)
                 .requestId(paymentTransaction.getId().toString())
                 .extraData("")
-                .amount(orderResponse.getFinalTotal().longValueExact())
+                .amount(amount)
                 .signature(prettySignature)
                 .lang("vi")
                 .build();
-
 
 
         return momoClient.createMomoQR(request);
@@ -96,7 +95,6 @@ public class MomoServiceImpl implements MomoService {
                 .status(StatusTransaction.PENDING)
                 .paymentMethod(paymentMethod)
                 .transactionRef(null)
-                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -121,18 +119,32 @@ public class MomoServiceImpl implements MomoService {
         }
     }
 
-    public boolean verifySignature(String rawData, String signature, String secretKey) {
+    @Override
+    @Transactional
+    public boolean verifyIpnSignature(Map<String, String> params) {
+
+        String rawSignature = String.format(
+                "accessKey=%s&amount=%s&extraData=%s&message=%s&orderId=%s&orderInfo=%s&orderType=%s&partnerCode=%s&payType=%s&requestId=%s&responseTime=%s&resultCode=%s&transId=%s",
+                momoProperties.getAccess_key(),
+                params.get("amount"),
+                params.get("extraData"),
+                params.get("message"),
+                params.get("orderId"),
+                params.get("orderInfo"),
+                params.get("orderType"),
+                params.get("partnerCode"),
+                params.get("payType"),
+                params.get("requestId"),
+                params.get("responseTime"),
+                params.get("resultCode"),
+                params.get("transId")
+        );
         try {
-            Mac mac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
-            mac.init(secretKeySpec);
-
-            byte[] hash = mac.doFinal(rawData.getBytes());
-            String generatedSignature = Base64.getEncoder().encodeToString(hash);
-
-            return generatedSignature.equals(signature);
-
+            String generatedSignature = signHmacSHA256(rawSignature, momoProperties.getSecret_key());
+            String momoSignature = params.get("signature");
+            return generatedSignature.equals(momoSignature);
         } catch (Exception e) {
+            log.error("Error verifying signature", e);
             return false;
         }
     }
