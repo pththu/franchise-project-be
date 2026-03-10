@@ -15,7 +15,6 @@ import com.franchiseproject.loyaltyservice.model.LoyaltyTransaction;
 import com.franchiseproject.loyaltyservice.model.Promotion;
 import com.franchiseproject.loyaltyservice.model.TierBenefit;
 import com.franchiseproject.loyaltyservice.repository.CustomerFranchiseRepository;
-import com.franchiseproject.loyaltyservice.repository.LoyaltyRuleRepository;
 import com.franchiseproject.loyaltyservice.repository.LoyaltyTransactionRepository;
 import com.franchiseproject.loyaltyservice.repository.PromotionRepository;
 import com.franchiseproject.loyaltyservice.repository.TierBenefitRepository;
@@ -40,8 +39,9 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     CustomerFranchiseRepository customerFranchiseRepository;
     PromotionRepository promotionRepository;
     LoyaltyMapper loyaltyMapper;
-    LoyaltyRuleRepository loyaltyRuleRepository;
     TierBenefitRepository tierBenefitRepository;
+
+    private static final double AMOUNT_PER_POINT = 10000.0;
 
     @Override
     public List<TransactionHistoryResponse> getByCustomerId(UUID customerId) {
@@ -117,11 +117,8 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     @Override
     @Transactional
     public EarnPointsResponse earnPoints(EarnPointsRequest request) {
-        double amountPerPoint = loyaltyRuleRepository.findById(1L)
-                .map(rule -> rule.getAmountPerPoint())
-                .orElse(10000.0);
 
-        int pointsEarned = (int) (request.getOrderAmount() / amountPerPoint);
+        int pointsEarned = (int) (request.getOrderAmount() / AMOUNT_PER_POINT);
 
         if (pointsEarned <= 0) {
             throw new AppException(ErrorCode.ORDER_AMOUNT_TOO_SMALL);
