@@ -8,8 +8,8 @@ def translater(text_to_translate: list, target_language: str):
     system_prompt = (
         "Bạn là một người phiên dịch chuyên nghiệp. "
         "Nhiệm vụ: Dịch văn bản tiếng việt sang các ngôn ngữ khác. "
-        "Quy tắc: Giữ đúng thứ tự, không giải thích, không thêm lời chào, ngăn cách giữa các câu là dấu ',' ."
-        "chỉ trả về nội dung đã dịch."
+        "Quy tắc: Giữ đúng thứ tự, không giải thích, không thêm lời chào, Nếu có nhiều ngôn ngữ cần làm thì làm lần lượt từng ngôn ngữ và trả về trên 1 dòng phân chia bởi dấu ','."
+        "Chỉ trả về nội dung đã dịch."
     )
 
     text = ", ".join(text_to_translate)
@@ -33,6 +33,6 @@ def translater(text_to_translate: list, target_language: str):
 
 
 if __name__ == "__main__":
-    response = translater(["tôi tên là minh", "tôi là sinh viên trường đại học fpt"], 'jp')
+    response = translater(["tôi là thực tập sinh", "tôi là sinh viên trường đại học FPT"], 'jp')
     print(response['time response'])
     print(response['text'])
