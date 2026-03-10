@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ErrorCode {
+    NOT_FOUND_TRANSACTION(404, "Transaction not found", HttpStatus.NOT_FOUND),
     SIGNATURE_FAILED(400, "tạo signature thất bại", HttpStatus.BAD_REQUEST),
     INVALID_SIGNATURE(400, "Invalid signature", HttpStatus.BAD_REQUEST),
     PAYMENT_METHOD_NOT_SUPPORTED(400, "Phương thức thanh toán không được hỗ trợ", HttpStatus.BAD_REQUEST),

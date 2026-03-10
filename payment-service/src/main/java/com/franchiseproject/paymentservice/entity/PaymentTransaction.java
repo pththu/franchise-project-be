@@ -41,7 +41,7 @@ import java.util.UUID;
         @Column(name = "create_at", updatable = false)
         LocalDateTime createdAt;
 
-        @ManyToOne
+        @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "payment_method_id", nullable = false)
         @JsonManagedReference
         PaymentMethod paymentMethod;

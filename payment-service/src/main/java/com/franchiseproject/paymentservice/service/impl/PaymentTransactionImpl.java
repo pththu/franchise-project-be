@@ -2,8 +2,12 @@ package com.franchiseproject.paymentservice.service.impl;
 
 import com.franchiseproject.paymentservice.client.OrderClient;
 import com.franchiseproject.paymentservice.dto.request.PaymentResultRequest;
+import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
 import com.franchiseproject.paymentservice.entity.PaymentTransaction;
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
+import com.franchiseproject.paymentservice.exception.AppException;
+import com.franchiseproject.paymentservice.exception.ErrorCode;
+import com.franchiseproject.paymentservice.mapper.PaymentTransactionMapper;
 import com.franchiseproject.paymentservice.repository.PaymentTransactionRepository;
 import com.franchiseproject.paymentservice.service.PaymentTransactionService;
 import jakarta.transaction.Transactional;
@@ -20,6 +24,7 @@ import java.util.UUID;
 public class PaymentTransactionImpl implements PaymentTransactionService {
     PaymentTransactionRepository paymentTransactionRepository;
     OrderClient orderClient;
+    PaymentTransactionMapper paymentTransactionMapper;
 
     @Override
     @Transactional
@@ -42,4 +47,13 @@ public class PaymentTransactionImpl implements PaymentTransactionService {
         paymentTransactionRepository.save(paymentTransaction);
         orderClient.sendPaymentResult(paymentResultRequest);
     }
+
+    @Override
+    public PaymentTransactionResponse getPaymentTransactionByOrderId(UUID orderId) {
+        PaymentTransaction transaction = paymentTransactionRepository
+                .findByOrderId(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_TRANSACTION));
+        return paymentTransactionMapper.toPaymentTransactionResponse(transaction);
+    }
+
 }
