@@ -15,14 +15,19 @@ import com.franchiseproject.shiftservice.repository.ShiftConfigurationRepository
 import com.franchiseproject.shiftservice.repository.StaffShiftRepository;
 import com.franchiseproject.shiftservice.service.ShiftConfigurationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -33,37 +38,37 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
     private final ShiftMapper shiftMapper;
     private final StaffShiftMapper staffShiftMapper;
 
-    // ================= SHIFT CONFIG =================
+    // Constants
+    private static final int GRACE_PERIOD_MINUTES = 15;
+    private static final int LATE_THRESHOLD_MINUTES = 30;
+    private static final int MAX_SHIFTS_PER_WEEK = 6;
 
+    // ================= SHIFT CONFIG =================
     @Override
     public ShiftResponse createShiftConfiguration(CreateShiftRequest request) {
-
+        log.info("Creating shift: {}", request);
         ShiftConfiguration shift = shiftMapper.toEntity(request);
         shift.setId(UUID.randomUUID());
         shift.setStatus(true);
-
-        return shiftMapper.toResponse(shiftRepository.save(shift));
+        ShiftResponse response = shiftMapper.toResponse(shiftRepository.save(shift));
+        log.info("Shift created: {}", response);
+        return response;
     }
 
     @Override
     public ShiftResponse updateShiftConfiguration(UUID id, CreateShiftRequest request) {
-
         ShiftConfiguration shift = getShiftConfigOrThrow(id);
-
         shift.setName(request.getName());
         shift.setStartTime(request.getStartTime());
         shift.setEndTime(request.getEndTime());
         shift.setFranchiseId(request.getFranchiseId());
-
         return shiftMapper.toResponse(shiftRepository.save(shift));
     }
 
     @Override
     public ShiftResponse deleteShiftConfiguration(UUID id) {
-
         ShiftConfiguration shift = getShiftConfigOrThrow(id);
         shiftRepository.delete(shift);
-
         return shiftMapper.toResponse(shift);
     }
 
@@ -76,26 +81,25 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
     }
 
     // ================= ASSIGN SHIFT =================
-
     @Override
     public StaffShiftResponse assignShift(AssignShiftRequest request) {
-
+        // Validate
         ShiftConfiguration shiftConfig = getShiftConfigOrThrow(request.getShiftConfigId());
 
         if (!shiftConfig.getStatus()) {
-            throw new IllegalStateException("Shift configuration is inactive");
+            throw new IllegalStateException("Ca làm việc đã bị vô hiệu hóa");
         }
 
         if (request.getWorkDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Cannot assign shift in the past");
+            throw new IllegalArgumentException("Không thể phân ca trong quá khứ");
         }
 
-        if (staffShiftRepository.existsByStaffIdAndWorkDate(
-                request.getStaffId(),
-                request.getWorkDate())) {
-
-            throw new IllegalArgumentException("Staff already has a shift on this date");
+        if (staffShiftRepository.existsByStaffIdAndWorkDate(request.getStaffId(), request.getWorkDate())) {
+            throw new IllegalArgumentException("Nhân viên đã có ca làm việc trong ngày này");
         }
+
+        // Check giới hạn ca/tuần (chỉ tính ca ASSIGNED, CHECKED_IN, CHECKED_OUT)
+        checkWeeklyShiftLimit(request.getStaffId(), request.getWorkDate());
 
         StaffShift staffShift = StaffShift.builder()
                 .id(UUID.randomUUID())
@@ -105,119 +109,140 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
                 .status(ShiftStatus.ASSIGNED)
                 .build();
 
-        return staffShiftMapper.toResponse(
-                staffShiftRepository.save(staffShift)
-        );
+        return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
     }
 
     @Override
     public StaffShiftResponse updateAssignedShift(UUID staffShiftId, AssignShiftRequest request) {
         StaffShift staffShift = getStaffShiftOrThrow(staffShiftId);
-
         boolean hasChanges = false;
 
-        // Chỉ update workDate nếu được gửi
-        if (request.getWorkDate() != null) {
+        if (request.getWorkDate() != null && !request.getWorkDate().equals(staffShift.getWorkDate())) {
+            // Check trùng ngày
+            if (staffShiftRepository.existsByStaffIdAndWorkDateAndIdNot(
+                    staffShift.getStaffId(), request.getWorkDate(), staffShiftId)) {
+                throw new IllegalArgumentException("Nhân viên đã có ca khác trong ngày này");
+            }
             staffShift.setWorkDate(request.getWorkDate());
             hasChanges = true;
-
-            // Check trùng ngày chỉ khi workDate thay đổi
-            if (staffShiftRepository.existsByStaffIdAndWorkDateAndIdNot(
-                    staffShift.getStaffId(),
-                    request.getWorkDate(),
-                    staffShiftId)) {
-                throw new IllegalArgumentException("Staff already has another shift on this date");
-            }
         }
 
-        // Chỉ update shiftConfigId nếu được gửi (và hợp lệ)
-        if (request.getShiftConfigId() != null) {
+        if (request.getShiftConfigId() != null && !request.getShiftConfigId().equals(staffShift.getShiftConfigId())) {
             ShiftConfiguration newConfig = shiftRepository.findById(request.getShiftConfigId())
-                    .orElseThrow(() -> new IllegalArgumentException("Shift configuration not found"));
-
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca làm việc"));
             if (!newConfig.getStatus()) {
-                throw new IllegalStateException("Shift configuration is inactive");
+                throw new IllegalStateException("Ca làm việc đã bị vô hiệu hóa");
             }
-
             staffShift.setShiftConfigId(request.getShiftConfigId());
             hasChanges = true;
         }
 
-        // Nếu không có thay đổi gì thì trả về hiện tại (hoặc throw nếu muốn strict)
         if (!hasChanges) {
-            return staffShiftMapper.toResponse(staffShift);  // hoặc throw nếu business yêu cầu phải có thay đổi
+            return staffShiftMapper.toResponse(staffShift);
         }
 
         return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
     }
 
     // ================= ATTENDANCE =================
-
     @Override
     public StaffShiftResponse checkIn(UUID shiftId) {
-
         StaffShift staffShift = getStaffShiftOrThrow(shiftId);
 
+        // 1. Kiểm tra trạng thái
         if (staffShift.getStatus() != ShiftStatus.ASSIGNED) {
-            throw new IllegalStateException("Cannot check in. Invalid shift status.");
+            throw new IllegalStateException("Không thể check-in. Trạng thái hiện tại: " + staffShift.getStatus());
         }
 
-        staffShift.setCheckInTime(LocalTime.now());
+        // 2. Kiểm tra ngày
+        LocalDate today = LocalDate.now();
+        if (staffShift.getWorkDate().isBefore(today)) {
+            throw new IllegalStateException("Không thể check-in cho ca trong quá khứ");
+        }
+        if (staffShift.getWorkDate().isAfter(today)) {
+            throw new IllegalStateException("Không thể check-in cho ca trong tương lai");
+        }
+
+        // 3. Xử lý check-in
+        LocalTime now = LocalTime.now();
+        ShiftConfiguration config = getShiftConfigOrThrow(staffShift.getShiftConfigId());
+
+        // Kiểm tra check-in sớm (cho cả ca thường và ca đêm)
+        if (isTooEarly(now, config)) {
+            throw new IllegalStateException("Chưa đến giờ check-in. Giờ bắt đầu: " + config.getStartTime());
+        }
+
+        // Tính số phút trễ
+        if (now.isAfter(config.getStartTime().plusMinutes(GRACE_PERIOD_MINUTES))) {
+            long lateMinutes = Duration.between(config.getStartTime(), now).toMinutes();
+            staffShift.setLateMinutes((int) lateMinutes);
+            staffShift.setNote("Check-in trễ " + lateMinutes + " phút");
+
+            if (lateMinutes > LATE_THRESHOLD_MINUTES) {
+                log.info("Staff {} check-in trễ {} phút", staffShift.getStaffId(), lateMinutes);
+            }
+        }
+
+        staffShift.setCheckInTime(now);
         staffShift.setStatus(ShiftStatus.CHECKED_IN);
 
-        return staffShiftMapper.toResponse(staffShift);
+        return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
     }
 
     @Override
     public StaffShiftResponse checkOut(UUID shiftId) {
-
         StaffShift staffShift = getStaffShiftOrThrow(shiftId);
 
         if (staffShift.getStatus() != ShiftStatus.CHECKED_IN) {
-            throw new IllegalStateException("Cannot check out before check in.");
+            throw new IllegalStateException("Chưa check-in hoặc đã check-out rồi");
         }
 
         staffShift.setCheckOutTime(LocalTime.now());
         staffShift.setStatus(ShiftStatus.CHECKED_OUT);
 
-        return staffShiftMapper.toResponse(staffShift);
+        return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
     }
 
     @Override
     public StaffShiftResponse markAbsent(UUID shiftId) {
-
         StaffShift staffShift = getStaffShiftOrThrow(shiftId);
 
         if (staffShift.getStatus() != ShiftStatus.ASSIGNED) {
-            throw new IllegalStateException("Cannot mark absent");
+            throw new IllegalStateException("Không thể đánh dấu vắng mặt cho ca đã xử lý");
+        }
+
+        if (staffShift.getWorkDate().isAfter(LocalDate.now())) {
+            throw new IllegalStateException("Không thể đánh dấu vắng mặt cho ca trong tương lai");
         }
 
         staffShift.setStatus(ShiftStatus.ABSENT);
+        staffShift.setNote("Vắng mặt");
 
-        return staffShiftMapper.toResponse(staffShift);
+        return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
     }
 
     // ================= SCHEDULE =================
-
     @Override
     public List<StaffShiftResponse> getSchedule(UUID staffId, LocalDate date) {
+        List<StaffShift> shifts;
         if (staffId != null) {
-            return staffShiftRepository.findByStaffIdAndWorkDate(staffId, date)
-                    .stream()
-                    .map(staffShiftMapper::toResponse)
-                    .toList();
+            shifts = staffShiftRepository.findByStaffIdAndWorkDate(staffId, date);
+        } else {
+            shifts = staffShiftRepository.findByWorkDate(date);
         }
-        return staffShiftRepository.findByWorkDate(date)
-                .stream()
-                .map(staffShiftMapper::toResponse)
+
+        return shifts.stream()
+                .map(shift -> {
+                    StaffShiftResponse response = staffShiftMapper.toResponse(shift);
+                    enhanceWithShiftDetails(response, shift);
+                    return response;
+                })
                 .toList();
     }
 
     // ================= STATISTICS =================
-
     @Override
     public ShiftStatisticResponse getStatisticByDate(LocalDate date) {
-
         List<StaffShift> shifts = staffShiftRepository.findByWorkDate(date);
 
         return ShiftStatisticResponse.builder()
@@ -226,37 +251,144 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
                 .totalCheckedIn(countByStatus(shifts, ShiftStatus.CHECKED_IN))
                 .totalCheckedOut(countByStatus(shifts, ShiftStatus.CHECKED_OUT))
                 .totalAbsent(countByStatus(shifts, ShiftStatus.ABSENT))
+                .totalIncomplete(countByStatus(shifts, ShiftStatus.INCOMPLETE))
                 .build();
     }
 
     @Override
     public PersonalStatisticResponse getPersonalStatistic(UUID staffId) {
-
         List<StaffShift> shifts = staffShiftRepository.findByStaffId(staffId);
 
         return PersonalStatisticResponse.builder()
                 .totalShifts(shifts.size())
                 .totalCompleted(countByStatus(shifts, ShiftStatus.CHECKED_OUT))
                 .totalAbsent(countByStatus(shifts, ShiftStatus.ABSENT))
+                .totalLate(countLateShifts(shifts))
+                .totalIncomplete(countByStatus(shifts, ShiftStatus.INCOMPLETE))
                 .build();
     }
 
+    // ================= ATTENDANCE REPORT =================
+    @Override
+    public List<StaffShiftResponse> getIncompleteShifts(LocalDate date) {
+        return staffShiftRepository.findByWorkDateAndStatus(date, ShiftStatus.INCOMPLETE)
+                .stream()
+                .map(staffShiftMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public Map<String, Object> getAttendanceSummary(LocalDate date) {
+        List<StaffShift> shifts = staffShiftRepository.findByWorkDate(date);
+
+        return Map.of(
+                "date", date.toString(),
+                "totalShifts", shifts.size(),
+                "checkedOut", countByStatus(shifts, ShiftStatus.CHECKED_OUT),
+                "checkedIn", countByStatus(shifts, ShiftStatus.CHECKED_IN),
+                "assigned", countByStatus(shifts, ShiftStatus.ASSIGNED),
+                "absent", countByStatus(shifts, ShiftStatus.ABSENT),
+                "incomplete", countByStatus(shifts, ShiftStatus.INCOMPLETE),
+                "lateList", shifts.stream()
+                        .filter(s -> s.getLateMinutes() != null && s.getLateMinutes() > 0)
+                        .map(s -> Map.of(
+                                "staffId", s.getStaffId().toString(),
+                                "lateMinutes", s.getLateMinutes(),
+                                "note", s.getNote() != null ? s.getNote() : ""
+                        ))
+                        .toList()
+        );
+    }
+
+    // ================= JOB XỬ LÝ QUÊN CHECK-OUT =================
+    @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Ho_Chi_Minh")
+    @Transactional
+    public void handleMissedCheckOuts() {
+        LocalDate today = LocalDate.now();
+        log.info("Running missed checkout job for date: {}", today);
+
+        List<StaffShift> incompleteShifts = staffShiftRepository
+                .findByWorkDateAndStatus(today, ShiftStatus.CHECKED_IN);
+
+        for (StaffShift shift : incompleteShifts) {
+            try {
+                shift.setStatus(ShiftStatus.INCOMPLETE);
+                shift.setNote("Quên check-out");
+                staffShiftRepository.save(shift);
+                log.info("Marked shift {} as incomplete for staff {}", shift.getId(), shift.getStaffId());
+            } catch (Exception e) {
+                log.error("Failed to mark shift {} as incomplete", shift.getId(), e);
+            }
+        }
+    }
 
     // ================= PRIVATE HELPERS =================
 
     private ShiftConfiguration getShiftConfigOrThrow(UUID id) {
         return shiftRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Shift configuration not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca làm việc"));
     }
 
     private StaffShift getStaffShiftOrThrow(UUID id) {
         return staffShiftRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Staff shift not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca đã phân công"));
+    }
+
+    private void checkWeeklyShiftLimit(UUID staffId, LocalDate workDate) {
+        LocalDate weekStart = workDate.minusDays(workDate.getDayOfWeek().getValue() - 1);
+        LocalDate weekEnd = weekStart.plusDays(6);
+
+        // Chỉ đếm ca thật (không tính ABSENT, INCOMPLETE)
+        long weeklyShifts = staffShiftRepository.countByStaffIdAndWorkDateBetweenAndStatusIn(
+                staffId,
+                weekStart,
+                weekEnd,
+                List.of(ShiftStatus.ASSIGNED, ShiftStatus.CHECKED_IN, ShiftStatus.CHECKED_OUT)
+        );
+
+        if (weeklyShifts >= MAX_SHIFTS_PER_WEEK) {
+            throw new IllegalStateException("Nhân viên đã đạt giới hạn " + MAX_SHIFTS_PER_WEEK + " ca/tuần");
+        }
+    }
+
+    private boolean isTooEarly(LocalTime now, ShiftConfiguration config) {
+        LocalTime startTime = config.getStartTime();
+        LocalTime endTime = config.getEndTime();
+
+        // Ca đêm (start > end)
+        if (startTime.isAfter(endTime)) {
+            // Cho phép check-in từ 1 tiếng trước giờ bắt đầu
+            LocalTime earliestCheckIn = startTime.minusHours(1);
+
+            // Nếu earliestCheckIn < 0 (qua ngày hôm trước)
+            if (earliestCheckIn.isAfter(startTime)) { // Bị wrap qua ngày mới
+                return now.isBefore(LocalTime.MIN) && now.isAfter(startTime);
+            }
+            return now.isBefore(earliestCheckIn) && now.isAfter(startTime);
+        } else {
+            // Ca thường
+            return now.isBefore(startTime.minusHours(1));
+        }
     }
 
     private long countByStatus(List<StaffShift> shifts, ShiftStatus status) {
         return shifts.stream()
                 .filter(s -> s.getStatus() == status)
                 .count();
+    }
+
+    private long countLateShifts(List<StaffShift> shifts) {
+        return shifts.stream()
+                .filter(s -> s.getLateMinutes() != null && s.getLateMinutes() > 0)
+                .count();
+    }
+
+    private void enhanceWithShiftDetails(StaffShiftResponse response, StaffShift shift) {
+        shiftRepository.findById(shift.getShiftConfigId())
+                .ifPresent(config -> {
+                    response.setShiftName(config.getName());
+                    response.setShiftStartTime(config.getStartTime());
+                    response.setShiftEndTime(config.getEndTime());
+                });
     }
 }

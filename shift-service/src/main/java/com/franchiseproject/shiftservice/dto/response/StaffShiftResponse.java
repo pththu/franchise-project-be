@@ -16,4 +16,9 @@ public class StaffShiftResponse {
     private LocalTime checkInTime;
     private LocalTime checkOutTime;
     private ShiftStatus status;
+    private Integer lateMinutes;      // Số phút check-in trễ
+    private String note;              // Ghi chú
+    private String shiftName;         // Tên ca
+    private LocalTime shiftStartTime; // Giờ bắt đầu ca
+    private LocalTime shiftEndTime;   // Giờ kết thúc ca
 }
