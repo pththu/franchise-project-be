@@ -13,7 +13,7 @@ import java.text.ParseException;
 import java.util.UUID;
 
 public interface AuthenticationService {
-//    boolean logout ();
+    boolean logout ();
 //    AuthenticationResponse login(User user, HttpServletResponse response) throws Exception;
 //    User register(CustomerRegisterRequest request);
 //    IntrospectResponse introspect(IntrospectRequest request) throws Exception;

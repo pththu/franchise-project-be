@@ -205,10 +205,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
-//    @Override
-//    public boolean logout() {
-//        return true;
-//    }
+    @Override
+    public boolean logout() {
+        return true;
+    }
 //
 //    public AuthenticationResponse login(User user, HttpServletResponse response)
 //            throws Exception {

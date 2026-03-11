@@ -84,7 +84,9 @@ public class SecurityConfig {
                             try {
 //                                jwtConfigurer.decoder(jwtDecoder())
 //                                        .jwtAuthenticationConverter(jwtAuthenticationConverter());
-                                jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter());
+                                jwtConfigurer
+                                        .decoder(jwtDecoder())
+                                        .jwtAuthenticationConverter(jwtAuthConverter());
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
                             }
