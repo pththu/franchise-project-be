@@ -46,6 +46,9 @@ public class FranchiseIngredient {
     @Column(name = "updated_at")
     Instant updatedAt;
 
+    @Column(name = "product_name")
+    String productName;
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "franchise_id", nullable = false)

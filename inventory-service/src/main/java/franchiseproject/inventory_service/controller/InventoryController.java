@@ -1,9 +1,15 @@
 package franchiseproject.inventory_service.controller;
 
+import franchiseproject.inventory_service.dto.ExportInventoryRequest;
 import franchiseproject.inventory_service.dto.FranchiseOfInventoryResponse;
 import franchiseproject.inventory_service.dto.InventoryResponse;
+import franchiseproject.inventory_service.dto.SetMinStockRequest;
+import franchiseproject.inventory_service.model.FranchiseIngredient;
+import franchiseproject.inventory_service.model.InventoryTransaction;
 import franchiseproject.inventory_service.service.InventoryService;
+import franchiseproject.inventory_service.service.impl.InventoryServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +21,7 @@ import java.util.UUID;
 public class InventoryController {
 
     private final InventoryService inventoryService;
+    private final InventoryServiceImpl inventoryServiceImpl;
 
     // 1 View Inventory by Franchise
     @GetMapping("/franchise/{franchiseId}")
@@ -61,5 +68,85 @@ public class InventoryController {
             @RequestParam String productName) {
 
         return inventoryService.filterInventoryByFranchise(productName);
+    }
+    //Manage warehouse release forms
+    //Export Inventory
+    @PostMapping("/export")
+    public ResponseEntity<InventoryTransaction> exportInventory(
+            @RequestBody ExportInventoryRequest request){
+
+        return ResponseEntity.ok(
+                inventoryServiceImpl.exportInventory(request)
+        );
+    }
+
+    //View Export Records
+    @GetMapping("/export")
+    public ResponseEntity<List<InventoryTransaction>> getExportRecords(){
+
+        return ResponseEntity.ok(
+                inventoryServiceImpl.getExportRecords()
+        );
+    }
+
+    //View Export Record Details
+    @GetMapping("/export/{id}")
+    public ResponseEntity<InventoryTransaction> getExportDetail(
+            @PathVariable UUID id){
+
+        return ResponseEntity.ok(
+                inventoryServiceImpl.getExportRecordDetail(id)
+        );
+    }
+
+    //Edit Export Record
+    @PutMapping("/export/{id}")
+    public ResponseEntity<InventoryTransaction> editExport(
+            @PathVariable UUID id,
+            @RequestBody ExportInventoryRequest request){
+
+        return ResponseEntity.ok(
+                inventoryServiceImpl.editExportRecord(id, request)
+        );
+    }
+
+    //Delete Export Record
+    @DeleteMapping("/export/{id}")
+    public ResponseEntity<String> deleteExport(@PathVariable UUID id){
+
+        inventoryServiceImpl.deleteExportRecord(id);
+
+        return ResponseEntity.ok("Deleted successfully");
+    }
+
+
+    //Inventory alert management
+    //Set Min Stock
+    @PostMapping("/min-stock")
+    public ResponseEntity<InventoryTransaction> setMinStock(
+            @RequestBody SetMinStockRequest request){
+
+        return ResponseEntity.ok(
+                inventoryServiceImpl.setMinStock(request)
+        );
+    }
+
+    //View Stock Alerts
+    @GetMapping("/alerts")
+    public ResponseEntity<List<InventoryTransaction>> getStockAlerts(){
+
+        return ResponseEntity.ok(
+                inventoryServiceImpl.getStockAlerts()
+        );
+    }
+
+    //View Low Stock by Franchise
+    @GetMapping("/low-stock/{franchiseId}")
+    public ResponseEntity<List<FranchiseIngredient>> getLowStockByFranchise(
+            @PathVariable UUID franchiseId){
+
+        return ResponseEntity.ok(
+                inventoryServiceImpl.getLowStockByFranchise(franchiseId)
+        );
     }
 }
