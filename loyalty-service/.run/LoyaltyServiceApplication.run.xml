@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="LoyaltyServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
-      <env name="DB_URL" value="jdbc:postgresql://dpg-d644ehfpm1nc738hbvrg-a.singapore-postgres.render.com/auth_franchise_heoe" />
+      <env name="DB_PASSWORD" value="XSBBYPBmgdLKwrapWYDE4C29ZYVOczBX" />
+      <env name="DB_URL" value="jdbc:postgresql://dpg-d6nd4iv5r7bs73cv57lg-a.singapore-postgres.render.com/auth_franchise_qyzo" />
       <env name="DB_USERNAME" value="sa" />
-      <env name="DB_PASSWORD" value="1IywPMOfBdPLn1E8FZfqkA2LBfnVwR9E" />
     </envs>
     <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
     <module name="loyalty-service" />
