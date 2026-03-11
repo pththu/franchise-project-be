@@ -93,11 +93,13 @@ public class SecurityConfig {
                                     try {
 //                                jwtConfigurer.decoder(jwtDecoder())
 //                                        .jwtAuthenticationConverter(jwtAuthenticationConverter());
-                                        jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter());
-                                    } catch (Exception e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                })
+                                jwtConfigurer
+                                        .decoder(jwtDecoder())
+                                        .jwtAuthenticationConverter(jwtAuthConverter());
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
         );
 
         http.csrf(AbstractHttpConfigurer::disable);
