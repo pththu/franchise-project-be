@@ -33,11 +33,7 @@ public class PaymentMethod {
     @Column(name = "created_at", updatable = false)
     LocalDateTime createdAt;
 
-//    @OneToMany(mappedBy = "paymentMethod")
-//    List<UserPaymentMethod> userPaymentMethods;
-
     @OneToMany(mappedBy = "paymentMethod")
     @JsonManagedReference
     List<PaymentTransaction> paymentTransactions;
-
 }

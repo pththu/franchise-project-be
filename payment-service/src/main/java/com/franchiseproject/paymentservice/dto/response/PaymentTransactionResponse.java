@@ -1,6 +1,7 @@
 package com.franchiseproject.paymentservice.dto.response;
 
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
+
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -10,9 +11,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Builder
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PaymentTransactionResponse {
     UUID id;
@@ -23,4 +25,5 @@ public class PaymentTransactionResponse {
     String transactionRef;
     LocalDateTime createdAt;
     PaymentMethodResponse paymentMethodResponse;
+    String paymentMethodName;
 }
