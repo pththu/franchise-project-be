@@ -52,7 +52,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new AppException(ErrorCode.EMAIL_IS_EXISTS);
         }
 
-        Role role = roleRepository.findByName(req.getRoleName());
+        Role role = roleRepository.findByName(req.getRoleName())
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
 
         String cognitoSub;
 

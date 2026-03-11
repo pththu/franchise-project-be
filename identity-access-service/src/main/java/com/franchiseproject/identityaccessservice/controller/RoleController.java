@@ -77,4 +77,17 @@ public class RoleController {
                 .data(Boolean.valueOf(roleService.deleteRole(id)))
                 .build();
     }
+
+    // Assign Permissions
+    @PutMapping("/{id}/permissions")
+    public ApiResponse<Role> assignPermissions(
+            @PathVariable UUID id,
+            @RequestBody com.franchiseproject.identityaccessservice.dto.request.RolePermissionRequest request) {
+
+        return ApiResponse.<Role>builder()
+                .statusCode(200)
+                .message("Assign permissions to Roles successfully.")
+                .data(roleService.assignPermissions(id, request))
+                .build();
+    }
 }
