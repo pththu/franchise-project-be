@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
 
@@ -23,13 +24,13 @@ import java.util.UUID;
 @Table(name="delivery")
 public class Delivery {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name="delevery_id")
-    UUID deleveryId;
+    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
+    @Column(name="delivery_id")
+    UUID deliveryId;
     @Column(name="order_id")
     UUID orderId;
-    @Column(name="staff_id")
-    UUID staffId;
+    @Column(name="shipper_id")
+    UUID shipperId;
     @Column(name="weight")
     double weight;
     @Column(name="scheduled_at")
