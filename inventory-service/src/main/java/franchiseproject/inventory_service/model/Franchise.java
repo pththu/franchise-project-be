@@ -1,5 +1,6 @@
 package franchiseproject.inventory_service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -13,8 +14,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "franchises")
-@Setter
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -49,6 +50,7 @@ public class Franchise {
     @Column(name = "updated_at")
     Instant updatedAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "franchise", cascade = CascadeType.ALL)
     List<FranchiseIngredient> franchiseIngredients;
 }
