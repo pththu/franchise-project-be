@@ -30,8 +30,11 @@ public enum ErrorCode {
     CREATE_TOKEN_FAIL(500, "Failed to create token"),
     DUPLICATE_KEY(500, "Duplicate key value violates unique constraint"),
     UNCATEGORIZED_EXCEPTION(500, "Uncategorized exception"),
-    LOGIN_FAILED(400, "Login failed")
-    ;
+    LOGIN_FAILED(400, "Login failed"),
+
+    PERMISSION_EXISTED(400, "This permission (API and Method) already exists!"),
+    PERMISSION_NOT_FOUND(404, "Permissions not found!"),
+    INVALID_INPUT(400, "Invalid input data!");
 
     private int code;
     private String message;
