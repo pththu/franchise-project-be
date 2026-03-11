@@ -1,10 +1,13 @@
 package franchiseproject.inventory_service.controller;
 
 import franchiseproject.inventory_service.dto.ExportInventoryRequest;
+import franchiseproject.inventory_service.dto.FranchiseOfInventoryResponse;
+import franchiseproject.inventory_service.dto.InventoryResponse;
 import franchiseproject.inventory_service.dto.SetMinStockRequest;
 import franchiseproject.inventory_service.model.FranchiseIngredient;
 import franchiseproject.inventory_service.model.InventoryTransaction;
 import franchiseproject.inventory_service.service.InventoryService;
+import franchiseproject.inventory_service.service.impl.InventoryServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,12 +16,59 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/inventory")
+@RequestMapping("/api/inventory")
 @RequiredArgsConstructor
 public class InventoryController {
 
     private final InventoryService inventoryService;
+    private final InventoryServiceImpl inventoryServiceImpl;
 
+    // 1 View Inventory by Franchise
+    @GetMapping("/franchise/{franchiseId}")
+    public List<InventoryResponse> viewInventoryByFranchise(
+            @PathVariable UUID franchiseId) {
+
+        return inventoryService.viewInventoryByFranchise(franchiseId);
+    }
+
+    // 2 View Inventory Detail
+    @GetMapping("/franchise")
+    public List<FranchiseOfInventoryResponse> getAllFranchises() {
+        return inventoryService.viewInventoryDetail();
+    }
+
+    // 3 View Low Stock Items
+    @GetMapping("/low-stock")
+    public List<InventoryResponse> viewLowStockItems() {
+
+        return inventoryService.viewLowStockItems();
+    }
+
+    // 4 Update Inventory Threshold
+    @PutMapping("/{inventoryId}/threshold")
+    public InventoryResponse updateInventoryThreshold(
+            @PathVariable UUID inventoryId,
+            @RequestParam Integer minStock) {
+
+        return inventoryService.updateInventoryThreshold(inventoryId, minStock);
+    }
+
+    // 5 Search Inventory theo chi nhánh
+    @GetMapping("/search")
+    public List<InventoryResponse> searchInventory(
+            @RequestParam String productName,
+            @RequestParam UUID franchiseId) {
+
+        return inventoryService.searchInventory(productName, franchiseId);
+    }
+
+    // 6 Filter Inventory tất cả chi nhánh
+    @GetMapping("/filter")
+    public List<InventoryResponse> filterInventoryByFranchise(
+            @RequestParam String productName) {
+
+        return inventoryService.filterInventoryByFranchise(productName);
+    }
     //Manage warehouse release forms
     //Export Inventory
     @PostMapping("/export")
@@ -26,7 +76,7 @@ public class InventoryController {
             @RequestBody ExportInventoryRequest request){
 
         return ResponseEntity.ok(
-                inventoryService.exportInventory(request)
+                inventoryServiceImpl.exportInventory(request)
         );
     }
 
@@ -35,7 +85,7 @@ public class InventoryController {
     public ResponseEntity<List<InventoryTransaction>> getExportRecords(){
 
         return ResponseEntity.ok(
-                inventoryService.getExportRecords()
+                inventoryServiceImpl.getExportRecords()
         );
     }
 
@@ -45,7 +95,7 @@ public class InventoryController {
             @PathVariable UUID id){
 
         return ResponseEntity.ok(
-                inventoryService.getExportRecordDetail(id)
+                inventoryServiceImpl.getExportRecordDetail(id)
         );
     }
 
@@ -56,7 +106,7 @@ public class InventoryController {
             @RequestBody ExportInventoryRequest request){
 
         return ResponseEntity.ok(
-                inventoryService.editExportRecord(id, request)
+                inventoryServiceImpl.editExportRecord(id, request)
         );
     }
 
@@ -64,7 +114,7 @@ public class InventoryController {
     @DeleteMapping("/export/{id}")
     public ResponseEntity<String> deleteExport(@PathVariable UUID id){
 
-        inventoryService.deleteExportRecord(id);
+        inventoryServiceImpl.deleteExportRecord(id);
 
         return ResponseEntity.ok("Deleted successfully");
     }
@@ -77,7 +127,7 @@ public class InventoryController {
             @RequestBody SetMinStockRequest request){
 
         return ResponseEntity.ok(
-                inventoryService.setMinStock(request)
+                inventoryServiceImpl.setMinStock(request)
         );
     }
 
@@ -86,7 +136,7 @@ public class InventoryController {
     public ResponseEntity<List<InventoryTransaction>> getStockAlerts(){
 
         return ResponseEntity.ok(
-                inventoryService.getStockAlerts()
+                inventoryServiceImpl.getStockAlerts()
         );
     }
 
@@ -96,7 +146,7 @@ public class InventoryController {
             @PathVariable UUID franchiseId){
 
         return ResponseEntity.ok(
-                inventoryService.getLowStockByFranchise(franchiseId)
+                inventoryServiceImpl.getLowStockByFranchise(franchiseId)
         );
     }
 }
