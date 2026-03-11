@@ -1,6 +1,5 @@
 package franchiseproject.inventory_service.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,38 +8,40 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "franchises")
-@Getter
+@Table(name = "inventory_import")
 @Setter
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Franchise {
+public class InventoryImport {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(name = "id", unique = true, nullable = false, updatable = false)
     UUID id;
 
-    @Column(name = "name")
-    String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "franchise_id", nullable = false)
+    Franchise franchise;
 
-    @Column(name = "address")
-    String address;
+    @Column(name = "code", nullable = false, unique = true, length = 50)
+    String code;
 
-    @Column(name = "opened_at")
-    Instant openedAt;
+    @Column(name = "note", length = 500)
+    String note;
 
-    @Column(name = "closed_at")
-    Instant closedAt;
+    @Column(name = "status", nullable = false, length = 50)
+    String status;
 
-    @Column(name = "is_active")
-    Boolean isActive;
+    @Column(name = "created_by")
+    UUID createdBy;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -50,7 +51,7 @@ public class Franchise {
     @Column(name = "updated_at")
     Instant updatedAt;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "franchise", cascade = CascadeType.ALL)
-    List<FranchiseIngredient> franchiseIngredients;
+    @OneToMany(mappedBy = "inventoryImport", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    List<InventoryImportItem> items = new ArrayList<>();
 }
