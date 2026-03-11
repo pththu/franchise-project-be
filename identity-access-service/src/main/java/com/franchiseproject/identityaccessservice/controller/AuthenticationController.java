@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +32,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -124,40 +126,45 @@ public class AuthenticationController {
                 .build();
     }
 
-//    @GetMapping("/logout")
-//    public ApiResponse<String> logout(@AuthenticationPrincipal Jwt jwt, HttpServletResponse response) {
-//
-//        String username = jwt.getSubject();
-//        User user = userService.getByUsername(username);
-//        if (user == null) {
-//            throw new AppException(ErrorCode.USER_NOT_EXISTED);
-//        }
-//
-//        ResponseCookie accessCookie = ResponseCookie.from("access_token", "")
-//                .httpOnly(true)
-//                .secure(true)
-//                .path("/")
-//                .maxAge(0)
-//                .sameSite("Strict")
-//                .build();
-//
-//        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", "")
-//                .httpOnly(true)
-//                .secure(true)
-//                .path("/refresh")
-//                .maxAge(0)
-//                .sameSite("Strict")
-//                .build();
-//
-//        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
-//        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-//
-//        return ApiResponse.<String>builder()
-//                .statusCode(200)
-//                .message("Logout")
-//                .data("Logout: " + authenticationService.logout())
-//                .build();
-//    }
+    @GetMapping("/logout")
+    public ApiResponse<String> logout(
+            @AuthenticationPrincipal Jwt jwt,
+            HttpServletResponse response
+    ) {
+
+        log.info("jwt: {}", jwt);
+        log.info("jwt.getSubject(): {}", jwt.getSubject());
+        UUID userId = UUID.fromString(jwt.getSubject());
+        User user = userService.getById(userId);
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+
+        ResponseCookie accessCookie = ResponseCookie.from("access_token", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        return ApiResponse.<String>builder()
+                .statusCode(200)
+                .message("Logout")
+                .data("Logout: " + authenticationService.logout())
+                .build();
+    }
 //
 //    @PutMapping("/{userId}/lock")
 //    public ApiResponse<UserLockResponse> lockUser(@PathVariable UUID userId) {
