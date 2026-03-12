@@ -197,9 +197,18 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
             throw new IllegalStateException("Chưa check-in hoặc đã check-out rồi");
         }
 
-        staffShift.setCheckOutTime(LocalTime.now());
-        staffShift.setStatus(ShiftStatus.CHECKED_OUT);
+        ShiftConfiguration config = getShiftConfigOrThrow(staffShift.getShiftConfigId());
+        LocalTime now = LocalTime.now();
 
+        // Kiểm tra nếu check-out quá giờ
+        if (now.isAfter(config.getEndTime().plusMinutes(30))) {
+            staffShift.setStatus(ShiftStatus.INCOMPLETE);
+            staffShift.setNote("Check-out quá trễ (>30 phút sau giờ kết thúc)");
+        } else {
+            staffShift.setStatus(ShiftStatus.CHECKED_OUT);
+        }
+
+        staffShift.setCheckOutTime(now);
         return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
     }
 
@@ -301,23 +310,35 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
     }
 
     // ================= JOB XỬ LÝ QUÊN CHECK-OUT =================
-    @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Ho_Chi_Minh")
+    @Scheduled(cron = "0 0/30 * * * ?", zone = "Asia/Ho_Chi_Minh") // Chạy mỗi 30 phút
     @Transactional
     public void handleMissedCheckOuts() {
         LocalDate today = LocalDate.now();
-        log.info("Running missed checkout job for date: {}", today);
+        LocalTime now = LocalTime.now();
 
-        List<StaffShift> incompleteShifts = staffShiftRepository
+        log.info("Running missed checkout job at {}", now);
+
+        // Lấy tất cả ca đang CHECKED_IN
+        List<StaffShift> activeShifts = staffShiftRepository
                 .findByWorkDateAndStatus(today, ShiftStatus.CHECKED_IN);
 
-        for (StaffShift shift : incompleteShifts) {
+        for (StaffShift shift : activeShifts) {
             try {
-                shift.setStatus(ShiftStatus.INCOMPLETE);
-                shift.setNote("Quên check-out");
-                staffShiftRepository.save(shift);
-                log.info("Marked shift {} as incomplete for staff {}", shift.getId(), shift.getStaffId());
+                ShiftConfiguration config = getShiftConfigOrThrow(shift.getShiftConfigId());
+
+                // Kiểm tra nếu đã quá giờ kết thúc 30 phút
+                LocalTime endTime = config.getEndTime();
+
+                if (now.isAfter(endTime.plusMinutes(30))) {
+                    shift.setStatus(ShiftStatus.INCOMPLETE);
+                    shift.setCheckOutTime(endTime); // Ghi nhận giờ kết thúc dự kiến
+                    shift.setNote("Quên check-out - tự động xử lý sau 30 phút");
+
+                    staffShiftRepository.save(shift);
+                    log.info("Marked shift {} as incomplete (missed checkout after 30 mins)", shift.getId());
+                }
             } catch (Exception e) {
-                log.error("Failed to mark shift {} as incomplete", shift.getId(), e);
+                log.error("Failed to process shift {}", shift.getId(), e);
             }
         }
     }
