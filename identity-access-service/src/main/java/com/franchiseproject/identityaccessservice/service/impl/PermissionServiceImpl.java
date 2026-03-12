@@ -27,12 +27,18 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public PermissionResponse create(PermissionRequest request) {
+        request.setName(request.getName().trim().toUpperCase());
         request.setApi(request.getApi().trim());
         request.setHttpMethod(request.getHttpMethod().trim().toUpperCase());
+
+        if (permissionRepository.existsByName(request.getName())) {
+            throw new AppException(ErrorCode.PERMISSION_EXISTED);
+        }
 
         if (permissionRepository.existsByApiAndHttpMethod(request.getApi(), request.getHttpMethod())) {
             throw new AppException(ErrorCode.PERMISSION_EXISTED);
         }
+
         Permission permission = permissionMapper.toPermission(request);
         return permissionMapper.toPermissionResponse(permissionRepository.save(permission));
     }
@@ -49,13 +55,19 @@ public class PermissionServiceImpl implements PermissionService {
         Permission permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
 
+        request.setName(request.getName().trim().toUpperCase());
         request.setApi(request.getApi().trim());
         request.setHttpMethod(request.getHttpMethod().trim().toUpperCase());
 
-        boolean isChanged = !permission.getApi().equals(request.getApi())
+        boolean isNameChanged = !permission.getName().equals(request.getName());
+        if (isNameChanged && permissionRepository.existsByName(request.getName())) {
+            throw new AppException(ErrorCode.PERMISSION_EXISTED);
+        }
+
+        boolean isApiOrMethodChanged = !permission.getApi().equals(request.getApi())
                 || !permission.getHttpMethod().equals(request.getHttpMethod());
 
-        if (isChanged && permissionRepository.existsByApiAndHttpMethod(request.getApi(), request.getHttpMethod())) {
+        if (isApiOrMethodChanged && permissionRepository.existsByApiAndHttpMethod(request.getApi(), request.getHttpMethod())) {
             throw new AppException(ErrorCode.PERMISSION_EXISTED);
         }
 
