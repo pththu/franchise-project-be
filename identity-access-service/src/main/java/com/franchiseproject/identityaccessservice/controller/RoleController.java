@@ -4,6 +4,7 @@ import com.franchiseproject.identityaccessservice.dto.ApiResponse;
 import com.franchiseproject.identityaccessservice.dto.request.RoleCreationRequest;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.service.RoleService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -75,6 +76,19 @@ public class RoleController {
                 .statusCode(200)
                 .message("Deleted")
                 .data(Boolean.valueOf(roleService.deleteRole(id)))
+                .build();
+    }
+
+    // Assign Permissions
+    @PutMapping("/{id}/permissions")
+    public ApiResponse<Role> assignPermissions(
+            @PathVariable UUID id,
+            @RequestBody @Valid com.franchiseproject.identityaccessservice.dto.request.RolePermissionRequest request) { // <-- Thêm @Valid ở đây
+
+        return ApiResponse.<Role>builder()
+                .statusCode(200)
+                .message("Assign permissions to Roles successfully.")
+                .data(roleService.assignPermissions(id, request))
                 .build();
     }
 }
