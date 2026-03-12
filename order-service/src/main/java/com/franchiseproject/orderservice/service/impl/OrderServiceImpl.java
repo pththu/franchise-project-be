@@ -10,9 +10,9 @@ import com.franchiseproject.orderservice.client.ProductClient;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import com.franchiseproject.orderservice.mapper.OrderMapper;
-import com.franchiseproject.orderservice.model.Order;
-import com.franchiseproject.orderservice.model.OrderDetail;
-import com.franchiseproject.orderservice.model.OrderStatusLog;
+import com.franchiseproject.orderservice.entity.Order;
+import com.franchiseproject.orderservice.entity.OrderDetail;
+import com.franchiseproject.orderservice.entity.OrderStatusLog;
 import com.franchiseproject.orderservice.repository.OrderRepository;
 import com.franchiseproject.orderservice.repository.OrderStatusLogRepository;
 import com.franchiseproject.orderservice.service.OrderDetailService;
@@ -21,6 +21,10 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -278,6 +282,29 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public Page<OrderResponse> getOrdersByFranchiseAndStatus(
+            UUID franchiseId,
+            OrderStatus status,
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "createAt")
+        );
+        Page<Order> orders;
+        if (status != null) {
+            orders = orderRepository.findByFranchiseIdAndOrderStatus(franchiseId, status, pageable);
+        } else {
+            orders = orderRepository.findByFranchiseId(franchiseId, pageable);
+        }
+
+        return orders.map(orderMapper::toOrderResponse);
+    }
+
+
+    @Override
     public void addAddressOnlineOrder(AddAddressRequest request) {
         String key = "online_order:" + request.getCustomerId();
         redisTemplate.opsForValue().set(key, request.getAddress());
@@ -318,5 +345,78 @@ public class OrderServiceImpl implements OrderService {
         order.setEstimatedDeliveryTime(estimatedTime);
 
         orderRepository.save(order);
+    }
+
+    @Override
+    public List<OrderResponse> searchOrders(UUID franchiseId, String keyword) {
+        List<Order> orders = orderRepository.searchOrders(franchiseId, keyword);
+        return orders.stream()
+                .map(orderMapper::toOrderResponse)
+                .toList();
+    }
+
+    @Override
+    public Page<OrderResponse> getOrdersByStatus(
+            OrderStatus status,
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "createAt")
+        );
+        Page<Order> orders;
+        if (status == null) {
+            orders = orderRepository.findAll(pageable);
+        } else {
+            orders = orderRepository.findByOrderStatus(status, pageable);
+        }
+        return orders.map(orderMapper::toOrderResponse);
+    }
+
+    @Override
+    public List<OrderResponse> searchOrderById(String keyword) {
+
+        List<Order> orders = orderRepository.searchOrderByIdLike(keyword);
+
+        return orders.stream()
+                .map(orderMapper::toOrderResponse)
+                .toList();
+    }
+
+    @Override
+    public Page<OrderResponse> getOrdersByCustomerIdAndStatus(
+            UUID customerId,
+            OrderStatus status,
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "createAt")
+        );
+        Page<Order> orders;
+        if (status != null) {
+            orders = orderRepository.findByCustomerIdAndOrderStatus(
+                    customerId,
+                    status,
+                    pageable
+            );
+        } else {
+            orders = orderRepository.findByCustomerId(
+                    customerId,
+                    pageable
+            );
+        }
+        return orders.map(orderMapper::toOrderResponse);
+    }
+
+    @Override
+    public OrderResponse getOrderById(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        return orderMapper.toOrderResponse(order);
     }
 }

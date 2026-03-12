@@ -1,4 +1,4 @@
-package com.franchiseproject.orderservice.model;
+package com.franchiseproject.orderservice.entity;
 
 
 import jakarta.persistence.*;

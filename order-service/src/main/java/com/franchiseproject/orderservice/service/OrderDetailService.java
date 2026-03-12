@@ -1,11 +1,10 @@
 package com.franchiseproject.orderservice.service;
 
 import com.franchiseproject.orderservice.dto.request.CreateOrderItemRequest;
-import com.franchiseproject.orderservice.dto.request.CreateOrderRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderItemRequest;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
-import com.franchiseproject.orderservice.model.Order;
-import com.franchiseproject.orderservice.model.OrderDetail;
+import com.franchiseproject.orderservice.entity.Order;
+import com.franchiseproject.orderservice.entity.OrderDetail;
 
 import java.math.BigDecimal;
 import java.util.List;

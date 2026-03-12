@@ -2,7 +2,6 @@ package com.franchiseproject.orderservice.dto;
 
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
-import com.franchiseproject.orderservice.model.OrderDetail;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
