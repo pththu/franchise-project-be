@@ -17,11 +17,11 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
         <module name="delivery-service" />
+        <module name="product-service" />
         <module name="inventory-service" />
+        <module name="order-service" />
         <module name="payment-service" />
         <module name="promotion-service" />
-        <module name="product-service" />
-        <module name="order-service" />
       </profile>
       <profile name="Annotation profile for shift-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
