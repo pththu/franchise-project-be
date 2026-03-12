@@ -2,6 +2,7 @@ package com.franchiseproject.paymentservice.service.impl;
 
 import com.franchiseproject.paymentservice.client.OrderClient;
 import com.franchiseproject.paymentservice.dto.request.PaymentResultRequest;
+import com.franchiseproject.paymentservice.dto.response.OrderResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
 import com.franchiseproject.paymentservice.entity.PaymentTransaction;
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
@@ -56,4 +57,15 @@ public class PaymentTransactionImpl implements PaymentTransactionService {
         return paymentTransactionMapper.toPaymentTransactionResponse(transaction);
     }
 
+    public OrderResponse checkDuplicateTransaction(OrderResponse orderResponse) {
+        if (!orderResponse.getOrderStatus().equals("WAITING_PAYMENT")) {
+            throw new AppException(ErrorCode.ORDER_NOT_PAYABLE);
+        }
+
+        PaymentTransactionResponse paymentTransactionResponse = getPaymentTransactionByOrderId(orderResponse.getOrderId());
+        if(paymentTransactionResponse != null){
+            throw new AppException(ErrorCode.DUPLICATE_ORDER_ID);
+        }
+        return orderResponse;
+    }
 }

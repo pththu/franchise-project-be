@@ -11,6 +11,7 @@ import com.franchiseproject.paymentservice.exception.ErrorCode;
 import com.franchiseproject.paymentservice.repository.PaymentMethodRepository;
 import com.franchiseproject.paymentservice.service.MomoService;
 import com.franchiseproject.paymentservice.service.PaymentMethodService;
+import com.franchiseproject.paymentservice.service.PaymentTransactionService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentMethodServiceImpl implements PaymentMethodService {
     PaymentMethodRepository paymentMethodRepository;
+    PaymentTransactionService paymentTransactionService;
     OrderClient orderClient;
     MomoService momoService;
 
@@ -53,7 +55,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
         OrderResponse orderResponse = orderClient.getOrderInfoByOrderId(optionPaymentMethodRequest.getOrderId());
         PaymentMethod paymentMethod = getAvailiablePaymentMethod(optionPaymentMethodRequest);
-
+        paymentTransactionService.checkDuplicateTransaction(orderResponse);
         switch (paymentMethod.getMethodName()) {
             case "MOMO":
                 CreateMomoResponse createMomoResponse = momoService.buildCreateMomoQR(orderResponse, paymentMethod);
@@ -65,7 +67,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                         .amount(createMomoResponse.getAmount())
                         .build();
             case "VNPAY":
-
+            case "COD":
             default:
                 throw new AppException(ErrorCode.PAYMENT_METHOD_NOT_SUPPORTED);
         }

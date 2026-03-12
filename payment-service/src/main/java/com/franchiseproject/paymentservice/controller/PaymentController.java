@@ -8,6 +8,7 @@ import com.franchiseproject.paymentservice.entity.PaymentMethod;
 import com.franchiseproject.paymentservice.exception.AppException;
 import com.franchiseproject.paymentservice.service.PaymentMethodService;
 import com.franchiseproject.paymentservice.service.PaymentTransactionService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -34,11 +35,12 @@ public class PaymentController {
         return paymentMethodService.create(paymentMethod);
     }
 
+    /// resolve request option payment method(COD, MOMO, VNPAY)
     @PostMapping("/option")
-    public ApiResponse<PaymentQRResponse> optionPaymentMethod(@RequestBody OptionPaymentMethodRequest optionPaymentMethodRequest) {
+    public ApiResponse<PaymentQRResponse> optionPaymentMethod(@Valid @RequestBody OptionPaymentMethodRequest optionPaymentMethodRequest) {
         PaymentQRResponse paymentQRResponse = paymentMethodService.optionPaymentMethod(optionPaymentMethodRequest);
         return ApiResponse.<PaymentQRResponse>builder()
-                .message("Payment Method has been saved successfully!")
+                .message("Choice Payment Method and create QR successfully!")
                 .data(paymentQRResponse)
                 .statusCode(200)
                 .errors(null)
