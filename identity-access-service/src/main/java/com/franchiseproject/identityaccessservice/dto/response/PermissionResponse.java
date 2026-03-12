@@ -12,6 +12,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PermissionResponse {
     UUID id;
+    String name;
     String api;
     String httpMethod;
     String description;
