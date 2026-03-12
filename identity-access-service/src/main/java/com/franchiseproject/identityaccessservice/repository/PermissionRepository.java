@@ -9,4 +9,6 @@ import java.util.UUID;
 @Repository
 public interface PermissionRepository extends JpaRepository<Permission, UUID> {
     boolean existsByApiAndHttpMethod(String api, String httpMethod);
+
+    boolean existsByName(String name);
 }
