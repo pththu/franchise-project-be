@@ -1,7 +1,7 @@
 package franchiseproject.promotion_service.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import franchiseproject.promotion_service.enums.DiscountType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import franchiseproject.promotion_service.entity.Promotion;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,44 +9,23 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "promotions")
+@Table(name = "coupons")
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Promotion {
+public class Coupon {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(name = "id", nullable = false, updatable = false)
     UUID id;
-
-    @Column(name = "name", nullable = false)
-    String name;
-
-    @Column(name = "description")
-    String description;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "discount_type", nullable = false)
-    DiscountType discountType;
-
-    @Column(name = "discount_value", nullable = false)
-    BigDecimal discountValue;
-
-    @Column(name = "start_time")
-    Instant startTime;
-
-    @Column(name = "end_time")
-    Instant endTime;
 
     @Column(name = "coupon_code", unique = true, nullable = false)
     String couponCode;
@@ -57,6 +36,11 @@ public class Promotion {
     @Column(name = "coupon_used_count")
     Integer usedCount;
 
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name = "promotion_id")
+    Promotion promotion;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     Instant createdAt;
@@ -65,11 +49,4 @@ public class Promotion {
     @Column(name = "updated_at")
     Instant updatedAt;
 
-    @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    List<Coupon> coupons;
-
-    @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    List<PromotionScope> scopes;
 }
