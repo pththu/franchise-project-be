@@ -19,7 +19,7 @@ public interface AuthenticationService {
 //    IntrospectResponse introspect(IntrospectRequest request) throws Exception;
 //    UserLockResponse lockUser(UUID userId);
 
-    TokenResponse refreshToken(String username, String refreshToken);
+    TokenResponse refreshToken(UUID userId, String refreshToken);
     TokenResponse login(AuthenticationRequest req);
     String register(UserRegisterRequest req);
     void verifyEmail(VerifyRequest req);

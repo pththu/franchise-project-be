@@ -85,13 +85,11 @@ public class AuthenticationController {
     ) {
 
         TokenResponse tokens = authenticationService.login(request);
-
         ResponseCookie cookie = ResponseCookie.from("access_token", tokens.getAccessToken())
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(Duration.ofMinutes(2))
-//                .maxAge(Duration.ofSeconds(tokens.getExpiresIn()))
+                .maxAge(Duration.ofSeconds(tokens.getExpiresIn()))
                 .sameSite("Strict")
                 .build();
 
@@ -99,8 +97,7 @@ public class AuthenticationController {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(Duration.ofMinutes(4))
-//                .maxAge(Duration.ofDays(14))
+                .maxAge(Duration.ofDays(14))
                 .sameSite("Strict")
                 .build();
 
@@ -115,11 +112,27 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    public ApiResponse<TokenResponse> refresh(@RequestBody Map<String, String> body) {
+    public ApiResponse<TokenResponse> refresh(
+            @CookieValue(name = "refresh_token", required = false) String refreshToken,
+            @RequestBody RefreshTokenRequest request,
+            HttpServletResponse response
+    ) {
 
-        String username = body.get("username");
-        String refreshToken = body.get("refreshToken");
-        TokenResponse tokens = authenticationService.refreshToken(username, refreshToken);
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            throw new AppException(ErrorCode.UNAUTHORIZED); // Hoặc mã lỗi "Vui lòng đăng nhập lại"
+        }
+
+        TokenResponse tokens = authenticationService.refreshToken(request.getUserId(), refreshToken);
+
+        ResponseCookie cookie = ResponseCookie.from("access_token", tokens.getAccessToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(Duration.ofSeconds(tokens.getExpiresIn()))
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return ApiResponse.<TokenResponse>builder()
                 .statusCode(200)

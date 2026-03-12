@@ -105,14 +105,6 @@ public class SecurityConfig {
         return source;
     }
 
-//    @Bean
-//    JwtAuthenticationConverter jwtAuthenticationConverter() {
-//        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-//        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
-//        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-//        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
-//        return jwtAuthenticationConverter;
-//    }
 
     @Bean
     public JwtDecoder jwtDecoder() {
@@ -145,44 +137,4 @@ public class SecurityConfig {
             return null;
         };
     }
-
-//    @Bean
-//    BearerTokenResolver bearerTokenResolver() {
-//        return request -> {
-//            String bearerToken = request.getHeader("Authorization");
-//            if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-//                return bearerToken.substring(7);
-//            }
-//
-//            Cookie[] cookies = request.getCookies();
-//            if (cookies != null) {
-//                for (Cookie cookie : cookies) {
-//                    if ("access_token".equals(cookie.getName())) {
-//                        return cookie.getValue();
-//                    }
-//                }
-//            }
-//            return null;
-//        };
-//    }
-
-//    @Bean
-//    BearerTokenResolver bearerTokenResolver() {
-//        return request -> {
-//            String bearerToken = request.getHeader("Authorization");
-//            if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-//                return bearerToken.substring(7);
-//            }
-//
-//            Cookie[] cookies = request.getCookies();
-//            if (cookies != null) {
-//                for (Cookie cookie : cookies) {
-//                    if ("access_token".equals(cookie.getName())) {
-//                        return cookie.getValue();
-//                    }
-//                }
-//            }
-//            return null;
-//        };
-//    }
 }
