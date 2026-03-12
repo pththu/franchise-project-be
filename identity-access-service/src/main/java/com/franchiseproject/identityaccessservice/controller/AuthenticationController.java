@@ -1,11 +1,10 @@
 package com.franchiseproject.identityaccessservice.controller;
 
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
-import com.franchiseproject.identityaccessservice.dto.request.AuthenticationRequest;
-import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
-import com.franchiseproject.identityaccessservice.dto.request.IntrospectRequest;
+import com.franchiseproject.identityaccessservice.dto.request.*;
 import com.franchiseproject.identityaccessservice.dto.response.AuthenticationResponse;
 import com.franchiseproject.identityaccessservice.dto.response.IntrospectResponse;
+import com.franchiseproject.identityaccessservice.dto.response.TokenResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserLockResponse;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
@@ -19,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,11 +29,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.time.Duration;
+import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @RestController
-//@RequestMapping("/api/v1/auth")
-@RequestMapping("/api/auth/auth")
+@RequestMapping("/api/auth")
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 public class AuthenticationController {
@@ -42,67 +43,99 @@ public class AuthenticationController {
     PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
-    public ApiResponse<User> register(@RequestBody @Valid CustomerRegisterRequest request) {
-        return ApiResponse.<User>builder()
+    public ApiResponse<Map<String, String>> register(@Valid @RequestBody UserRegisterRequest req) {
+        String username = authenticationService.register(req);
+        return ApiResponse.<Map<String, String>>builder()
                 .statusCode(201)
-                .message("Register success")
-                .data(authenticationService.register(request))
+                .message("Registration successful! Please check your email for verification code.")
+                .data(Map.of("username", username))
+                .build();
+    }
+
+    @PostMapping("/verify")
+    public ApiResponse verify(
+            @Valid @RequestBody VerifyRequest request) {
+
+        authenticationService.verifyEmail(request);
+        return ApiResponse.builder()
+                .statusCode(200)
+                .message("Email verified successfully! You can now sign in.")
+                .build();
+    }
+
+    @PostMapping("/resend-code")
+    public ApiResponse resendCode(@RequestBody Map<String, String> body) {
+
+        String username = body.get("username");
+        if (username == null || username.isBlank()) {
+            throw new AppException(ErrorCode.IDENTIFIER_IS_REQUIRED);
+        }
+
+        authenticationService.resendVerificationCode(username);
+        return ApiResponse.builder()
+                .statusCode(200)
+                .message("Verification code sent to your email.")
                 .build();
     }
 
     @PostMapping("/login")
-    public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request, HttpServletResponse response)
-            throws Exception {
+    public ApiResponse<TokenResponse> login(
+            @Valid @RequestBody AuthenticationRequest request,
+            HttpServletResponse response
+    ) {
 
-        User user = userService.getByUsername(request.getUsername());
+        TokenResponse tokens = authenticationService.login(request);
 
-        if (user == null) {
-            throw new AppException(ErrorCode.USER_NOT_EXISTED);
-        }
-
-        boolean result = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
-        if (!result) throw new AppException(ErrorCode.UNAUTHORIZED);
-
-        if (user.getStatus().equals(UserStatus.DELETED)) {
-            throw new AppException(ErrorCode.USER_NOT_EXISTED);
-        }
-
-        if (user.getStatus().equals(UserStatus.SUSPENDED)) {
-            throw new AppException(ErrorCode.USER_lOCKED);
-        }
-
-        AuthenticationResponse authResponse = authenticationService.login(user, response);
-        ResponseCookie cookie = ResponseCookie.from("access_token", authResponse.getAccessToken())
+        ResponseCookie cookie = ResponseCookie.from("access_token", tokens.getAccessToken())
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .path("/")
-                .maxAge(Duration.ofMinutes(10))
+                .maxAge(Duration.ofSeconds(tokens.getExpiresIn()))
+                .sameSite("Strict")
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", tokens.getRefreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(Duration.ofDays(14))
                 .sameSite("Strict")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        return ApiResponse.<AuthenticationResponse>builder()
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        return ApiResponse.<TokenResponse>builder()
                 .statusCode(200)
-                .message("Login success")
-                .data(authResponse)
+                .message("Login successful!")
+                .data(tokens)
                 .build();
     }
 
-    @PostMapping("/introspect")
-    public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request)
-            throws Exception {
-        return ApiResponse.<IntrospectResponse>builder()
+    @PostMapping("/refresh")
+    public ApiResponse<TokenResponse> refresh(@RequestBody Map<String, String> body) {
+
+        String username = body.get("username");
+        String refreshToken = body.get("refreshToken");
+        TokenResponse tokens = authenticationService.refreshToken(username, refreshToken);
+
+        return ApiResponse.<TokenResponse>builder()
                 .statusCode(200)
-                .message("Login success")
-                .data(authenticationService.introspect(request))
+                .message("Token refreshed.")
+                .data(tokens)
                 .build();
     }
 
     @GetMapping("/logout")
-    public ApiResponse<String> logout(@AuthenticationPrincipal Jwt jwt, HttpServletResponse response) {
+    public ApiResponse<String> logout(
+            @AuthenticationPrincipal Jwt jwt,
+            HttpServletResponse response
+    ) {
 
-        String username = jwt.getSubject();
-        User user = userService.getByUsername(username);
+        log.info("jwt: {}", jwt);
+        log.info("jwt.getSubject(): {}", jwt.getSubject());
+        UUID userId = UUID.fromString(jwt.getSubject());
+        User user = userService.getById(userId);
         if (user == null) {
             throw new AppException(ErrorCode.USER_NOT_EXISTED);
         }
@@ -118,7 +151,7 @@ public class AuthenticationController {
         ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .secure(true)
-                .path("/refresh")
+                .path("/")
                 .maxAge(0)
                 .sameSite("Strict")
                 .build();
@@ -132,13 +165,13 @@ public class AuthenticationController {
                 .data("Logout: " + authenticationService.logout())
                 .build();
     }
-
-    @PutMapping("/{userId}/lock")
-    public ApiResponse<UserLockResponse> lockUser(@PathVariable UUID userId) {
-        return ApiResponse.<UserLockResponse>builder()
-                .statusCode(200)
-                .message("User locked")
-                .data(authenticationService.lockUser(userId))
-                .build();
-    }
+//
+//    @PutMapping("/{userId}/lock")
+//    public ApiResponse<UserLockResponse> lockUser(@PathVariable UUID userId) {
+//        return ApiResponse.<UserLockResponse>builder()
+//                .statusCode(200)
+//                .message("User locked")
+//                .data(authenticationService.lockUser(userId))
+//                .build();
+//    }
 }

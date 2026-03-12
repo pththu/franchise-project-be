@@ -20,5 +20,7 @@ public interface RoleService {
     List<Role> getAll();
 
     boolean deleteRole(UUID id);
+
+    Role assignPermissions(UUID roleId, com.franchiseproject.identityaccessservice.dto.request.RolePermissionRequest request);
 }
 
