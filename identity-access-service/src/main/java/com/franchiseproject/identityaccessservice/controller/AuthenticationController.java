@@ -90,7 +90,8 @@ public class AuthenticationController {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(Duration.ofSeconds(tokens.getExpiresIn()))
+                .maxAge(Duration.ofMinutes(2))
+//                .maxAge(Duration.ofSeconds(tokens.getExpiresIn()))
                 .sameSite("Strict")
                 .build();
 
@@ -98,7 +99,8 @@ public class AuthenticationController {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(Duration.ofDays(14))
+                .maxAge(Duration.ofMinutes(4))
+//                .maxAge(Duration.ofDays(14))
                 .sameSite("Strict")
                 .build();
 
