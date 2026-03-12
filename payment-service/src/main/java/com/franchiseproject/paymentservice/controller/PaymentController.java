@@ -2,6 +2,7 @@ package com.franchiseproject.paymentservice.controller;
 
 import com.franchiseproject.paymentservice.dto.request.OptionPaymentMethodRequest;
 import com.franchiseproject.paymentservice.dto.response.ApiResponse;
+import com.franchiseproject.paymentservice.dto.response.PaymentMethodResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentQRResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
@@ -53,6 +54,16 @@ public class PaymentController {
         return ApiResponse.<PaymentTransactionResponse>builder()
                 .message("Get Transaction by OrderId Success!")
                 .data(paymentTransactionResponse)
+                .statusCode(200)
+                .errors(null)
+                .build();
+    }
+
+    @GetMapping("/get-method")
+    public ApiResponse<List<PaymentMethodResponse>> getPaymentMethodByOrderId() {
+        return ApiResponse.<List<PaymentMethodResponse>>builder()
+                .message("Lấy danh sách payment method khả dụng thành công")
+                .data(paymentMethodService.getAllByActiveTrue())
                 .statusCode(200)
                 .errors(null)
                 .build();

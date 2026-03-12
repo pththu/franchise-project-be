@@ -33,7 +33,6 @@ import java.util.UUID;
 import org.springframework.data.redis.core.RedisTemplate;
 
 
-
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -319,4 +318,14 @@ public class OrderServiceImpl implements OrderService {
 
         orderRepository.save(order);
     }
+
+    @Override
+    @Transactional
+    public PaymentResponse getOrder(UUID orderId) {
+        Order order = orderRepository.findOrderById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        return orderMapper.toPaymentResponse(order);
+    }
+
 }
+

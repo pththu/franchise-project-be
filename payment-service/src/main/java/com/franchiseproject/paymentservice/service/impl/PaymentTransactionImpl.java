@@ -5,6 +5,7 @@ import com.franchiseproject.paymentservice.dto.request.PaymentResultRequest;
 import com.franchiseproject.paymentservice.dto.response.OrderResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
 import com.franchiseproject.paymentservice.entity.PaymentTransaction;
+import com.franchiseproject.paymentservice.enums.OrderStatus;
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
 import com.franchiseproject.paymentservice.exception.AppException;
 import com.franchiseproject.paymentservice.exception.ErrorCode;
@@ -15,10 +16,12 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -57,15 +60,27 @@ public class PaymentTransactionImpl implements PaymentTransactionService {
         return paymentTransactionMapper.toPaymentTransactionResponse(transaction);
     }
 
+    @Override
+    @Transactional
     public OrderResponse checkDuplicateTransaction(OrderResponse orderResponse) {
-        if (!orderResponse.getOrderStatus().equals("WAITING_PAYMENT")) {
+        if (orderResponse.getOrderStatus() != OrderStatus.WAITING_PAYMENT) { //đang lỗi
             throw new AppException(ErrorCode.ORDER_NOT_PAYABLE);
         }
 
-        PaymentTransactionResponse paymentTransactionResponse = getPaymentTransactionByOrderId(orderResponse.getOrderId());
-        if(paymentTransactionResponse != null){
+        boolean exists = paymentTransactionRepository
+                .findByOrderId(orderResponse.getOrderId())
+                .isPresent();
+        if (exists) {
             throw new AppException(ErrorCode.DUPLICATE_ORDER_ID);
         }
         return orderResponse;
     }
+
+
+//    private PaymentTransactionResponse findPaymentTransactionByOrderId(UUID orderId) {
+//        PaymentTransaction transaction = paymentTransactionRepository
+//                .findByOrderId(orderId)
+//                .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_ALREADY_EXISTS));///đang lỗi
+//        return paymentTransactionMapper.toPaymentTransactionResponse(transaction);
+//    }
 }

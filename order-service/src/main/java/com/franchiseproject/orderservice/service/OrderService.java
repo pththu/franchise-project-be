@@ -5,6 +5,7 @@ import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
 //import com.franchiseproject.orderservice.dto.response.OrderResponse;
+import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.model.Order;
 
@@ -24,4 +25,6 @@ public interface OrderService {
     void addAddressOnlineOrder(AddAddressRequest request);
     String getAddressOnlineOrder(UUID customerId);
     OrderResponse updateOrder(UUID orderId, UpdateOrderRequest request);
+    PaymentResponse getOrder(UUID orderId);
+
 }
