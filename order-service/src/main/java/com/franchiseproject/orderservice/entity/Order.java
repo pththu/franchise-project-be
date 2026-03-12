@@ -1,4 +1,4 @@
-package com.franchiseproject.orderservice.model;
+package com.franchiseproject.orderservice.entity;
 
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -7,10 +7,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -40,7 +38,7 @@ public class Order {
     UUID staffId;
     @Column(name = "payment_transaction_id")
     UUID paymentTransactionId;
-    @Column(name = "promotionId")
+    @Column(name = "promotion_id")
     UUID promotionId;
     @Column(name = "address")
     String address;

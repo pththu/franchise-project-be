@@ -1,6 +1,6 @@
 package com.franchiseproject.orderservice.service.impl;
 
-import com.franchiseproject.orderservice.model.OrderStatusLog;
+import com.franchiseproject.orderservice.entity.OrderStatusLog;
 import com.franchiseproject.orderservice.repository.OrderStatusLogRepository;
 import com.franchiseproject.orderservice.service.OrderStatusLogService;
 import lombok.AccessLevel;
