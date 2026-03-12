@@ -38,7 +38,6 @@ public class DeliveryServiceImpl implements DeliveryService {
     public DeliveryResponse createDelivery(CreateDeliveryRequest request) {
         Delivery delivery = Delivery.builder()
                 .orderId(request.getOrderId())
-                .shipperId(request.getShipperId())
                 .weight(request.getWeight())
                 .scheduledAt(request.getScheduledAt())
                 .status(DeliverySatus.CREATED)
@@ -46,7 +45,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         delivery = deliveryRepository.save(delivery);
 
-        return buildResponse(delivery, request.getStaffId());
+        return buildResponse(delivery);
     }
 
     @Override
@@ -59,14 +58,14 @@ public class DeliveryServiceImpl implements DeliveryService {
                 || delivery.getStatus() == DeliverySatus.RATING) {
             throw new AppException(ErrorCode.DELIVERY_ALREADY_FINALIZED);
         }
-        delivery.setShipperId(request.getShipperId() == null ? delivery.getShipperId() : request.getShipperId());
+        delivery.setStaffId(request.getStaffId() == null ? delivery.getStaffId() : request.getStaffId());
         delivery.setWeight(request.getWeight() == 0 ? delivery.getWeight() : request.getWeight());
         delivery.setScheduledAt(request.getScheduledAt() == null ? delivery.getScheduledAt() : request.getScheduledAt());
         delivery.setStatus(request.getStatus());
 
         delivery = deliveryRepository.save(delivery);
 
-        return buildResponse(delivery, request.getStaffId());
+        return buildResponse(delivery);
     }
 
     @Override
@@ -78,8 +77,8 @@ public class DeliveryServiceImpl implements DeliveryService {
         return deliveryMapper.toDeliveryResponse(delivery);
     }
 
-    private DeliveryResponse buildResponse(Delivery delivery, UUID staffId) {
-        deliveryHistoryService.createDeliveryHistory(delivery, staffId);
+    private DeliveryResponse buildResponse(Delivery delivery) {
+        deliveryHistoryService.createDeliveryHistory(delivery);
 
         List<DeliveryHistoryResponse> histories =
                 deliveryHistoryService.getDeliveryHistoryByDeliveryId(delivery.getDeliveryId());

@@ -50,12 +50,12 @@ public class DeliveryController {
     }
 
     @PutMapping("/assign-shipper/{deliveryId}")
-    public ApiResponse<DeliveryResponse> assignShipper(
+    public ApiResponse<DeliveryResponse> assignStaff(
             @PathVariable UUID deliveryId,
             @RequestBody UpdateDeliveryRequest request) {
         DeliveryResponse response = deliveryService.updateDelivery(deliveryId, request);
         return ApiResponse.<DeliveryResponse>builder()
-                .message("Gán nhân viên giao hàng thành công")
+                .message("Gán nhân viên thành công")
                 .data(response)
                 .statusCode(200)
                 .errors(null)

@@ -19,9 +19,7 @@ import java.util.UUID;
 public class CreateDeliveryRequest {
     @NotNull(message = "Không để trống id đơn hàng")
     UUID orderId;
-    @NotNull(message = "Không để trống id quản lý")
     UUID staffId;
-    UUID shipperId;
     double weight;
     Instant scheduledAt;
     List<DeliveryHistory> deliveryHistory;

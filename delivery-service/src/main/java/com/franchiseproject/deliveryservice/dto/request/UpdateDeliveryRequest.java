@@ -20,7 +20,6 @@ import java.util.UUID;
 public class UpdateDeliveryRequest {
     @NotNull(message = "Không để trống id quản lý")
     UUID staffId;
-    UUID shipperId;
     DeliverySatus status;
     double weight;
     Instant scheduledAt;
