@@ -23,6 +23,9 @@ public class Permission {
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     UUID id;
 
+    @Column(nullable = false, unique = true, length = 100)
+    String name;
+
     @Column(nullable = false)
     String api;
 

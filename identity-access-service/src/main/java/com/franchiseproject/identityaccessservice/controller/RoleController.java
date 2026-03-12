@@ -4,6 +4,7 @@ import com.franchiseproject.identityaccessservice.dto.ApiResponse;
 import com.franchiseproject.identityaccessservice.dto.request.RoleCreationRequest;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.service.RoleService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -82,7 +83,7 @@ public class RoleController {
     @PutMapping("/{id}/permissions")
     public ApiResponse<Role> assignPermissions(
             @PathVariable UUID id,
-            @RequestBody com.franchiseproject.identityaccessservice.dto.request.RolePermissionRequest request) {
+            @RequestBody @Valid com.franchiseproject.identityaccessservice.dto.request.RolePermissionRequest request) { // <-- Thêm @Valid ở đây
 
         return ApiResponse.<Role>builder()
                 .statusCode(200)

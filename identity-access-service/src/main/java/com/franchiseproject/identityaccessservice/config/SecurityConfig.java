@@ -78,6 +78,7 @@ public class SecurityConfig {
         http.cors(Customizer.withDefaults());
         http.authorizeHttpRequests(request ->
                         request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
+                                .requestMatchers("/api/auth/roles/**", "/api/auth/permissions/**").permitAll()
 
 //                        .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINT_GET).hasAuthority("ROLE_ADMIN")
 //                        .requestMatchers(HttpMethod.DELETE, ADMIN_ENDPOINT_DEL).hasAuthority("ROLE_ADMIN")
@@ -93,13 +94,13 @@ public class SecurityConfig {
                                     try {
 //                                jwtConfigurer.decoder(jwtDecoder())
 //                                        .jwtAuthenticationConverter(jwtAuthenticationConverter());
-                                jwtConfigurer
-                                        .decoder(jwtDecoder())
-                                        .jwtAuthenticationConverter(jwtAuthConverter());
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        })
+                                        jwtConfigurer
+                                                .decoder(jwtDecoder())
+                                                .jwtAuthenticationConverter(jwtAuthConverter());
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                })
         );
 
         http.csrf(AbstractHttpConfigurer::disable);
