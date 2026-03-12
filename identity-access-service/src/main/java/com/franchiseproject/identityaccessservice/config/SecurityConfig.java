@@ -56,30 +56,16 @@ public class SecurityConfig {
             api_prefix + "verify",
             api_prefix + "resend-code",
             api_prefix + "refresh",
-            api_prefix + "auth/login",
-            api_prefix + "auth/register",
-            api_prefix + "auth/introspect"
-    };
+            api_prefix + "logout",
 
-    final String[] ADMIN_ENDPOINT_GET = {
-            api_prefix + "users"
-    };
-
-    final String[] ADMIN_ENDPOINT_DEL = {
-            api_prefix + "users/delete-account"
-    };
-
-    final String[] ADMIN_ENDPOINT_PUT = {
-            api_prefix + "*/lock"
     };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults());
         http.authorizeHttpRequests(request ->
-                        request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
-                                .requestMatchers("/api/auth/roles/**", "/api/auth/permissions/**").permitAll()
-
+                        request.requestMatchers(PUBLIC_ENDPOINT).permitAll()
+//                                .requestMatchers("/api/auth/roles/**", "/api/auth/permissions/**").permitAll()
 //                        .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINT_GET).hasAuthority("ROLE_ADMIN")
 //                        .requestMatchers(HttpMethod.DELETE, ADMIN_ENDPOINT_DEL).hasAuthority("ROLE_ADMIN")
 //                        .requestMatchers(HttpMethod.PUT, ADMIN_ENDPOINT_PUT).hasAuthority("ROLE_ADMIN")
@@ -147,33 +133,10 @@ public class SecurityConfig {
         return NimbusJwtDecoder.withIssuerLocation(issuer).build();
     }
 
-//    @Bean
-//    JwtDecoder jwtDecoder() throws Exception {
-//        RSAPublicKey rsaPublicKey = jwtKeyProperties.getPublicKeyObject();
-//        return NimbusJwtDecoder
-//                .withPublicKey(rsaPublicKey)
-//                .build();
-//    }
-
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
     }
-
-//    @Bean
-//    BearerTokenResolver bearerTokenResolver() {
-//        return request -> {
-//            Cookie[] cookies = request.getCookies();
-//            if (cookies == null) return null;
-//
-//            for (Cookie cookie : cookies) {
-//                if ("access_token".equals(cookie.getName())) {
-//                    return cookie.getValue();
-//                }
-//            }
-//            return null;
-//        };
-//    }
 
     @Bean
     BearerTokenResolver bearerTokenResolver() {
