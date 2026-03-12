@@ -34,6 +34,7 @@ public enum ErrorCode {
 
     PERMISSION_EXISTED(400, "This permission (API and Method) already exists!"),
     PERMISSION_NOT_FOUND(404, "Permissions not found!"),
+    PERMISSION_NAME_REQUIRED(1007, "Permission name cannot be empty"),
     INVALID_INPUT(400, "Invalid input data!");
 
     private int code;
