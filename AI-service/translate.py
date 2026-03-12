@@ -1,5 +1,8 @@
 from google import genai
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def translater(text_to_translate: list, target_language: str):
@@ -14,6 +17,7 @@ def translater(text_to_translate: list, target_language: str):
 
     text = ", ".join(text_to_translate)
 
+    logger.info(f"Translating {len(text_to_translate)} item(s) to '{target_language}'")
     start = time.time()
 
     response = client.models.generate_content(
@@ -28,6 +32,7 @@ def translater(text_to_translate: list, target_language: str):
     response_api = response.text.split(',')
 
     end = time.time()
+    logger.info(f"Translation completed in {end - start:.2f}s")
 
     return {"time response": end - start, "text": response_api}
 

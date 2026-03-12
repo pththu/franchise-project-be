@@ -1,0 +1,29 @@
+# pip install -r be/AI-service/requirements.txt
+# Web framework
+fastapi==0.133.0
+uvicorn==0.41.0
+pydantic==2.12.5
+
+# HTTP
+requests==2.31.0
+
+# Data
+pandas==2.3.3
+numpy==1.26.4
+
+# ML - Recommendation System
+scikit-learn==1.7.2
+scipy==1.15.3
+implicit==0.7.2
+lightgbm==4.6.0
+faiss-cpu==1.13.2
+
+# NLP / Semantic Search
+sentence-transformers==5.2.3
+
+# Translation
+google-genai==1.66.0
+
+# Web scraping (notebooks)
+# selenium
+# beautifulsoup4
