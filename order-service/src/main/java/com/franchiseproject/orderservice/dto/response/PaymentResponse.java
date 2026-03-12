@@ -17,8 +17,8 @@ public class PaymentResponse {
     UUID paymentTransactionId;
     UUID orderId;
     UUID customerId;
-    String statusTransaction;
+    String orderStatus;
     String transactionReference;
     String message;
-    BigDecimal amount;
+    BigDecimal finalTotal;
 }

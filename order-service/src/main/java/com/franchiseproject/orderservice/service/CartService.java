@@ -2,7 +2,7 @@ package com.franchiseproject.orderservice.service;
 
 import com.franchiseproject.orderservice.dto.request.AddOnlineItemRequest;
 import com.franchiseproject.orderservice.dto.request.AddPosItemRequest;
-import com.franchiseproject.orderservice.model.PosCartItem;
+import com.franchiseproject.orderservice.entity.PosCartItem;
 
 import java.util.List;
 import java.util.UUID;
