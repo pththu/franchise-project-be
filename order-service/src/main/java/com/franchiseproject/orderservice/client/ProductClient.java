@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ProductClient {
-//    private final RestClient productRestClient;
-//
+    private final RestClient productRestClient;
+
 //    public Map<UUID, ProductResponse> getProductsByIds(List<UUID> ids) {
 //
 //        List<ProductResponse> products = productRestClient.post()
@@ -56,7 +56,7 @@ public class ProductClient {
         List<ProductResponse> products = ids.stream()
                 .map(id -> ProductResponse.builder()
                         .id(id)
-                        .name("Mock Product " + id.toString().substring(0, 5))
+                        .name("Mock Product " + id.toString().substring(1, 3))
                         .price(BigDecimal.valueOf(50000))
                         .quantity(100)
                         .build())

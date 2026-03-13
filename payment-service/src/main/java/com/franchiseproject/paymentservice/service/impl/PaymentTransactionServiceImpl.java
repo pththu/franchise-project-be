@@ -1,42 +1,34 @@
 package com.franchiseproject.paymentservice.service.impl;
 
 import com.franchiseproject.paymentservice.client.OrderClient;
+import com.franchiseproject.paymentservice.dto.request.PaymentResultRequest;
+import com.franchiseproject.paymentservice.dto.response.OrderResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
 import com.franchiseproject.paymentservice.entity.PaymentTransaction;
-import com.franchiseproject.paymentservice.mapper.PaymentTransactionMapper;
-import com.franchiseproject.paymentservice.repository.PaymentTransactionRepository;
-import com.franchiseproject.paymentservice.service.PaymentTransactionService;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import com.franchiseproject.paymentservice.dto.request.PaymentResultRequest;
+import com.franchiseproject.paymentservice.enums.OrderStatus;
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
 import com.franchiseproject.paymentservice.exception.AppException;
 import com.franchiseproject.paymentservice.exception.ErrorCode;
+import com.franchiseproject.paymentservice.mapper.PaymentTransactionMapper;
+import com.franchiseproject.paymentservice.repository.PaymentTransactionRepository;
+import com.franchiseproject.paymentservice.service.PaymentTransactionService;
 import jakarta.transaction.Transactional;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
+import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentTransactionServiceImpl implements PaymentTransactionService {
     PaymentTransactionRepository paymentTransactionRepository;
-    PaymentTransactionMapper paymentTransactionMapper;
     OrderClient orderClient;
-
-
-    @Override
-    public List<PaymentTransactionResponse> getTransactionsByUserId(UUID userId) {
-        List<PaymentTransaction> transactions =
-                paymentTransactionRepository.findByUserId(userId);
-        return transactions.stream()
-                .map(paymentTransactionMapper::toPaymentTransactionResponse)
-                .collect(Collectors.toList());
-    }
+    PaymentTransactionMapper paymentTransactionMapper;
 
     @Override
     @Transactional
@@ -68,4 +60,27 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
         return paymentTransactionMapper.toPaymentTransactionResponse(transaction);
     }
 
+    @Override
+    @Transactional
+    public OrderResponse checkDuplicateTransaction(OrderResponse orderResponse) {
+        if (orderResponse.getOrderStatus() != OrderStatus.WAITING_PAYMENT) {
+            throw new AppException(ErrorCode.ORDER_NOT_PAYABLE);
+        }
+
+        boolean exists = paymentTransactionRepository
+                .findByOrderId(orderResponse.getOrderId())
+                .isPresent();
+        if (exists) {
+            throw new AppException(ErrorCode.DUPLICATE_ORDER_ID);
+        }
+        return orderResponse;
+    }
+
+
+//    private PaymentTransactionResponse findPaymentTransactionByOrderId(UUID orderId) {
+//        PaymentTransaction transaction = paymentTransactionRepository
+//                .findByOrderId(orderId)
+//                .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_ALREADY_EXISTS));///đang lỗi
+//        return paymentTransactionMapper.toPaymentTransactionResponse(transaction);
+//    }
 }
