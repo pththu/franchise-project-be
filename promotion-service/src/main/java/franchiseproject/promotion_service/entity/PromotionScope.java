@@ -1,7 +1,6 @@
 package franchiseproject.promotion_service.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import franchiseproject.promotion_service.entity.Promotion;
 import franchiseproject.promotion_service.enums.ScopeType;
 import jakarta.persistence.*;
 import lombok.*;

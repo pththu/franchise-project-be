@@ -1,14 +1,12 @@
 package franchiseproject.promotion_service.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import franchiseproject.promotion_service.entity.Promotion;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -37,8 +35,8 @@ public class Coupon {
     Integer usedCount;
 
     @ManyToOne
-    @JsonBackReference
     @JoinColumn(name = "promotion_id")
+    @JsonIgnore
     Promotion promotion;
 
     @CreationTimestamp
@@ -48,5 +46,4 @@ public class Coupon {
     @UpdateTimestamp
     @Column(name = "updated_at")
     Instant updatedAt;
-
 }

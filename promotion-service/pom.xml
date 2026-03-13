@@ -69,14 +69,8 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
-    <!-- (Tuỳ chọn) Thêm repository Central để tránh toolchain bị thiếu repo -->
     <repositories>
         <repository>
             <id>central</id>
