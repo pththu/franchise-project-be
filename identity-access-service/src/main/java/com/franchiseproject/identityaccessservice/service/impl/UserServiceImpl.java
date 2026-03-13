@@ -76,8 +76,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse getProfile(String username) {
-        return userMapper.toUserResponse(userRepository.findByUsername(username)
+    public UserResponse getProfile(UUID userId) {
+        return userMapper.toUserResponse(userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND)));
     }
 
