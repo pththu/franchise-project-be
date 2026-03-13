@@ -6,7 +6,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -28,14 +28,15 @@ public class Coupon {
     @Column(name = "coupon_code", unique = true, nullable = false)
     String couponCode;
 
-    @Column(name = "usage_limit")
+    @Column(name = "coupon_usage_limit")
     Integer usageLimit;
 
-    @Column(name = "used_count")
+    @Column(name = "coupon_used_count")
     Integer usedCount;
 
     @ManyToOne
     @JoinColumn(name = "promotion_id")
+    @JsonIgnore
     Promotion promotion;
 
     @CreationTimestamp
