@@ -1,7 +1,7 @@
 package com.franchiseproject.paymentservice.enums;
 
 public enum StatusTransaction {
-     PENDING,
+    PENDING,
     SUCCESS,
     FAILED,
     REFUNDED

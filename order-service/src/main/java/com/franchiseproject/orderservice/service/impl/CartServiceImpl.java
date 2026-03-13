@@ -3,7 +3,7 @@ package com.franchiseproject.orderservice.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.franchiseproject.orderservice.dto.request.AddOnlineItemRequest;
 import com.franchiseproject.orderservice.dto.request.AddPosItemRequest;
-import com.franchiseproject.orderservice.model.PosCartItem;
+import com.franchiseproject.orderservice.entity.PosCartItem;
 import com.franchiseproject.orderservice.service.CartService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
