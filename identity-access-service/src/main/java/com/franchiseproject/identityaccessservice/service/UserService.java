@@ -17,7 +17,7 @@ public interface UserService {
     User getById (UUID userId);
     UserCreationResponse createOne (User user);
     boolean changePassword(ChangePasswordRequest request);
-    UserResponse getProfile(String username);
+    UserResponse getProfile(UUID userId);
     UserUpdateResponse updateAccountInfomation(String username, UserUpdateRequest request);
     UserDeleteResponse deleteAccountUser(UUID userId);
     AssignRoleResponse assignRole(Role role, User user);
