@@ -28,10 +28,10 @@ public class Coupon {
     @Column(name = "coupon_code", unique = true, nullable = false)
     String couponCode;
 
-    @Column(name = "usage_limit")
+    @Column(name = "coupon_usage_limit")
     Integer usageLimit;
 
-    @Column(name = "used_count")
+    @Column(name = "coupon_used_count")
     Integer usedCount;
 
     @ManyToOne

@@ -48,10 +48,13 @@ public class Promotion {
     @Column(name = "end_time")
     Instant endTime;
 
-    @Column(name = "usage_limit")
+    @Column(name = "coupon_code", unique = true, nullable = false)
+    String couponCode;
+
+    @Column(name = "coupon_usage_limit")
     Integer usageLimit;
 
-    @Column(name = "used_count")
+    @Column(name = "coupon_used_count")
     Integer usedCount;
 
     @CreationTimestamp
@@ -63,6 +66,7 @@ public class Promotion {
     Instant updatedAt;
 
     @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
+    @JsonManagedReference
     List<Coupon> coupons;
 
     @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
