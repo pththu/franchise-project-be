@@ -1,6 +1,6 @@
 package com.franchiseproject.orderservice.repository;
 
-import com.franchiseproject.orderservice.model.OrderDetail;
+import com.franchiseproject.orderservice.entity.OrderDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

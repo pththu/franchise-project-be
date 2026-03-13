@@ -3,7 +3,7 @@ package com.franchiseproject.orderservice.controller;
 import com.franchiseproject.orderservice.dto.request.AddOnlineItemRequest;
 import com.franchiseproject.orderservice.dto.request.AddPosItemRequest;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
-import com.franchiseproject.orderservice.model.PosCartItem;
+import com.franchiseproject.orderservice.entity.PosCartItem;
 import com.franchiseproject.orderservice.service.CartService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -17,7 +17,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RequestMapping("/cart")
+@RequestMapping("/api/carts")
 public class CartController {
     CartService cartService;
 

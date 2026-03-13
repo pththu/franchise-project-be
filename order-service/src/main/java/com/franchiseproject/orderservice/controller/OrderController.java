@@ -2,21 +2,22 @@ package com.franchiseproject.orderservice.controller;
 
 import com.franchiseproject.orderservice.dto.request.CreateOrderRequest;
 import com.franchiseproject.orderservice.dto.OrderResponse;
+import com.franchiseproject.orderservice.dto.request.PaymentResultRequest;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
+import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
-import com.franchiseproject.orderservice.mapper.OrderMapper;
-import com.franchiseproject.orderservice.service.OrderDetailService;
 import com.franchiseproject.orderservice.service.OrderService;
-import com.franchiseproject.orderservice.service.OrderStatusLogService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import java.util.List;
@@ -28,15 +29,10 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderController {
     OrderService orderService;
-    OrderDetailService orderDetailService;
-    OrderStatusLogService orderStatusLogService;
-    OrderMapper orderMapper;
 
     @GetMapping
     public ApiResponse<List<OrderResponse>> getAllOrder() {
-
         List<OrderResponse> orders = orderService.getAll();
-
         return ApiResponse.<List<OrderResponse>>builder()
                 .message("Lấy danh sách đơn hàng thành công")
                 .data(orders)
@@ -92,6 +88,20 @@ public class OrderController {
                 .message("Tìm đơn hàng theo mã khách hàng thành công!!!")
                 .statusCode(200)
                 .data(orderService.getOrderByCustomerId(customerId))
+                .build();
+    }
+
+    @GetMapping("/customer/{customerId}")
+    public ApiResponse<Page<OrderResponse>> getOrdersByCustomer(
+            @PathVariable UUID customerId,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.<Page<OrderResponse>>builder()
+                .message("Lấy danh sách đơn hàng theo mã khách hàng và trạng thái thành công")
+                .statusCode(200)
+                .data(orderService.getOrdersByCustomerIdAndStatus(customerId, status, page, size))
                 .build();
     }
 
@@ -158,6 +168,90 @@ public class OrderController {
                 .data(orderService.getAddressOnlineOrder(customerId))
                 .statusCode(200)
                 .errors(null)
+                .build();
+    }
+
+
+    /// Mock Test Api với Payment-Service
+    @GetMapping("/{orderId}/get-orders")
+    public PaymentResponse getOrder(@PathVariable UUID orderId) {
+
+        return PaymentResponse.builder()
+                .orderId(orderId)
+                .customerId(UUID.randomUUID())
+                .finalTotal(new BigDecimal("120000"))
+                .orderStatus("WAITING_PAYMENT")
+                .build();
+    }
+
+    @PostMapping("/payment-result")
+    public ResponseEntity<String> receivePaymentResult(@RequestBody PaymentResultRequest request) {
+
+        System.out.println("Received payment result: " + request);
+
+        return ResponseEntity.ok("Payment result received");
+    }
+
+
+    @GetMapping("/franchise/{franchiseId}")
+    public ApiResponse<Page<OrderResponse>> getOrdersByFranchise(
+            @PathVariable UUID franchiseId,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.<Page<OrderResponse>>builder()
+                .message("Lấy danh sách đơn hàng theo franchise thành công")
+                .data(orderService.getOrdersByFranchiseAndStatus(franchiseId, status, page, size))
+                .statusCode(200)
+                .errors(null)
+                .build();
+    }
+
+    @GetMapping("/status")
+    public ApiResponse<Page<OrderResponse>> getOrdersByStatus(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        Page<OrderResponse> orders = orderService.getOrdersByStatus(status, page, size);
+
+        return ApiResponse.<Page<OrderResponse>>builder()
+                .message("Lấy danh sách đơn hàng thành công")
+                .data(orders)
+                .statusCode(200)
+                .errors(null)
+                .build();
+    }
+
+    @GetMapping("/search")
+    public ApiResponse<List<OrderResponse>> searchOrders(
+            @RequestParam(required = false) UUID franchiseId,
+            @RequestParam String keyword
+    ) {
+
+        List<OrderResponse> orders;
+
+        if (franchiseId != null) {
+            orders = orderService.searchOrders(franchiseId, keyword);
+        } else {
+            orders = orderService.searchOrderById(keyword);
+        }
+
+        return ApiResponse.<List<OrderResponse>>builder()
+                .message("Search orders success")
+                .data(orders)
+                .statusCode(200)
+                .errors(null)
+                .build();
+    }
+
+    @GetMapping("/detail/{orderId}")
+    public ApiResponse<OrderResponse> getOrderById(@PathVariable UUID orderId) {
+        return ApiResponse.<OrderResponse>builder()
+                .message("Lấy đơn hàng theo mã đơn hàng thành công")
+                .data(orderService.getOrderById(orderId))
                 .build();
     }
 }
