@@ -6,6 +6,7 @@ import com.franchiseproject.paymentservice.dto.response.PaymentMethodResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentQRResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
+import com.franchiseproject.paymentservice.enums.StatusTransaction;
 import com.franchiseproject.paymentservice.exception.AppException;
 import com.franchiseproject.paymentservice.service.PaymentMethodService;
 import com.franchiseproject.paymentservice.service.PaymentTransactionService;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.query.Order;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -66,6 +68,15 @@ public class PaymentController {
                 .data(paymentMethodService.getAllByActiveTrue())
                 .statusCode(200)
                 .errors(null)
+                .build();
+    }
+
+    @GetMapping("/status/{orderId}")
+    public ApiResponse<StatusTransaction> checkStatus(@PathVariable UUID orderId) {
+        return ApiResponse.<StatusTransaction>builder()
+                .message("Lấy trạng thái Transaction thành công!")
+                .data(paymentTransactionService.getPaymentTransactionByOrderId(orderId).getStatus())
+                .statusCode(200)
                 .build();
     }
 
