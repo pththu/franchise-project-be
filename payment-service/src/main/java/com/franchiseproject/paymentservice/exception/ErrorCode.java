@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ErrorCode {
+    TRANSACTION_ALREADY_EXISTS(400, "Order đã có transaction", HttpStatus.CONFLICT),
+    METHOD_EMPTY(400, "Không tìm thấy payment method khả dụng", HttpStatus.BAD_REQUEST),
+    DUPLICATE_ORDER_ID(400, "duplicate request create transaction", HttpStatus.BAD_REQUEST),
     NOT_FOUND_TRANSACTION(404, "Transaction not found", HttpStatus.NOT_FOUND),
     SIGNATURE_FAILED(400, "tạo signature thất bại", HttpStatus.BAD_REQUEST),
     INVALID_SIGNATURE(400, "Invalid signature", HttpStatus.BAD_REQUEST),

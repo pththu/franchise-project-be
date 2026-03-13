@@ -2,6 +2,7 @@ package com.franchiseproject.orderservice.client;
 
 import com.franchiseproject.orderservice.dto.request.PaymentTransactionRequest;
 import com.franchiseproject.orderservice.dto.response.PaymentResponse;
+import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +43,7 @@ public class PaymentClient {
                 .orderId(orderId)
                 .customerId(customerId)
                 .finalTotal(finalTotal)
-                .orderStatus("SUCCESS")
+                .orderStatus(OrderStatus.CONFIRMED)
                 .build();
     }
 }

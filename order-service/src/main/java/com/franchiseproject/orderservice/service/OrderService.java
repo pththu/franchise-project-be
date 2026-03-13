@@ -4,11 +4,14 @@ import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.request.CreateOrderRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
+//import com.franchiseproject.orderservice.dto.response.OrderResponse;
+import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface OrderService {
@@ -50,4 +53,6 @@ public interface OrderService {
     Page<OrderResponse> getOrdersByCustomerIdAndStatus(UUID customerId, OrderStatus status, int page, int size);
 
     OrderResponse getOrderById(UUID orderId);
+    PaymentResponse getOrder(UUID orderId);
+
 }
