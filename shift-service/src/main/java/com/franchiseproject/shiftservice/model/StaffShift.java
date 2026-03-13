@@ -35,4 +35,7 @@ public class StaffShift {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ShiftStatus status;
+
+    private Integer lateMinutes;
+    private String note;
 }
