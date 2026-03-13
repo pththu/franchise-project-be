@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/loyalty")
-@CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping("/api/loyalty")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LoyaltyTransactionController {
