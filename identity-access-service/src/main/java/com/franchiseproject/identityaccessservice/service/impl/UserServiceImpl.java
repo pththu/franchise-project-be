@@ -18,6 +18,10 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,6 +37,8 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+
+    static final int DEFAULT_PAGE_SIZE = 20;
 
     @Override
     public User getByUsername(String username) {
@@ -139,5 +145,28 @@ public class UserServiceImpl implements UserService {
         return AssignRoleResponse.builder()
                 .isAssigned(true)
                 .build();
+    }
+
+    @Override
+    public Page<User> getAll(int page) {
+        Pageable pageable = PageRequest.of(
+                page,
+                DEFAULT_PAGE_SIZE,
+                Sort.by("username").ascending()
+        );
+        return userRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<User> search(String keyword, int page) {
+        if (keyword != null) {
+            keyword = keyword.trim();
+        }
+        Pageable pageable = PageRequest.of(
+                page,
+                DEFAULT_PAGE_SIZE,
+                Sort.by("username").ascending()
+        );
+        return userRepository.searchByKeyword(keyword, pageable);
     }
 }

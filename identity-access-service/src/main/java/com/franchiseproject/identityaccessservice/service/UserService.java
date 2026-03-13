@@ -7,6 +7,7 @@ import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,4 +22,6 @@ public interface UserService {
     UserUpdateResponse updateAccountInfomation(String username, UserUpdateRequest request);
     UserDeleteResponse deleteAccountUser(UUID userId);
     AssignRoleResponse assignRole(Role role, User user);
+    Page<User> getAll(int page);
+    Page<User> search(String keyword, int page);
 }

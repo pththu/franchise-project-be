@@ -17,6 +17,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,23 +39,59 @@ public class UserController {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
 
-    @GetMapping
-    public ApiResponse<List<UserResponse>> getAll() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("Username :" + authentication.getName());
-        authentication.getAuthorities().forEach(
-                ga -> log.info(ga.getAuthority())
-        );
+//    @GetMapping
+//    public ApiResponse<List<UserResponse>> getAll() {
+//        return ApiResponse.<List<UserResponse>>builder()
+//                .statusCode(200)
+//                .message("Get Data Success")
+//                .data(userService.getAll()
+//                        .stream()
+//                        .map(userMapper::toUserResponse)
+//                        .toList())
+//                .build();
+//    }
 
-        return ApiResponse.<List<UserResponse>>builder()
+    @GetMapping
+    public ApiResponse<Page<UserResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page) {
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Username: {}", authentication.getName());
+        authentication.getAuthorities()
+                .forEach(ga -> log.info(ga.getAuthority()));
+
+        Page<UserResponse> data = userService.getAll(page)
+                .map(userMapper::toUserResponse);
+
+        return ApiResponse.<Page<UserResponse>>builder()
                 .statusCode(200)
                 .message("Get Data Success")
-                .data(userService.getAll()
-                        .stream()
-                        .map(userMapper::toUserResponse)
-                        .toList())
+                .data(data)
                 .build();
     }
+
+    @GetMapping("/search")
+    public ApiResponse<PageResponse<UserResponse>> search(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page) {
+
+        log.info("keyword: {}", keyword);
+        Page<UserResponse> data = userService.search(keyword, page)
+                .map(userMapper::toUserResponse);
+
+        return ApiResponse.<PageResponse<UserResponse>>builder()
+                .statusCode(200)
+                .message("Search users success")
+                .data(PageResponse.<UserResponse>builder()
+                        .content(data.getContent())
+                        .page(data.getNumber())
+                        .size(data.getSize())
+                        .totalElements(data.getTotalElements())
+                        .totalPages(data.getTotalPages())
+                        .build())
+                .build();
+    }
+
 
     @PostMapping("")
     public ApiResponse<UserCreationResponse> createUser(@RequestBody @Valid UserCreationRequest request, @AuthenticationPrincipal Jwt jwt) {
