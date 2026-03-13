@@ -44,9 +44,6 @@ public class PromotionServiceImpl {
         existing.setStartTime(promotion.getStartTime());
         existing.setEndTime(promotion.getEndTime());
         existing.setUsageLimit(promotion.getUsageLimit());
-        existing.setScopeType(promotion.getScopeType());
-        existing.setScopeValue(promotion.getScopeValue());
-        existing.setCouponCode(promotion.getCouponCode());
 
         return promotionRepository.save(existing);
     }
