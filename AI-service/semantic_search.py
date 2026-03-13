@@ -2,6 +2,9 @@ from sentence_transformers import SentenceTransformer
 from vector_store import VectorStore
 import numpy as np
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Semantic_Search:
     def __init__(self, model_name = "intfloat/multilingual-e5-base", vector_path = "Vector/vectors.txt"):
@@ -13,15 +16,15 @@ class Semantic_Search:
     def _check_load(self, path):
 
         if self.model is not None:
-            print("Load thành công model")
+            logger.info("Load thành công model")
         else:
-            print("Model chưa load được")
+            logger.error("Model chưa load được")
         
         try:
             with open(path, "r") as f:
-                print("Store Vectors check thành công !!!")
+                logger.info("Store Vectors check thành công !!!")
         except:
-            print(f"Chưa có VectorStore!!! đang build lại.")
+            logger.warning(f"Chưa có VectorStore!!! đang build lại.")
             self.update_vectors_store()
 
     def _search(self, 

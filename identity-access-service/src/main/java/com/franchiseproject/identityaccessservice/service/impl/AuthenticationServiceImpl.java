@@ -192,11 +192,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     // REFRESH TOKEN
     // ─────────────────────────────────────────────────────────────
     @Override
-    public TokenResponse refreshToken(String username, String refreshToken) {
-        AuthenticationResultType result = cognitoService.refreshToken(username, refreshToken);
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public TokenResponse refreshToken(UUID userId, String refreshToken) {
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        AuthenticationResultType result = cognitoService.refreshToken(user.getUsername(), refreshToken);
         return TokenResponse.builder()
                 .accessToken(result.accessToken())
                 .idToken(result.idToken())

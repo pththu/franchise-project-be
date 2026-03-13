@@ -8,11 +8,14 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth/roles")
 //@RequestMapping("/api/v1/roles")
@@ -24,6 +27,12 @@ public class RoleController {
     // Get all Roles
     @GetMapping
     public ApiResponse<List<Role>> getAllRoles() {
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Username :" + authentication.getName());
+        authentication.getAuthorities().forEach(
+                ga -> log.info(ga.getAuthority())
+        );
         return ApiResponse.<List<Role>>builder()
                 .statusCode(200)
                 .message("Gel all role")
