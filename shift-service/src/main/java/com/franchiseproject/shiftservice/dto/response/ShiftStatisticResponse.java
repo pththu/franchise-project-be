@@ -12,4 +12,5 @@ public class ShiftStatisticResponse {
     private long totalCheckedIn;
     private long totalCheckedOut;
     private long totalAbsent;
+    private long totalIncomplete;     // Số ca quên check-out
 }
