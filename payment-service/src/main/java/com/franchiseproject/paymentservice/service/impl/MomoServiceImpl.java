@@ -47,7 +47,6 @@ public class MomoServiceImpl implements MomoService {
         String prettySignature = "";
         String orderInfo = "ThanhToanHoaDon_" + orderResponse.getOrderId();
         long amount = orderResponse.getFinalTotal().longValueExact();
-        checkOrderStatus(orderResponse);
 
         PaymentTransaction paymentTransaction = buildPaymentTransaction(orderResponse, paymentMethod);
         paymentTransactionRepository.save(paymentTransaction);
@@ -111,12 +110,6 @@ public class MomoServiceImpl implements MomoService {
             hexString.append(hex);
         }
         return hexString.toString();
-    }
-
-    private void checkOrderStatus(OrderResponse orderResponse) {
-        if (!orderResponse.getOrderStatus().equals("WAITING_PAYMENT")) {
-            throw new AppException(ErrorCode.ORDER_NOT_PAYABLE);
-        }
     }
 
     @Override

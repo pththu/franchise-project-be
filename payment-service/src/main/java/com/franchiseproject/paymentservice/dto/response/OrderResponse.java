@@ -1,5 +1,6 @@
 package com.franchiseproject.paymentservice.dto.response;
 
+import com.franchiseproject.paymentservice.enums.OrderStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -22,5 +23,5 @@ public class OrderResponse {
     @Positive(message = "Tiền > 0")
     BigDecimal finalTotal;
     @NotNull(message = "orderStatus cần phải ở WAITING_PAYMENT mới có thể tiến thành thanh toán")
-    String orderStatus;
+    OrderStatus orderStatus;
 }

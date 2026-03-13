@@ -27,7 +27,7 @@ import java.util.UUID;
         UUID id;
         @Column(name = "user_id", nullable = false)
         UUID userId;
-        @Column(name = "order_id", nullable = false)
+        @Column(name = "order_id", nullable = false, unique = true)
         UUID orderId;
         @Column(name = "amount", nullable = false)
         BigDecimal amount;
