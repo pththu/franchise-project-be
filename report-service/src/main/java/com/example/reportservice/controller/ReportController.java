@@ -1,11 +1,12 @@
 package com.example.reportservice.controller;
 
-import com.example.reportservice.dto.response.DashboardResponse;
-import com.example.reportservice.service.impl.ReportService;
+import com.example.reportservice.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 //@RestController
 //@RequestMapping("/reports")
@@ -25,17 +26,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/reports")
+@RequiredArgsConstructor
 public class ReportController {
 
     private final ReportService reportService;
 
-    public ReportController(ReportService reportService) {
-        this.reportService = reportService;
+    @GetMapping("/dashboard")
+    public Map<String, Object> getDashboard() {
+        return reportService.getDashboard();
     }
 
-    @GetMapping("/orders")
-    public Object getOrders() {
-        return reportService.getOrders();
-    }
 
 }
