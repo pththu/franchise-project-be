@@ -1,10 +1,12 @@
 package com.franchiseproject.identityaccessservice.service;
 
 import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
+import com.franchiseproject.identityaccessservice.dto.request.SeachUsersRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.enums.UserStatus;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -21,6 +23,16 @@ public interface UserService {
     UserDeleteResponse deleteAccountUser(UUID userId);
     AssignRoleResponse assignRole(Role role, User user);
     Page<User> getAll(int page);
-    Page<User> search(String keyword, int page);
+//    Page<User> search(
+//            String keyword,
+//            String role,
+//            UserStatus status,
+//            Boolean gender,
+//            int page,
+//            int size,
+//            String sortBy,
+//            String sortDir
+//    );
+    Page<User> search(SeachUsersRequest request);
     StatsCountUserResponse countUsers();
 }

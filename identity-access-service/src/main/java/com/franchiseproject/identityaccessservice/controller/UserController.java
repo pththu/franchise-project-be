@@ -57,13 +57,33 @@ public class UserController {
                 .build();
     }
 
+    //    @GetMapping("/search")
+//    public ApiResponse<PageResponse<UserResponse>> search(
+//            @RequestParam String keyword,
+//            @RequestParam(defaultValue = "0") int page) {
+//
+//        log.info("keyword: {}", keyword);
+//        Page<UserResponse> data = userService.search(keyword, page)
+//                .map(userMapper::toUserResponse);
+//
+//        return ApiResponse.<PageResponse<UserResponse>>builder()
+//                .statusCode(200)
+//                .message("Search users success")
+//                .data(PageResponse.<UserResponse>builder()
+//                        .content(data.getContent())
+//                        .page(data.getNumber())
+//                        .size(data.getSize())
+//                        .totalElements(data.getTotalElements())
+//                        .totalPages(data.getTotalPages())
+//                        .build())
+//                .build();
+//    }
     @GetMapping("/search")
-    public ApiResponse<PageResponse<UserResponse>> search(
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int page) {
+    public ApiResponse<PageResponse<UserResponse>> search(@Valid @ModelAttribute SeachUsersRequest request) {
 
-        log.info("keyword: {}", keyword);
-        Page<UserResponse> data = userService.search(keyword, page)
+        log.info("Search users API called with request: {}", request);
+
+        Page<UserResponse> data = userService.search(request)
                 .map(userMapper::toUserResponse);
 
         return ApiResponse.<PageResponse<UserResponse>>builder()
@@ -99,7 +119,8 @@ public class UserController {
                 if (!roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
                 break;
             case "STAFF":
-                if (!roleName.equals("MANAGER") && !roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                if (!roleName.equals("MANAGER") && !roleName.equals("ADMIN"))
+                    throw new AppException(ErrorCode.FORBIDDEN);
                 break;
             case "CUSTOMER":
                 if (!roleName.equals("STAFF") && !roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
@@ -176,7 +197,7 @@ public class UserController {
     public ApiResponse<AssignRoleResponse> assignRole(
             @PathVariable UUID userId,
             @RequestBody AssignRoleRequest request,
-            @AuthenticationPrincipal Jwt jwt ) {
+            @AuthenticationPrincipal Jwt jwt) {
 
         String assignerRole = jwt.getClaimAsString("scope");
         User user = userService.getById(userId);
@@ -191,7 +212,8 @@ public class UserController {
                 if (!assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
                 break;
             case "STAFF":
-                if (!assignerRole.equals("MANAGER") && !assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                if (!assignerRole.equals("MANAGER") && !assignerRole.equals("ADMIN"))
+                    throw new AppException(ErrorCode.FORBIDDEN);
                 break;
         }
 

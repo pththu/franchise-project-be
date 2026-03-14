@@ -1,6 +1,7 @@
 package com.franchiseproject.identityaccessservice.repository;
 
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.enums.UserStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,12 +30,22 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Page<User> findAll(Pageable pageable);
 
     @Query("""
-            SELECT u FROM User u
-            WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            """)
-    Page<User> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+        SELECT u FROM User u
+        WHERE (:keyword IS NULL OR 
+                LOWER(u.username) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR
+                LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR
+                LOWER(u.fullName) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR
+                LOWER(u.phone) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')))
+            AND (:roleName IS NULL OR u.role.name = CAST(:roleName AS string))
+            AND (:status IS NULL OR u.status = :status)
+            AND (:gender IS NULL OR u.gender = :gender)
+        """)
+    Page<User> searchUsers(
+            @Param("keyword") String keyword,
+            @Param("roleName") String roleName,
+            @Param("status") UserStatus status,
+            @Param("gender") Boolean gender,
+            Pageable pageable);
 
     @Query("""
             SELECT 

@@ -1,6 +1,7 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
 import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
+import com.franchiseproject.identityaccessservice.dto.request.SeachUsersRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
@@ -154,18 +155,50 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll(pageable);
     }
 
+    //    @Override
+//    public Page<User> search(
+//            String keyword,
+//            String role,
+//            UserStatus status,
+//            Boolean gender,
+//            int page,
+//            int size,
+//            String sortBy,
+//            String sortDir
+//    ) {
+//       return null;
+//    }
     @Override
-    public Page<User> search(String keyword, int page) {
-        if (keyword != null) {
-            keyword = keyword.trim();
+    public Page<User> search(SeachUsersRequest request) {
+
+        String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
+                ? request.getKeyword().trim() : null;
+
+        String roleName = (request.getRole() != null && !request.getRole().trim().isEmpty())
+                ? request.getRole().trim() : null;
+
+        String sortProperty = request.getSortBy();
+        if ("name".equalsIgnoreCase(sortProperty)) {
+            sortProperty = "fullName";
         }
 
-        Pageable pageable = PageRequest.of(
-                page,
-                DEFAULT_PAGE_SIZE,
-                Sort.by("username").ascending()
+        UserStatus status = (request.getStatus() != null && !request.getStatus().trim().isEmpty())
+                ? UserStatus.valueOf(request.getStatus().trim()) : null;
+
+        Sort sort = request.getSortDir().equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortProperty).ascending()
+                : Sort.by(sortProperty).descending();
+
+
+        Pageable pageable = PageRequest.of(request.getPage().intValue(), request.getSize().intValue(), sort);
+
+        return userRepository.searchUsers(
+                keyword,
+                roleName,
+                status,
+                request.getGender(),
+                pageable
         );
-        return userRepository.searchByKeyword(keyword, pageable);
     }
 
     @Override
