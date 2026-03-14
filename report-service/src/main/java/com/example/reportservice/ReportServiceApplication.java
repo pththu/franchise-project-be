@@ -1,13 +1,13 @@
-package com.franchiseproject.identityaccessservice;
+package com.example.reportservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class IdentityAccessServiceApplication {
+public class ReportServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(IdentityAccessServiceApplication.class, args);
+        SpringApplication.run(ReportServiceApplication.class, args);
     }
 
 }
