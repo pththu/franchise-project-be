@@ -57,27 +57,6 @@ public class UserController {
                 .build();
     }
 
-    //    @GetMapping("/search")
-//    public ApiResponse<PageResponse<UserResponse>> search(
-//            @RequestParam String keyword,
-//            @RequestParam(defaultValue = "0") int page) {
-//
-//        log.info("keyword: {}", keyword);
-//        Page<UserResponse> data = userService.search(keyword, page)
-//                .map(userMapper::toUserResponse);
-//
-//        return ApiResponse.<PageResponse<UserResponse>>builder()
-//                .statusCode(200)
-//                .message("Search users success")
-//                .data(PageResponse.<UserResponse>builder()
-//                        .content(data.getContent())
-//                        .page(data.getNumber())
-//                        .size(data.getSize())
-//                        .totalElements(data.getTotalElements())
-//                        .totalPages(data.getTotalPages())
-//                        .build())
-//                .build();
-//    }
     @GetMapping("/search")
     public ApiResponse<PageResponse<UserResponse>> search(@Valid @ModelAttribute SeachUsersRequest request) {
 
@@ -101,17 +80,19 @@ public class UserController {
 
 
     @PostMapping("")
-    public ApiResponse<UserCreationResponse> createUser(@RequestBody @Valid UserCreationRequest request, @AuthenticationPrincipal Jwt jwt) {
+    public ApiResponse<UserCreationResponse> createUser(
+            @RequestBody @Valid UserCreationRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
 
         Role role = roleService.getByName(request.getRoleName());
-
         if (role == null) {
             throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
         }
 
-        String roleName = jwt.getClaimAsString("scope");
+        String roleName = jwt.getClaimAsString("role");
         System.out.println("ROLE: " + roleName);
         System.out.println("ROLE: " + role.getName());
+
         switch (role.getName()) {
             case "ADMIN":
                 throw new AppException(ErrorCode.FORBIDDEN);
@@ -123,25 +104,20 @@ public class UserController {
                     throw new AppException(ErrorCode.FORBIDDEN);
                 break;
             case "CUSTOMER":
-                if (!roleName.equals("STAFF") && !roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                if (!roleName.equals("STAFF") && !roleName.equals("ADMIN"))
+                    throw new AppException(ErrorCode.FORBIDDEN);
                 break;
         }
-
-        User user = userMapper.toUser(request);
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole(role);
-        user.setStatus(UserStatus.ACTIVE);
 
         return ApiResponse.<UserCreationResponse>builder()
                 .statusCode(201)
                 .message("Created")
-                .data(userService.createOne(user))
+                .data(userService.createOne(request, role))
                 .build();
     }
 
     /**
      * view account detail
-     *
      * @param userId
      * @return
      */
