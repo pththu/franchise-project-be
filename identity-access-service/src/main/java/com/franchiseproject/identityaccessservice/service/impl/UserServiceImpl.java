@@ -1,8 +1,6 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
 import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
-import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
@@ -15,18 +13,18 @@ import com.franchiseproject.identityaccessservice.repository.UserRepository;
 import com.franchiseproject.identityaccessservice.service.UserService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -134,7 +132,6 @@ public class UserServiceImpl implements UserService {
         return UserDeleteResponse.builder()
                 .isDeleted(true)
                 .build();
-
     }
 
     @Override
@@ -162,11 +159,28 @@ public class UserServiceImpl implements UserService {
         if (keyword != null) {
             keyword = keyword.trim();
         }
+
         Pageable pageable = PageRequest.of(
                 page,
                 DEFAULT_PAGE_SIZE,
                 Sort.by("username").ascending()
         );
         return userRepository.searchByKeyword(keyword, pageable);
+    }
+
+    @Override
+    public StatsCountUserResponse countUsers() {
+        Object[] result = (Object[]) userRepository.countUserStats()[0];
+
+        return StatsCountUserResponse.builder()
+                .totals(((Long) result[0]).intValue())
+                .totalIsActive(((Long) result[1]).intValue())
+                .totalIsSuspended(((Long) result[2]).intValue())
+                .totalIsDeleted(((Long) result[3]).intValue())
+                .totalAdmin(((Long) result[4]).intValue())
+                .totalManager(((Long) result[5]).intValue())
+                .totalStaff(((Long) result[6]).intValue())
+                .totalCustomer(((Long) result[7]).intValue())
+                .build();
     }
 }

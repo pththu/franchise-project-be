@@ -30,7 +30,6 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/api/auth/users")
-//@RequestMapping("/api/v1/users")
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserController {
@@ -38,18 +37,6 @@ public class UserController {
     RoleService roleService;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
-
-//    @GetMapping
-//    public ApiResponse<List<UserResponse>> getAll() {
-//        return ApiResponse.<List<UserResponse>>builder()
-//                .statusCode(200)
-//                .message("Get Data Success")
-//                .data(userService.getAll()
-//                        .stream()
-//                        .map(userMapper::toUserResponse)
-//                        .toList())
-//                .build();
-//    }
 
     @GetMapping
     public ApiResponse<Page<UserResponse>> getAll(
@@ -215,4 +202,12 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping("/counts")
+    public ApiResponse<StatsCountUserResponse> getCountUsers() {
+        return ApiResponse.<StatsCountUserResponse>builder()
+                .statusCode(200)
+                .message("Get count user in system")
+                .data(userService.countUsers())
+                .build();
+    }
 }

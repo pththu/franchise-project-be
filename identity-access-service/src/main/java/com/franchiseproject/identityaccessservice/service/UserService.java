@@ -1,8 +1,6 @@
 package com.franchiseproject.identityaccessservice.service;
 
 import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
-import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
@@ -24,4 +22,5 @@ public interface UserService {
     AssignRoleResponse assignRole(Role role, User user);
     Page<User> getAll(int page);
     Page<User> search(String keyword, int page);
+    StatsCountUserResponse countUsers();
 }
