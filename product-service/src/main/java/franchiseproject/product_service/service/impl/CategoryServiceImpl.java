@@ -7,6 +7,7 @@ import franchiseproject.product_service.dto.ProductInCategoryResponse;
 import franchiseproject.product_service.model.Category;
 import franchiseproject.product_service.repository.CategoryRepository;
 import franchiseproject.product_service.service.CategoryService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = Category.builder()
                 .name(request.getName())
                 .description(request.getDescription())
+                .status("ACTIVE")
                 .build();
 
         Category saved = categoryRepository.save(category);
@@ -71,23 +73,34 @@ public class CategoryServiceImpl implements CategoryService {
 
         category.setName(request.getName());
         category.setDescription(request.getDescription());
+        category.setStatus(request.getStatus());
 
         return mapToResponse(categoryRepository.save(category));
     }
 
+    @Transactional
     @Override
     public void delete(UUID id) {
-        if (!categoryRepository.existsById(id)) {
-            throw new RuntimeException("Category not found");
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        if (category.getProducts() != null && !category.getProducts().isEmpty()) {
+            throw new RuntimeException("Cannot delete category because it contains products");
         }
-        categoryRepository.deleteById(id);
+
+        categoryRepository.delete(category);
     }
 
     private CategoryResponse mapToResponse(Category category) {
+        int productCount = category.getProducts() == null ? 0 : category.getProducts().size();
+
         return CategoryResponse.builder()
                 .id(category.getId())
                 .name(category.getName())
                 .description(category.getDescription())
+                .status(category.getStatus())
+                .productCount(productCount)
+                .lastUpdated(category.getUpdatedAt())
                 .build();
     }
 
