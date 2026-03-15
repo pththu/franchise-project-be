@@ -171,6 +171,17 @@ public class OrderController {
                 .build();
     }
 
+    /// Trả Response data của Order cho Payment-Service tạo Transaction
+    /// dùng getOrder thì comment Mock test
+//    @GetMapping("/{orderId}/get-orders")
+//    public ApiResponse<PaymentResponse> getOrder(@PathVariable UUID orderId) {
+//        return ApiResponse.<PaymentResponse>builder()
+//                .message("Lấy đơn hàng trả về cho Payment-Service Thành Công!")
+//                .data(orderService.getOrder(orderId))
+//                .statusCode(200)
+//                .errors(null)
+//                .build();
+//    }
 
     /// Mock Test Api với Payment-Service
     @GetMapping("/{orderId}/get-orders")
@@ -180,10 +191,9 @@ public class OrderController {
                 .orderId(orderId)
                 .customerId(UUID.randomUUID())
                 .finalTotal(new BigDecimal("120000"))
-                .orderStatus("WAITING_PAYMENT")
+                .orderStatus(OrderStatus.WAITING_PAYMENT)
                 .build();
     }
-
     @PostMapping("/payment-result")
     public ResponseEntity<String> receivePaymentResult(@RequestBody PaymentResultRequest request) {
 

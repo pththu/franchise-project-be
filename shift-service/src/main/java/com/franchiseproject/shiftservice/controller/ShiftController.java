@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -85,10 +86,7 @@ public class ShiftController {
             @RequestParam(required = false) UUID staffId,
             @RequestParam LocalDate date
     ) {
-        if (staffId != null) {
             return service.getSchedule(staffId, date);
-        }
-        return service.getScheduleByDate(date);
     }
 
     // ================= STATISTICS =================
@@ -107,5 +105,17 @@ public class ShiftController {
             @PathVariable UUID staffId
     ) {
         return service.getPersonalStatistic(staffId);
+    }
+
+
+    // ===== ATTENDANCE REPORT (THÊM MỚI) =====
+    @GetMapping("/attendance/incomplete")
+    public List<StaffShiftResponse> getIncompleteShifts(@RequestParam LocalDate date) {
+        return service.getIncompleteShifts(date);
+    }
+
+    @GetMapping("/attendance/summary")
+    public Map<String, Object> getAttendanceSummary(@RequestParam LocalDate date) {
+        return service.getAttendanceSummary(date);
     }
 }

@@ -16,7 +16,7 @@ public class OrderClient {
 
     private final RestClient orderRestClient;
 
-    //yêu cầu order-service get info order sau đó trả lại theo OrderResponse
+    /// yêu cầu order-service get info order sau đó trả lại theo OrderResponse
     public OrderResponse getOrderInfoByOrderId(UUID orderId) {
         try {
             return orderRestClient.get()
@@ -28,6 +28,7 @@ public class OrderClient {
         }
     }
 
+    /// Gửi kết quả giao dịch cho order set lại trạng thái
     public void sendPaymentResult(PaymentResultRequest request) {
 
         orderRestClient.post()

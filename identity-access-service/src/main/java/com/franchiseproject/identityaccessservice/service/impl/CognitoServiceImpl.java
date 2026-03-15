@@ -238,9 +238,6 @@ public class CognitoServiceImpl implements CognitoService {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Normalize phone VN → E.164 format (+84...)
-    // ─────────────────────────────────────────────────────────────
     private String normalizePhone(String phone) {
         if (phone == null) return null;
         if (phone.startsWith("0")) {

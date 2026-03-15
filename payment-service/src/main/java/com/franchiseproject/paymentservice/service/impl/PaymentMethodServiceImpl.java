@@ -4,13 +4,16 @@ import com.franchiseproject.paymentservice.client.OrderClient;
 import com.franchiseproject.paymentservice.dto.request.OptionPaymentMethodRequest;
 import com.franchiseproject.paymentservice.dto.response.CreateMomoResponse;
 import com.franchiseproject.paymentservice.dto.response.OrderResponse;
+import com.franchiseproject.paymentservice.dto.response.PaymentMethodResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentQRResponse;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
 import com.franchiseproject.paymentservice.exception.AppException;
 import com.franchiseproject.paymentservice.exception.ErrorCode;
+import com.franchiseproject.paymentservice.mapper.PaymentMethodMapper;
 import com.franchiseproject.paymentservice.repository.PaymentMethodRepository;
 import com.franchiseproject.paymentservice.service.MomoService;
 import com.franchiseproject.paymentservice.service.PaymentMethodService;
+import com.franchiseproject.paymentservice.service.PaymentTransactionService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentMethodServiceImpl implements PaymentMethodService {
     PaymentMethodRepository paymentMethodRepository;
+    PaymentTransactionService paymentTransactionService;
+    PaymentMethodMapper paymentMethodMapper;
     OrderClient orderClient;
     MomoService momoService;
 
@@ -33,11 +38,22 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         return paymentMethodRepository.findAll();
     }
 
+    /// Lấy tất cả các phương thức thanh toán khả dụng
+    @Override
+    @Transactional
+    public List<PaymentMethodResponse> getAllByActiveTrue() {
+        List<PaymentMethod> listPaymentMethod = paymentMethodRepository.findAllByActive(true)
+                .orElseThrow(() -> new AppException(ErrorCode.METHOD_EMPTY));
+        return paymentMethodMapper.toPaymentMethodResponse(listPaymentMethod);
+
+    }
+
     @Override
     public PaymentMethod create(PaymentMethod paymentMethod) {
         return paymentMethodRepository.save(paymentMethod);
     }
 
+    /// Lấy phương thức thanh toán mà user đã chọn ở FE
     @Override
     @Transactional
     public PaymentMethod getAvailiablePaymentMethod(OptionPaymentMethodRequest optionPaymentMethodRequest) {
@@ -47,13 +63,14 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                         new AppException(ErrorCode.PAYMENT_METHOD_NOT_AVAILABLE));
     }
 
+    /// Điều hướng phương thức tạo giao dịch theo lựa chọn User đã chọn ở FE
     @Override
     @Transactional
     public PaymentQRResponse optionPaymentMethod(OptionPaymentMethodRequest optionPaymentMethodRequest) {
 
         OrderResponse orderResponse = orderClient.getOrderInfoByOrderId(optionPaymentMethodRequest.getOrderId());
         PaymentMethod paymentMethod = getAvailiablePaymentMethod(optionPaymentMethodRequest);
-
+        paymentTransactionService.checkDuplicateTransaction(orderResponse);
         switch (paymentMethod.getMethodName()) {
             case "MOMO":
                 CreateMomoResponse createMomoResponse = momoService.buildCreateMomoQR(orderResponse, paymentMethod);
@@ -65,7 +82,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                         .amount(createMomoResponse.getAmount())
                         .build();
             case "VNPAY":
-
+            case "COD":
             default:
                 throw new AppException(ErrorCode.PAYMENT_METHOD_NOT_SUPPORTED);
         }

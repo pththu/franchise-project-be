@@ -1,5 +1,7 @@
 package com.franchiseproject.paymentservice.config;
 
+import com.franchiseproject.paymentservice.exception.AppException;
+import com.franchiseproject.paymentservice.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +17,7 @@ public class RestClientConfig {
 
     private final MomoProperties momoProperties;
 
+    /// Call MOMO
     @Bean
     public RestClient momoRestClient() {
         return RestClient.builder()
@@ -31,11 +34,16 @@ public class RestClientConfig {
                 .build();
     }
 
+    /// Call order-service
     @Bean
     public RestClient orderRestClient() {
-        return RestClient.builder()
-                .baseUrl("http://localhost:3007")
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
+        try {
+            return RestClient.builder()
+                    .baseUrl("http://localhost:3007")
+                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .build();
+        } catch (AppException a) {
+            throw new AppException(ErrorCode.NOT_FOUND_ORDER);
+        }
     }
 }

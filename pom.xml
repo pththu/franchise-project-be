@@ -24,6 +24,8 @@
         <module>product-service</module>
         <module>promotion-service</module>
         <module>shift-service</module>
+        <module>report-service</module>
+
     </modules>
 
 </project>
