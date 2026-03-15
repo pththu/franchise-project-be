@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>franchiseproject</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <!-- QUAN TRỌNG -->
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>api-gateway</module>
+        <module>customer-service</module>
+        <module>delivery-service</module>
+        <module>identity-access-service</module>
+        <module>inventory-service</module>
+        <module>loyalty-service</module>
+        <module>order-service</module>
+        <module>payment-service</module>
+        <module>product-service</module>
+        <module>promotion-service</module>
+        <module>shift-service</module>
+        <module>report-service</module>
+
+    </modules>
+
+</project>
