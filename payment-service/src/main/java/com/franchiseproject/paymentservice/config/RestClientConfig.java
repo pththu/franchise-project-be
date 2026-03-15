@@ -17,6 +17,7 @@ public class RestClientConfig {
 
     private final MomoProperties momoProperties;
 
+    /// Call MOMO
     @Bean
     public RestClient momoRestClient() {
         return RestClient.builder()
@@ -33,6 +34,7 @@ public class RestClientConfig {
                 .build();
     }
 
+    /// Call order-service
     @Bean
     public RestClient orderRestClient() {
         try {

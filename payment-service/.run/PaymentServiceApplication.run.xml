@@ -6,7 +6,7 @@
       <env name="DB_URL" value="jdbc:postgresql://dpg-d6ghni1drdic73c6u9l0-a.singapore-postgres.render.com:5432/group_03?sslmode=require" />
       <env name="DB_USERNAME" value="group_03_user" />
       <env name="END_POINT" value="https://test-payment.momo.vn/v2/gateway/api" />
-      <env name="IPN_URL" value="http://localhost:3011/api/momo/ipn-handler" />
+      <env name="IPN_URL" value="https://nonpurifying-poetastric-kyrie.ngrok-free.dev/api/momo/ipn-handler" />
       <env name="RETURN_URL" value="http://localhost:5173/checkout-payment" />
       <env name="SECRET_KEY" value="K951B6PE1waDMi640xX08PD3vg6EkVlz" />
     </envs>

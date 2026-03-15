@@ -38,6 +38,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         return paymentMethodRepository.findAll();
     }
 
+    /// Lấy tất cả các phương thức thanh toán khả dụng
     @Override
     @Transactional
     public List<PaymentMethodResponse> getAllByActiveTrue() {
@@ -52,6 +53,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         return paymentMethodRepository.save(paymentMethod);
     }
 
+    /// Lấy phương thức thanh toán mà user đã chọn ở FE
     @Override
     @Transactional
     public PaymentMethod getAvailiablePaymentMethod(OptionPaymentMethodRequest optionPaymentMethodRequest) {
@@ -61,6 +63,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                         new AppException(ErrorCode.PAYMENT_METHOD_NOT_AVAILABLE));
     }
 
+    /// Điều hướng phương thức tạo giao dịch theo lựa chọn User đã chọn ở FE
     @Override
     @Transactional
     public PaymentQRResponse optionPaymentMethod(OptionPaymentMethodRequest optionPaymentMethodRequest) {

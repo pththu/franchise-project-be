@@ -47,6 +47,7 @@ public class PaymentController {
                 .build();
     }
 
+    /// Lấy giao dịch theo orderId
     @GetMapping("/{orderId}/get-transaction")
     public ApiResponse<PaymentTransactionResponse> getPaymentTransactionByOrderId(@PathVariable UUID orderId) {
         PaymentTransactionResponse paymentTransactionResponse = paymentTransactionService.getPaymentTransactionByOrderId(orderId);
@@ -58,6 +59,7 @@ public class PaymentController {
                 .build();
     }
 
+    /// Lấy các phương thức thanh toán khả dụng
     @GetMapping("/get-method")
     public ApiResponse<List<PaymentMethodResponse>> getPaymentMethodByOrderId() {
         return ApiResponse.<List<PaymentMethodResponse>>builder()
@@ -68,6 +70,7 @@ public class PaymentController {
                 .build();
     }
 
+    /// Lấy trạng thái của giao dịch theo orderId
     @GetMapping("/status/{orderId}")
     public ApiResponse<StatusTransaction> checkStatus(@PathVariable UUID orderId) {
         return ApiResponse.<StatusTransaction>builder()

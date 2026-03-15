@@ -15,6 +15,7 @@ import com.franchiseproject.paymentservice.exception.ErrorCode;
 import com.franchiseproject.paymentservice.repository.PaymentTransactionRepository;
 import com.franchiseproject.paymentservice.service.MomoService;
 import com.franchiseproject.paymentservice.service.PaymentMethodService;
+import com.franchiseproject.paymentservice.service.PaymentTransactionService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -36,10 +37,12 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MomoServiceImpl implements MomoService {
 
+    PaymentTransactionService paymentTransactionService;
     PaymentTransactionRepository paymentTransactionRepository;
     MomoProperties momoProperties;
     MomoClient momoClient;
 
+    /// Dùng build request để tạo giao dịch MOMO
     @Override
     @Transactional
     public CreateMomoResponse buildCreateMomoQR(OrderResponse orderResponse, PaymentMethod paymentMethod) {
@@ -48,7 +51,8 @@ public class MomoServiceImpl implements MomoService {
         String orderInfo = "ThanhToanHoaDon_" + orderResponse.getOrderId();
         long amount = orderResponse.getFinalTotal().longValueExact();
 
-        PaymentTransaction paymentTransaction = buildPaymentTransaction(orderResponse, paymentMethod);
+        PaymentTransaction paymentTransaction = paymentTransactionService.buildPaymentTransaction(orderResponse, paymentMethod);
+        paymentTransaction.changeStatus(StatusTransaction.PENDING);
         paymentTransactionRepository.save(paymentTransaction);
 
         String rawSignature = String.format(
@@ -86,17 +90,7 @@ public class MomoServiceImpl implements MomoService {
         return momoClient.createMomoQR(request);
     }
 
-    private PaymentTransaction buildPaymentTransaction(OrderResponse orderResponse, PaymentMethod paymentMethod) {
-        return PaymentTransaction.builder()
-                .userId(orderResponse.getCustomerId())
-                .orderId(orderResponse.getOrderId())
-                .amount(orderResponse.getFinalTotal())
-                .status(StatusTransaction.PENDING)
-                .paymentMethod(paymentMethod)
-                .transactionRef(null)
-                .build();
-    }
-
+    /// Dùng tạo signature
     private String signHmacSHA256(String data, String key) throws Exception {
         Mac hmacSHA256 = Mac.getInstance("HmacSHA256");
         SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
@@ -112,6 +106,7 @@ public class MomoServiceImpl implements MomoService {
         return hexString.toString();
     }
 
+    /// Xác nhận signature từ INP để chắc chắn là đúng giao dịch
     @Override
     @Transactional
     public boolean verifyIpnSignature(Map<String, String> params) {
