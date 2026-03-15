@@ -33,6 +33,9 @@ public class Category {
     @Column(name = "description", nullable = false)
     String description;
 
+    @Column(name = "status", nullable = false)
+    String status;
+
     @CreationTimestamp
     @Column(name = "created_at")
     Instant createdAt;
