@@ -9,6 +9,7 @@ import com.franchiseproject.shiftservice.dto.response.StaffShiftResponse;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface ShiftConfigurationService {
@@ -33,9 +34,14 @@ public interface ShiftConfigurationService {
 
     List<StaffShiftResponse> getSchedule(UUID staffId, LocalDate date);
 
-    List<StaffShiftResponse> getScheduleByDate(LocalDate date);
-
     ShiftStatisticResponse getStatisticByDate(LocalDate date);
 
     PersonalStatisticResponse getPersonalStatistic(UUID staffId);
+
+    List<StaffShiftResponse> getIncompleteShifts(LocalDate date);
+
+    Map<String, Object> getAttendanceSummary(LocalDate date);
+
+    void handleMissedCheckOuts();
+
 }

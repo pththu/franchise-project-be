@@ -1,5 +1,6 @@
 package com.franchiseproject.orderservice.dto.response;
 
+import com.franchiseproject.orderservice.enums.OrderStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -17,8 +18,8 @@ public class PaymentResponse {
     UUID paymentTransactionId;
     UUID orderId;
     UUID customerId;
-    String statusTransaction;
+    OrderStatus orderStatus;
     String transactionReference;
     String message;
-    BigDecimal amount;
+    BigDecimal finalTotal;
 }

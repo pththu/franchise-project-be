@@ -122,11 +122,11 @@ public class UserController {
 
     @GetMapping("/profile")
     public ApiResponse<UserResponse> profile(@AuthenticationPrincipal Jwt jwt) {
-        System.out.println(userService.getProfile(jwt.getSubject()));
+        log.info("jwt.getSubject(): {}", jwt.getSubject());
         return ApiResponse.<UserResponse>builder()
                 .statusCode(200)
                 .message("View account detail")
-                .data(userService.getProfile(jwt.getSubject()))
+                .data(userService.getProfile(UUID.fromString(jwt.getSubject())))
                 .build();
     }
 

@@ -11,6 +11,9 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PermissionRequest {
+    @NotBlank(message = "PERMISSION_NAME_REQUIRED")
+    String name;
+
     @NotBlank(message = "API path cannot be empty")
     String api;
 
