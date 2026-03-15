@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/loyalty/reports")
+@RequestMapping("/api/loyalty")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LoyaltyReportController {
@@ -20,7 +20,7 @@ public class LoyaltyReportController {
     LoyaltyReportService loyaltyReportService;
 
     // View Loyalty program reports
-    @GetMapping
+    @GetMapping("/reports")
     public ApiResponse<LoyaltyReportResponse> getLoyaltyReport() {
         return ApiResponse.<LoyaltyReportResponse>builder()
                 .statusCode(200)
