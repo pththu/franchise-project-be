@@ -11,6 +11,6 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserCreationResponse {
-    boolean isCreated;
+    Boolean isCreated;
     UserResponse userResponse;
 }

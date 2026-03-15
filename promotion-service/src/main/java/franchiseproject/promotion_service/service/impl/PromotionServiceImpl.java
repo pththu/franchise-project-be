@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -14,9 +15,41 @@ public class PromotionServiceImpl {
 
     private final PromotionRepository promotionRepository;
 
+    // View Promotions
     public List<Promotion> getAllPromotions() {
         return promotionRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        // nếu không muốn sort thì dùng:
-        // return promotionRepository.findAll();
+    }
+
+    // View Promotion Details
+    public Promotion getPromotionById(UUID id) {
+        return promotionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Promotion not found"));
+    }
+
+    // Create Promotion
+    public Promotion createPromotion(Promotion promotion) {
+        return promotionRepository.save(promotion);
+    }
+
+    // Update Promotion
+    public Promotion updatePromotion(UUID id, Promotion promotion) {
+
+        Promotion existing = promotionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Promotion not found"));
+
+        existing.setName(promotion.getName());
+        existing.setDescription(promotion.getDescription());
+        existing.setDiscountType(promotion.getDiscountType());
+        existing.setDiscountValue(promotion.getDiscountValue());
+        existing.setStartTime(promotion.getStartTime());
+        existing.setEndTime(promotion.getEndTime());
+        existing.setUsageLimit(promotion.getUsageLimit());
+
+        return promotionRepository.save(existing);
+    }
+
+    // Delete Promotion
+    public void deletePromotion(UUID id) {
+        promotionRepository.deleteById(id);
     }
 }

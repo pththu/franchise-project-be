@@ -4,14 +4,18 @@ import com.franchiseproject.identityaccessservice.dto.ApiResponse;
 import com.franchiseproject.identityaccessservice.dto.request.RoleCreationRequest;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.service.RoleService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth/roles")
 //@RequestMapping("/api/v1/roles")
@@ -23,6 +27,12 @@ public class RoleController {
     // Get all Roles
     @GetMapping
     public ApiResponse<List<Role>> getAllRoles() {
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Username :" + authentication.getName());
+        authentication.getAuthorities().forEach(
+                ga -> log.info(ga.getAuthority())
+        );
         return ApiResponse.<List<Role>>builder()
                 .statusCode(200)
                 .message("Gel all role")
@@ -75,6 +85,19 @@ public class RoleController {
                 .statusCode(200)
                 .message("Deleted")
                 .data(Boolean.valueOf(roleService.deleteRole(id)))
+                .build();
+    }
+
+    // Assign Permissions
+    @PutMapping("/{id}/permissions")
+    public ApiResponse<Role> assignPermissions(
+            @PathVariable UUID id,
+            @RequestBody @Valid com.franchiseproject.identityaccessservice.dto.request.RolePermissionRequest request) { // <-- Thêm @Valid ở đây
+
+        return ApiResponse.<Role>builder()
+                .statusCode(200)
+                .message("Assign permissions to Roles successfully.")
+                .data(roleService.assignPermissions(id, request))
                 .build();
     }
 }

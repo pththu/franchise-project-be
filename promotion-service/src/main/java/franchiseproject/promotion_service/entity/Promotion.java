@@ -1,72 +1,75 @@
 package franchiseproject.promotion_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import franchiseproject.promotion_service.enums.DiscountType;
-import franchiseproject.promotion_service.enums.ScopeType;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Table(name = "promotions")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Promotion {
 
     @Id
-    @GeneratedValue
-    private UUID id;
+    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
+    @Column(name = "id", nullable = false, updatable = false)
+    UUID id;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(name = "name", nullable = false)
+    String name;
 
-    @Column(length = 1000)
-    private String description;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DiscountType discountType;
-
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal discountValue;
-
-    @Column(nullable = false)
-    private LocalDateTime startTime;
-
-    @Column(nullable = false)
-    private LocalDateTime endTime;
-
-    private Integer usageLimit;
+    @Column(name = "description")
+    String description;
 
     @Enumerated(EnumType.STRING)
-    private ScopeType scopeType;
+    @Column(name = "discount_type", nullable = false)
+    DiscountType discountType;
 
-    private String scopeValue;
+    @Column(name = "discount_value", nullable = false)
+    BigDecimal discountValue;
 
-    @Column(unique = true)
-    private String couponCode;
+    @Column(name = "start_time")
+    Instant startTime;
 
-    private Integer couponUsageLimit = 0;
+    @Column(name = "end_time")
+    Instant endTime;
 
-    private Integer couponUsedCount = 0;
+    @Column(name = "coupon_code", unique = true, nullable = false)
+    String couponCode;
 
-    private LocalDateTime createdAt;
+    @Column(name = "coupon_usage_limit")
+    Integer usageLimit;
 
-    private LocalDateTime updatedAt;
+    @Column(name = "coupon_used_count")
+    Integer usedCount;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    Instant createdAt;
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    Instant updatedAt;
+
+    @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    List<Coupon> coupons;
+
+    @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    List<PromotionScope> scopes;
 }

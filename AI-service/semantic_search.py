@@ -2,6 +2,9 @@ from sentence_transformers import SentenceTransformer
 from vector_store import VectorStore
 import numpy as np
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Semantic_Search:
     def __init__(self, model_name = "intfloat/multilingual-e5-base", vector_path = "Vector/vectors.txt"):
@@ -13,15 +16,15 @@ class Semantic_Search:
     def _check_load(self, path):
 
         if self.model is not None:
-            print("Load thành công model")
+            logger.info("Load thành công model")
         else:
-            print("Model chưa load được")
+            logger.error("Model chưa load được")
         
         try:
             with open(path, "r") as f:
-                print("Store Vectors check thành công !!!")
+                logger.info("Store Vectors check thành công !!!")
         except:
-            print(f"Chưa có VectorStore!!! đang build lại.")
+            logger.warning(f"Chưa có VectorStore!!! đang build lại.")
             self.update_vectors_store()
 
     def _search(self, 
@@ -114,9 +117,11 @@ class Semantic_Search:
         vectors_store = []
 
         for item in data:
-            desc_txt = f"passage: {item['description']}"
-            core_txt = f"passage: {item['name']} được làm từ: {', '.join(item['categoryName'])}"
-
+            try:
+                desc_txt = f"passage: {item['description']}"
+                core_txt = f"passage: {item['name']} được làm từ: {', '.join(item['categoryName'])}"
+            except:
+                return "Lỗi: Không đủ các trường để tạo vector !!!"
             desc_vec = self.model.encode(desc_txt, normalize_embeddings=True)
             core_vec = self.model.encode(core_txt, normalize_embeddings=True)
 
