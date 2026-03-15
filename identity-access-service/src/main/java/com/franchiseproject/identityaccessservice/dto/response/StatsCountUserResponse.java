@@ -6,11 +6,17 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+@Builder
 @Setter
 @Getter
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserCreationResponse {
-    Boolean isCreated;
-    UserResponse userResponse;
+public class StatsCountUserResponse {
+    int totals;
+    int totalIsActive;
+    int totalIsDeleted;
+    int totalIsSuspended;
+    int totalAdmin;
+    int totalManager;
+    int totalStaff;
+    int totalCustomer;
 }

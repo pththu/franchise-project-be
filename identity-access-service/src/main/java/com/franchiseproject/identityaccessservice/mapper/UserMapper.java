@@ -16,7 +16,6 @@ import java.util.UUID;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    @Mapping(target = "passwordHash", source = "password")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "lastLogin", ignore = true)

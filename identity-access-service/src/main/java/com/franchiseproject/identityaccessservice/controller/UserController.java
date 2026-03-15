@@ -17,6 +17,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,7 +30,6 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/api/auth/users")
-//@RequestMapping("/api/v1/users")
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserController {
@@ -39,35 +39,60 @@ public class UserController {
     PasswordEncoder passwordEncoder;
 
     @GetMapping
-    public ApiResponse<List<UserResponse>> getAll() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("Username :" + authentication.getName());
-        authentication.getAuthorities().forEach(
-                ga -> log.info(ga.getAuthority())
-        );
+    public ApiResponse<Page<UserResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page) {
 
-        return ApiResponse.<List<UserResponse>>builder()
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Username: {}", authentication.getName());
+        authentication.getAuthorities()
+                .forEach(ga -> log.info(ga.getAuthority()));
+
+        Page<UserResponse> data = userService.getAll(page)
+                .map(userMapper::toUserResponse);
+
+        return ApiResponse.<Page<UserResponse>>builder()
                 .statusCode(200)
                 .message("Get Data Success")
-                .data(userService.getAll()
-                        .stream()
-                        .map(userMapper::toUserResponse)
-                        .toList())
+                .data(data)
                 .build();
     }
 
+    @GetMapping("/search")
+    public ApiResponse<PageResponse<UserResponse>> search(@Valid @ModelAttribute SeachUsersRequest request) {
+
+        log.info("Search users API called with request: {}", request);
+
+        Page<UserResponse> data = userService.search(request)
+                .map(userMapper::toUserResponse);
+
+        return ApiResponse.<PageResponse<UserResponse>>builder()
+                .statusCode(200)
+                .message("Search users success")
+                .data(PageResponse.<UserResponse>builder()
+                        .content(data.getContent())
+                        .page(data.getNumber())
+                        .size(data.getSize())
+                        .totalElements(data.getTotalElements())
+                        .totalPages(data.getTotalPages())
+                        .build())
+                .build();
+    }
+
+
     @PostMapping("")
-    public ApiResponse<UserCreationResponse> createUser(@RequestBody @Valid UserCreationRequest request, @AuthenticationPrincipal Jwt jwt) {
+    public ApiResponse<UserCreationResponse> createUser(
+            @RequestBody @Valid UserCreationRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
 
         Role role = roleService.getByName(request.getRoleName());
-
         if (role == null) {
             throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
         }
 
-        String roleName = jwt.getClaimAsString("scope");
+        String roleName = jwt.getClaimAsString("role");
         System.out.println("ROLE: " + roleName);
         System.out.println("ROLE: " + role.getName());
+
         switch (role.getName()) {
             case "ADMIN":
                 throw new AppException(ErrorCode.FORBIDDEN);
@@ -75,28 +100,24 @@ public class UserController {
                 if (!roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
                 break;
             case "STAFF":
-                if (!roleName.equals("MANAGER") && !roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                if (!roleName.equals("MANAGER") && !roleName.equals("ADMIN"))
+                    throw new AppException(ErrorCode.FORBIDDEN);
                 break;
             case "CUSTOMER":
-                if (!roleName.equals("STAFF") && !roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                if (!roleName.equals("STAFF") && !roleName.equals("ADMIN"))
+                    throw new AppException(ErrorCode.FORBIDDEN);
                 break;
         }
-
-        User user = userMapper.toUser(request);
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole(role);
-        user.setStatus(UserStatus.ACTIVE);
 
         return ApiResponse.<UserCreationResponse>builder()
                 .statusCode(201)
                 .message("Created")
-                .data(userService.createOne(user))
+                .data(userService.createOne(request, role))
                 .build();
     }
 
     /**
      * view account detail
-     *
      * @param userId
      * @return
      */
@@ -152,9 +173,9 @@ public class UserController {
     public ApiResponse<AssignRoleResponse> assignRole(
             @PathVariable UUID userId,
             @RequestBody AssignRoleRequest request,
-            @AuthenticationPrincipal Jwt jwt ) {
+            @AuthenticationPrincipal Jwt jwt) {
 
-        String assignerRole = jwt.getClaimAsString("scope");
+        String assignerRole = jwt.getClaimAsString("role");
         User user = userService.getById(userId);
         Role role = roleService.getByName(request.getRoleName());
         if (role == null || user == null) throw new AppException(ErrorCode.NOT_FOUND);
@@ -167,7 +188,8 @@ public class UserController {
                 if (!assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
                 break;
             case "STAFF":
-                if (!assignerRole.equals("MANAGER") && !assignerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                if (!assignerRole.equals("MANAGER") && !assignerRole.equals("ADMIN"))
+                    throw new AppException(ErrorCode.FORBIDDEN);
                 break;
         }
 
@@ -178,4 +200,12 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping("/counts")
+    public ApiResponse<StatsCountUserResponse> getCountUsers() {
+        return ApiResponse.<StatsCountUserResponse>builder()
+                .statusCode(200)
+                .message("Get count user in system")
+                .data(userService.countUsers())
+                .build();
+    }
 }
