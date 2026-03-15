@@ -175,7 +175,7 @@ public class UserController {
             @RequestBody AssignRoleRequest request,
             @AuthenticationPrincipal Jwt jwt) {
 
-        String assignerRole = jwt.getClaimAsString("scope");
+        String assignerRole = jwt.getClaimAsString("role");
         User user = userService.getById(userId);
         Role role = roleService.getByName(request.getRoleName());
         if (role == null || user == null) throw new AppException(ErrorCode.NOT_FOUND);
