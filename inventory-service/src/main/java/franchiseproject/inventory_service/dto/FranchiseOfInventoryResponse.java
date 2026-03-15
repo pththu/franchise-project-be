@@ -13,7 +13,15 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FranchiseOfInventoryResponse {
 
-    UUID id;
+    private UUID id;
 
-    String franchiseName;
+    private String productName;
+
+    private String franchiseName;
+
+    private Integer quantity;
+
+    private String unit;
+
+    private Integer minStock;
 }

@@ -40,6 +40,7 @@ public class SecurityConfig {
             "/api/auth/resend-code",
             "/api/auth/refresh",
             "/api/auth/logout",
+            "/api/inventory/**",
 
     };
 
