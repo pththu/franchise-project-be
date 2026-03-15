@@ -42,6 +42,4 @@ public interface ShiftConfigurationService {
 
     Map<String, Object> getAttendanceSummary(LocalDate date);
 
-    void handleMissedCheckOuts();
-
 }
