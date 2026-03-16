@@ -33,6 +33,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserController {
+
     UserService userService;
     RoleService roleService;
     UserMapper userMapper;
@@ -44,11 +45,9 @@ public class UserController {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         log.info("Username: {}", authentication.getName());
-        authentication.getAuthorities()
-                .forEach(ga -> log.info(ga.getAuthority()));
+        authentication.getAuthorities().forEach(ga -> log.info(ga.getAuthority()));
 
-        Page<UserResponse> data = userService.getAll(page)
-                .map(userMapper::toUserResponse);
+        Page<UserResponse> data = userService.getAll(page).map(userMapper::toUserResponse);
 
         return ApiResponse.<Page<UserResponse>>builder()
                 .statusCode(200)
@@ -58,12 +57,11 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ApiResponse<PageResponse<UserResponse>> search(@Valid @ModelAttribute SeachUsersRequest request) {
+    public ApiResponse<PageResponse<UserResponse>> search(
+            @Valid @ModelAttribute SeachUsersRequest request) {
 
         log.info("Search users API called with request: {}", request);
-
-        Page<UserResponse> data = userService.search(request)
-                .map(userMapper::toUserResponse);
+        Page<UserResponse> data = userService.search(request).map(userMapper::toUserResponse);
 
         return ApiResponse.<PageResponse<UserResponse>>builder()
                 .statusCode(200)
@@ -78,8 +76,20 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping("/counts")
+    public ApiResponse<StatsCountUserResponse> getCountUsers() {
+        return ApiResponse.<StatsCountUserResponse>builder()
+                .statusCode(200)
+                .message("Get count user in system")
+                .data(userService.countUsers())
+                .build();
+    }
 
-    @PostMapping("")
+    /**
+     * Admin/Manager tạo user thủ công với role cụ thể.
+     * Sau khi tạo, user được add ngay vào Cognito group theo roleName.
+     */
+    @PostMapping
     public ApiResponse<UserCreationResponse> createUser(
             @RequestBody @Valid UserCreationRequest request,
             @AuthenticationPrincipal Jwt jwt) {
@@ -89,22 +99,21 @@ public class UserController {
             throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
         }
 
-        String roleName = jwt.getClaimAsString("role");
-        System.out.println("ROLE: " + roleName);
-        System.out.println("ROLE: " + role.getName());
+        String callerRole = jwt.getClaimAsString("role");
+        log.info("CreateUser: callerRole={}, targetRole={}", callerRole, role.getName());
 
         switch (role.getName()) {
             case "ADMIN":
                 throw new AppException(ErrorCode.FORBIDDEN);
             case "MANAGER":
-                if (!roleName.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
+                if (!callerRole.equals("ADMIN")) throw new AppException(ErrorCode.FORBIDDEN);
                 break;
             case "STAFF":
-                if (!roleName.equals("MANAGER") && !roleName.equals("ADMIN"))
+                if (!callerRole.equals("MANAGER") && !callerRole.equals("ADMIN"))
                     throw new AppException(ErrorCode.FORBIDDEN);
                 break;
             case "CUSTOMER":
-                if (!roleName.equals("STAFF") && !roleName.equals("ADMIN"))
+                if (!callerRole.equals("STAFF") && !callerRole.equals("ADMIN"))
                     throw new AppException(ErrorCode.FORBIDDEN);
                 break;
         }
@@ -116,22 +125,43 @@ public class UserController {
                 .build();
     }
 
-    /**
-     * view account detail
-     * @param userId
-     * @return
-     */
     @GetMapping("/{id}")
     public ApiResponse<UserResponse> getUserById(@PathVariable("id") UUID userId) {
+        User user = userService.getById(userId);
+        log.info("getUserById: userId={}, verifyEmail={}", userId, user.isVerifyEmail());
         return ApiResponse.<UserResponse>builder()
-                .statusCode(201)
+                .statusCode(200)
                 .message("Get One")
-                .data(userMapper.toUserResponse(userService.getById(userId)))
+                .data(userMapper.toUserResponse(user))
+                .build();
+    }
+
+    @GetMapping("/profile")
+    public ApiResponse<UserResponse> profile(@AuthenticationPrincipal Jwt jwt) {
+        log.info("profile: subject={}", jwt.getSubject());
+        return ApiResponse.<UserResponse>builder()
+                .statusCode(200)
+                .message("View account detail")
+                .data(userService.getProfile(UUID.fromString(jwt.getSubject())))
+                .build();
+    }
+
+    @PutMapping("/update-account")
+    public ApiResponse<UserUpdateResponse> updateAccountInformation(
+            @RequestBody UserUpdateRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        return ApiResponse.<UserUpdateResponse>builder()
+                .statusCode(200)
+                .message("Update account information success")
+                .data(userService.updateAccountInformation(jwt.getSubject(), request))
                 .build();
     }
 
     @PostMapping("/change-password")
-    public ApiResponse<ChangePasswordResponse> changePassword(@RequestBody ChangePasswordRequest request) {
+    public ApiResponse<ChangePasswordResponse> changePassword(
+            @RequestBody ChangePasswordRequest request) {
+
         return ApiResponse.<ChangePasswordResponse>builder()
                 .statusCode(200)
                 .message("Change password success")
@@ -141,43 +171,56 @@ public class UserController {
                 .build();
     }
 
-    @GetMapping("/profile")
-    public ApiResponse<UserResponse> profile(@AuthenticationPrincipal Jwt jwt) {
-        log.info("jwt.getSubject(): {}", jwt.getSubject());
-        return ApiResponse.<UserResponse>builder()
+    /**
+     * Update trạng thái user: ACTIVE | SUSPENDED | DELETED
+     * Body: { "status": "SUSPENDED" }
+     *
+     */
+    @PutMapping("/{userId}/status")
+    public ApiResponse<UserStatusResponse> updateStatus(
+            @PathVariable UUID userId,
+            @RequestParam UserStatus status,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String callerRole = jwt.getClaimAsString("role");
+        log.info("UpdateStatus: caller={}, targetUser={}, newStatus={}", callerRole, userId, status);
+
+        // Chỉ ADMIN và MANAGER được phép thay đổi status
+        if (!callerRole.equals("ADMIN") && !callerRole.equals("MANAGER")) {
+            throw new AppException(ErrorCode.FORBIDDEN);
+        }
+
+        // MANAGER chỉ có thể suspend/activate STAFF và CUSTOMER, không được động vào ADMIN/MANAGER khác
+        if (callerRole.equals("MANAGER")) {
+            User target = userService.getById(userId);
+            String targetRole = target.getRole().getName();
+            if (targetRole.equals("ADMIN") || targetRole.equals("MANAGER")) {
+                throw new AppException(ErrorCode.FORBIDDEN);
+            }
+        }
+
+        return ApiResponse.<UserStatusResponse>builder()
                 .statusCode(200)
-                .message("View account detail")
-                .data(userService.getProfile(UUID.fromString(jwt.getSubject())))
+                .message("Update user status success")
+                .data(userService.updateStatus(userId, status))
                 .build();
     }
 
-    @PutMapping("/update-account")
-    public ApiResponse<UserUpdateResponse> updateAccountInfomation(@RequestBody UserUpdateRequest request, @AuthenticationPrincipal Jwt jwt) {
-        return ApiResponse.<UserUpdateResponse>builder()
-                .statusCode(201)
-                .message("Update account infomation successs")
-                .data(userService.updateAccountInfomation(jwt.getSubject(), request))
-                .build();
-    }
-
-    @DeleteMapping("/delete-account/{userId}")
-    public ApiResponse<UserDeleteResponse> deleteAccountUser(@PathVariable UUID userId) {
-        return ApiResponse.<UserDeleteResponse>builder()
-                .statusCode(200)
-                .message("Delete account usser id success")
-                .data(userService.deleteAccountUser(userId))
-                .build();
-    }
-
+    /**
+     * Assign role mới cho user.
+     * Tự động: xóa khỏi Cognito group cũ → add vào Cognito group mới → update DB.
+     */
     @PutMapping("/{userId}/assign-role")
     public ApiResponse<AssignRoleResponse> assignRole(
             @PathVariable UUID userId,
-            @RequestBody AssignRoleRequest request,
+            @PathParam("roleName") String roleName,
             @AuthenticationPrincipal Jwt jwt) {
 
         String assignerRole = jwt.getClaimAsString("role");
+        log.info("AssignRole: assigner={}, targetUser={}, newRole={}", assignerRole, userId, roleName);
+
         User user = userService.getById(userId);
-        Role role = roleService.getByName(request.getRoleName());
+        Role role = roleService.getByName(roleName);
         if (role == null || user == null) throw new AppException(ErrorCode.NOT_FOUND);
 
         switch (role.getName()) {
@@ -195,17 +238,17 @@ public class UserController {
 
         return ApiResponse.<AssignRoleResponse>builder()
                 .statusCode(200)
-                .message("Assign role sucess")
+                .message("Assign role success")
                 .data(userService.assignRole(role, user))
                 .build();
     }
 
-    @GetMapping("/counts")
-    public ApiResponse<StatsCountUserResponse> getCountUsers() {
-        return ApiResponse.<StatsCountUserResponse>builder()
+    @PutMapping("/delete-account/{userId}")
+    public ApiResponse<UserDeleteResponse> deleteAccountUser(@PathVariable UUID userId) {
+        return ApiResponse.<UserDeleteResponse>builder()
                 .statusCode(200)
-                .message("Get count user in system")
-                .data(userService.countUsers())
+                .message("Delete account user success")
+                .data(userService.deleteAccountUser(userId))
                 .build();
     }
 }
