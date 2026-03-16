@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/customers/customers")
+@RequestMapping("/api/customers")
 @CrossOrigin(origins = "http://localhost:5173")
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
