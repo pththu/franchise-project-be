@@ -42,13 +42,13 @@ public class OrderController {
     }
 
 
-    //createOrder cho staff tại các POS
+    /// createOrder cho staff tại các POS
     @PostMapping("/create-order")
-    public ApiResponse<OrderResponse> createOrder(
+    public ApiResponse<UUID> createOrder(
             @RequestBody @Valid CreateOrderRequest request
     ) {
-        OrderResponse response = orderService.createOrder(request);
-        return ApiResponse.<OrderResponse>builder()
+        UUID response = orderService.createOrder(request);
+        return ApiResponse.<UUID>builder()
                 .message("Tạo thành công!")
                 .data(response)
                 .statusCode(200)
@@ -194,6 +194,7 @@ public class OrderController {
                 .orderStatus(OrderStatus.WAITING_PAYMENT)
                 .build();
     }
+
     @PostMapping("/payment-result")
     public ResponseEntity<String> receivePaymentResult(@RequestBody PaymentResultRequest request) {
 
