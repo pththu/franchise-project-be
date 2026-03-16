@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +22,6 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
                 WHERE p.status = 'PENDING'
                 AND p.createdAt < :timeout
             """)
-    List<PaymentTransaction> findExpiredTransactions(Instant timeout);
+    List<PaymentTransaction> findExpiredTransactions(LocalDateTime timeout);
 
 }
