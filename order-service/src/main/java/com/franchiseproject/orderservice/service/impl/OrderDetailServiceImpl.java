@@ -39,7 +39,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                     if (product == null) {
                         throw new AppException(ErrorCode.MISSING_PRODUCTS);
                     }
-                    if (product.getQuantity() < item.getQuantity()) {
+                    if (!"ACTIVE".equals(product.getStatus())) {
                         throw new AppException(ErrorCode.NOT_ENOUGH_QUANTITY_PRODUCT);
                     }
                     return OrderDetail.builder()

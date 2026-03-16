@@ -23,6 +23,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +35,6 @@ import java.util.UUID;
 public class PaymentTransactionServiceImpl implements PaymentTransactionService {
 
     PaymentTransactionRepository paymentTransactionRepository;
-    PaymentTransactionService paymentTransactionService;
     OrderClient orderClient;
     PaymentTransactionMapper paymentTransactionMapper;
 
@@ -144,7 +144,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Scheduled(fixedRate = 60000) // chạy mỗi 60s
     @Transactional
     public void expirePendingTransactions() {
-        Instant timeout = Instant.now().minus(15, ChronoUnit.MINUTES);
+        LocalDateTime timeout = LocalDateTime.now().minusMinutes(15);
         List<PaymentTransaction> transactions =
                 paymentTransactionRepository.findExpiredTransactions(timeout);
         for (PaymentTransaction tx : transactions) {

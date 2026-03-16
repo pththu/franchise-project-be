@@ -1,15 +1,15 @@
 package com.franchiseproject.orderservice.enums;
 
 public enum OrderStatus {
-    CREATED,
+    CREATED, /// khi method build order từ data request gửi về
     CONFIRMED,
-    WAITING_PAYMENT,
-    PAID,
+    WAITING_PAYMENT,/// khi method createOrder trả về orderId cho client
+    PAID, /// Khi payment-service trả kết quả thanh toán (SUCCESS) cho order-service
     PREPARING,
     READY,
     COMPLETED,
-    CANCELLED,
-    FAILED,
+    CANCELLED, ///User hủy
+    FAILED,/// Khi payment-service trả kết quả thanh toán (Failed) cho order-service
     REFUNDED;
 
     public boolean canBeCancelledByCustomer() {
