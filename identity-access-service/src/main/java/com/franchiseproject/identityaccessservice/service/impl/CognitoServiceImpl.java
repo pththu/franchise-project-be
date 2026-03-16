@@ -35,6 +35,7 @@ public class CognitoServiceImpl implements CognitoService {
 
     /**
      * Đăng ký user mới trên Cognito
+     *
      * @return cognitoSub = UUID định danh user trong Cognito
      */
     @Override
@@ -254,6 +255,102 @@ public class CognitoServiceImpl implements CognitoService {
             throw new RuntimeException("Failed to compute SECRET_HASH", e);
         }
     }
+
+    @Override
+    public void changePassword(String accessToken, String oldPassword, String newPassword) {
+        try {
+            ChangePasswordRequest request = ChangePasswordRequest.builder()
+                    .accessToken(accessToken)
+                    .previousPassword(oldPassword)
+                    .proposedPassword(newPassword)
+                    .build();
+
+            cognitoClient.changePassword(request);
+            log.info("Cognito changePassword success");
+
+        } catch (NotAuthorizedException e) {
+            // Sai mật khẩu cũ hoặc token không hợp lệ
+            log.warn("Cognito changePassword: NotAuthorizedException — {}", e.getMessage());
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        } catch (InvalidPasswordException e) {
+            // Mật khẩu mới không đáp ứng policy của Cognito
+            log.warn("Cognito changePassword: InvalidPasswordException — {}", e.getMessage());
+            throw new AppException(ErrorCode.INVALID_PASSWORD);
+        } catch (LimitExceededException e) {
+            log.warn("Cognito changePassword: LimitExceededException — {}", e.getMessage());
+            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+        } catch (Exception e) {
+            log.error("Cognito changePassword error: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    public void forgotPassword(String username) {
+        try {
+            ForgotPasswordRequest request = ForgotPasswordRequest.builder()
+                    .clientId(clientId)
+                    .secretHash(computeSecretHash(username))
+                    .username(username)
+                    .build();
+
+            cognitoClient.forgotPassword(request);
+            log.info("Cognito forgotPassword triggered for: {}", username);
+
+        } catch (UserNotFoundException e) {
+            // Không tiết lộ user có tồn tại hay không (bảo mật)
+            log.warn("Cognito forgotPassword: UserNotFoundException for username={} — returning silently", username);
+            // Không throw để tránh user enumeration attack
+        } catch (NotAuthorizedException e) {
+            // User chưa verify email
+            log.warn("Cognito forgotPassword: NotAuthorizedException — {}", e.getMessage());
+            throw new AppException(ErrorCode.USER_NOT_CONFIRMED);
+        } catch (LimitExceededException e) {
+            log.warn("Cognito forgotPassword: LimitExceededException");
+            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+        } catch (InvalidParameterException e) {
+            // Có thể xảy ra nếu user chưa có email verified trong Cognito
+            log.warn("Cognito forgotPassword: InvalidParameterException — {}", e.getMessage());
+            throw new AppException(ErrorCode.USER_NOT_CONFIRMED);
+        } catch (Exception e) {
+            log.error("Cognito forgotPassword error: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
+    @Override
+    public void confirmForgotPassword(String username, String code, String newPassword) {
+        try {
+            ConfirmForgotPasswordRequest request = ConfirmForgotPasswordRequest.builder()
+                    .clientId(clientId)
+                    .secretHash(computeSecretHash(username))
+                    .username(username)
+                    .confirmationCode(code)
+                    .password(newPassword)
+                    .build();
+
+            cognitoClient.confirmForgotPassword(request);
+            log.info("Cognito confirmForgotPassword success for: {}", username);
+
+        } catch (CodeMismatchException e) {
+            log.warn("Cognito confirmForgotPassword: CodeMismatchException");
+            throw new AppException(ErrorCode.INVALID_VERIFIED_CODE);
+        } catch (ExpiredCodeException e) {
+            log.warn("Cognito confirmForgotPassword: ExpiredCodeException");
+            throw new AppException(ErrorCode.CODE_EXPRIED);
+        } catch (InvalidPasswordException e) {
+            log.warn("Cognito confirmForgotPassword: InvalidPasswordException — {}", e.getMessage());
+            throw new AppException(ErrorCode.INVALID_PASSWORD);
+        } catch (UserNotFoundException e) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        } catch (LimitExceededException e) {
+            throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
+        } catch (Exception e) {
+            log.error("Cognito confirmForgotPassword error: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
 
     private String normalizePhone(String phone) {
         if (phone == null) return null;

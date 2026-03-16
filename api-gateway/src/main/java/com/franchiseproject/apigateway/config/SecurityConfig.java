@@ -40,7 +40,9 @@ public class SecurityConfig {
             "/api/auth/resend-code",
             "/api/auth/refresh",
             "/api/auth/logout",
-
+            "/api/auth/change-password",
+            "/api/auth/forgot-password",
+            "/api/auth/forgot-password/confirm",
     };
 
     @Bean

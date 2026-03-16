@@ -85,24 +85,16 @@ public class AuthenticationController {
     ) {
 
         TokenResponse tokens = authenticationService.login(request);
-        ResponseCookie cookie = ResponseCookie.from("access_token", tokens.getAccessToken())
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(Duration.ofSeconds(tokens.getExpiresIn()))
-                .sameSite("Strict")
-                .build();
-
-        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", tokens.getRefreshToken())
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(Duration.ofDays(14))
-                .sameSite("Strict")
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+        response.addHeader(
+                HttpHeaders.SET_COOKIE,
+                buildCookie("access_token",
+                        tokens.getAccessToken(),
+                        Duration.ofSeconds(tokens.getExpiresIn())).toString());
+        response.addHeader(
+                HttpHeaders.SET_COOKIE,
+                buildCookie("refresh_token",
+                        tokens.getRefreshToken(),
+                        Duration.ofDays(14)).toString());
 
         return ApiResponse.<TokenResponse>builder()
                 .statusCode(200)
@@ -123,16 +115,11 @@ public class AuthenticationController {
         }
 
         TokenResponse tokens = authenticationService.refreshToken(request.getUserId(), refreshToken);
-
-        ResponseCookie cookie = ResponseCookie.from("access_token", tokens.getAccessToken())
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(Duration.ofSeconds(tokens.getExpiresIn()))
-                .sameSite("Strict")
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        response.addHeader(
+                HttpHeaders.SET_COOKIE,
+                buildCookie("access_token",
+                        tokens.getAccessToken(),
+                        Duration.ofSeconds(tokens.getExpiresIn())).toString());
 
         return ApiResponse.<TokenResponse>builder()
                 .statusCode(200)
@@ -155,24 +142,8 @@ public class AuthenticationController {
             throw new AppException(ErrorCode.USER_NOT_EXISTED);
         }
 
-        ResponseCookie accessCookie = ResponseCookie.from("access_token", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .sameSite("Strict")
-                .build();
-
-        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .sameSite("Strict")
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, clearCookie("access_token").toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, clearCookie("refresh_token").toString());
 
         return ApiResponse.<String>builder()
                 .statusCode(200)
@@ -189,4 +160,73 @@ public class AuthenticationController {
 //                .data(authenticationService.lockUser(userId))
 //                .build();
 //    }
+
+
+    @PostMapping("/change-password")
+    public ApiResponse<?> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            @CookieValue(name = "access_token", required = false) String accessToken,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        // Double-check: JWT còn valid (Spring Security đã verify), nhưng cũng cần access_token
+        // cho Cognito ChangePassword API (nó cần raw access token, không phải JWT parsed)
+        if (accessToken == null || accessToken.isBlank()) {
+            accessToken = jwt.getTokenValue();
+        }
+
+        log.info("accessToken {}", accessToken);
+        log.info("changePassword: userId={}", jwt.getSubject());
+        authenticationService.changePassword(accessToken, request);
+
+        return ApiResponse.builder()
+                .statusCode(200)
+                .message("Password changed successfully.")
+                .build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ApiResponse<?> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+
+        log.info("forgotPassword: identifier={}", request.getIdentifier());
+        authenticationService.forgotPassword(request.getIdentifier());
+
+        return ApiResponse.builder()
+                .statusCode(200)
+                .message("If this account exists, a verification code has been sent to the registered email.")
+                .build();
+    }
+
+    @PostMapping("/forgot-password/confirm")
+    public ApiResponse<?> confirmForgotPassword(
+            @Valid @RequestBody ConfirmForgotPasswordRequest request) {
+
+        log.info("confirmForgotPassword: username={}", request.getUsername());
+        authenticationService.confirmForgotPassword(request);
+
+        return ApiResponse.builder()
+                .statusCode(200)
+                .message("Password reset successfully. You can now sign in with your new password.")
+                .build();
+    }
+
+    private ResponseCookie buildCookie(String name, String value, Duration maxAge) {
+        return ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(false)      // true khi production
+                .path("/")
+                .maxAge(maxAge)
+                .sameSite("Strict")
+                .build();
+    }
+
+    private ResponseCookie clearCookie(String name) {
+        return ResponseCookie.from(name, "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+    }
 }

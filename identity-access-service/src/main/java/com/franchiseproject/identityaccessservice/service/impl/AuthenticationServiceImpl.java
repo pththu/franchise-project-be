@@ -135,6 +135,61 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         cognitoService.resendConfirmationCode(username);
     }
 
+    @Override
+    public void changePassword(String accessToken, ChangePasswordRequest request) {
+        if (accessToken == null || accessToken.isBlank()) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        log.info("changePassword: forwarding to Cognito ChangePassword API");
+        // Delegate hoàn toàn sang Cognito — Cognito validate oldPassword và enforce policy
+        cognitoService.changePassword(accessToken, request.getOldPassword(), request.getNewPassword());
+        log.info("changePassword: Cognito ChangePassword success");
+    }
+
+    @Override
+    public void forgotPassword(String identifier) {
+        log.info("forgotPassword: identifier={}", identifier);
+
+        String username = resolveUsername(identifier);
+
+        // Nếu không tìm thấy user → return silently (chống user enumeration)
+        if (username == null) {
+            log.warn("forgotPassword: user not found for identifier={}, returning silently", identifier);
+            return;
+        }
+
+        // Kiểm tra user có thể reset password không
+        userRepository.findByUsername(username).ifPresent(user -> {
+            if (user.getStatus() == UserStatus.SUSPENDED) {
+                throw new AppException(ErrorCode.USER_lOCKED);
+            }
+            if (user.getStatus() == UserStatus.DELETED) {
+                throw new AppException(ErrorCode.USER_NOT_EXISTED);
+            }
+        });
+
+        cognitoService.forgotPassword(username);
+        log.info("forgotPassword: OTP sent for username={}", username);
+    }
+
+    @Override
+    public void confirmForgotPassword(ConfirmForgotPasswordRequest request) {
+        log.info("confirmForgotPassword: username={}", request.getUsername());
+
+        // Kiểm tra user tồn tại trong DB
+        userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        cognitoService.confirmForgotPassword(
+                request.getUsername(),
+                request.getCode(),
+                request.getNewPassword()
+        );
+
+        log.info("confirmForgotPassword: success for username={}", request.getUsername());
+    }
+
     public TokenResponse login(AuthenticationRequest req) {
 
         String identifier = req.getIdentifier();
@@ -202,5 +257,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public boolean logout() {
         return true;
+    }
+
+    private String resolveUsername(String identifier) {
+        if (identifier == null || identifier.isBlank()) return null;
+
+        // Nếu chứa @ → coi là email
+        if (identifier.contains("@")) {
+            return userRepository.findByEmail(identifier)
+                    .map(User::getUsername)
+                    .orElse(null);
+        }
+
+        // Kiểm tra username có tồn tại không
+        return userRepository.findByUsername(identifier)
+                .map(User::getUsername)
+                .orElse(null);
     }
 }

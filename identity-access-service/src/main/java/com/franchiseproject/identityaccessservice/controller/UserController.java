@@ -160,13 +160,16 @@ public class UserController {
 
     @PostMapping("/change-password")
     public ApiResponse<ChangePasswordResponse> changePassword(
-            @RequestBody ChangePasswordRequest request) {
+            @RequestBody ChangePasswordRequest request,
+            @AuthenticationPrincipal Jwt jwt
+            ) {
 
+        UUID userId = UUID.fromString(jwt.getSubject());
         return ApiResponse.<ChangePasswordResponse>builder()
                 .statusCode(200)
                 .message("Change password success")
                 .data(ChangePasswordResponse.builder()
-                        .isChange(userService.changePassword(request))
+                        .isChange(userService.changePassword(request, userId))
                         .build())
                 .build();
     }
