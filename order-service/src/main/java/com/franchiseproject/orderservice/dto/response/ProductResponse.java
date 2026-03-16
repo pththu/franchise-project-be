@@ -1,5 +1,6 @@
 package com.franchiseproject.orderservice.dto.response;
 
+import com.franchiseproject.orderservice.enums.OrderStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -15,5 +16,5 @@ public class ProductResponse {
     UUID id;
     String name;
     BigDecimal price;
-    Integer quantity;
+    String status;
 }

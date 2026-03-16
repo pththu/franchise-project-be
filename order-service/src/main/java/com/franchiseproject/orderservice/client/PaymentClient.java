@@ -29,21 +29,21 @@ public class PaymentClient {
 //                .orElseThrow(() -> new AppException(ErrorCode.NO_TRANSACTION));
 //    }
     //Mock Test
-    public PaymentResponse createTransaction(UUID orderId,
-                                             UUID customerId,
-                                             BigDecimal finalTotal) {
-
-        if (orderId == null || customerId == null || finalTotal == null) {
-            throw new AppException(ErrorCode.NO_TRANSACTION);
-        }
-
-        // MOCK RESPONSE
-        return PaymentResponse.builder()
-                .paymentTransactionId(UUID.randomUUID())
-                .orderId(orderId)
-                .customerId(customerId)
-                .finalTotal(finalTotal)
-                .orderStatus(OrderStatus.CONFIRMED)
-                .build();
-    }
+//    public PaymentResponse createTransaction(UUID orderId,
+//                                             UUID customerId,
+//                                             BigDecimal finalTotal) {
+//
+//        if (orderId == null || customerId == null || finalTotal == null) {
+//            throw new AppException(ErrorCode.NO_TRANSACTION);
+//        }
+//
+//        // MOCK RESPONSE
+//        return PaymentResponse.builder()
+//                .paymentTransactionId(UUID.randomUUID())
+//                .orderId(orderId)
+//                .customerId(customerId)
+//                .finalTotal(finalTotal)
+//                .orderStatus(OrderStatus.CONFIRMED)
+//                .build();
+//    }
 }

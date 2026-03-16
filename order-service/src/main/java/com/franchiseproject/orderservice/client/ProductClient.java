@@ -24,7 +24,8 @@ public class ProductClient {
 //                .uri("/api/products/batch")
 //                .body(ids)
 //                .retrieve()
-//                .body(new ParameterizedTypeReference<>() {});
+//                .body(new ParameterizedTypeReference<>() {
+//                });
 //        if (products == null || products.isEmpty()) {
 //            throw new AppException(ErrorCode.NO_PRODUCTS);
 //        }
@@ -47,7 +48,6 @@ public class ProductClient {
 
     //Mock Test
     public Map<UUID, ProductResponse> getProductsByIds(List<UUID> ids) {
-
         if (ids == null || ids.isEmpty()) {
             throw new AppException(ErrorCode.NO_PRODUCTS);
         }
@@ -58,10 +58,9 @@ public class ProductClient {
                         .id(id)
                         .name("Mock Product " + id.toString().substring(1, 3))
                         .price(BigDecimal.valueOf(50000))
-                        .quantity(100)
+                        .status("ACTIVE")
                         .build())
                 .toList();
-
         return products.stream()
                 .collect(Collectors.toMap(ProductResponse::getId, p -> p));
     }
@@ -69,11 +68,9 @@ public class ProductClient {
     public BigDecimal validateAndCalculate(UUID customerId,
                                            UUID promotionId,
                                            BigDecimal totalItems) {
-
         if (promotionId == null) {
             return BigDecimal.ZERO;
         }
-
         // Giả lập giảm 10%
         return totalItems.multiply(BigDecimal.valueOf(0.1));
     }

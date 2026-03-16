@@ -20,19 +20,14 @@ import java.util.UUID;
 public class CreateOrderRequest {
     @NotNull(message = "Không để trống franchise")
     UUID franchiseId;
-
     UUID customerId;
     UUID staffId;
     UUID promotionId;
     String address;
-    UUID paymentTransactionId;
-
     @Positive(message = "Chỉ được nhập >= 0")
     BigDecimal priceShip;
-
     @NotNull(message = "Không để trống")
     TypeOrder typeOrder;
-
     @NotNull(message = "Order phải có sản phẩm")
     List<CreateOrderItemRequest> items;
 }
