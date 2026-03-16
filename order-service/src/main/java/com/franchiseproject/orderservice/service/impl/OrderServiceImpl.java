@@ -71,11 +71,6 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderDetails(details);
         order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
         orderRepository.save(order);
-//        PaymentResponse payment = paymentClient.createTransaction(order.getId(), order.getCustomerId(), finalTotal);
-//        order.setPaymentTransactionId(payment.getPaymentTransactionId());
-//        Order savedOrder = orderRepository.save(order);
-//        OrderResponse orderResponse = orderMapper.toOrderResponse(savedOrder);
-//        orderResponse.setTransactionReference(payment.getTransactionReference());
         return order.getId();
     }
 
@@ -113,11 +108,6 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
-//    @KafkaListener(...)
-//    public void handlePaymentSuccess(PaymentSuccessEvent event) {
-//        Order order = orderRepository.findById(event.getOrderId());
-//        order.setOrderStatus(OrderStatus.PAID);
-//    }
 
     private Order buildOrder(CreateOrderRequest request) {
         return Order.builder()
@@ -166,7 +156,7 @@ public class OrderServiceImpl implements OrderService {
         if (currentStatus == OrderStatus.COMPLETED
                 || currentStatus == OrderStatus.CANCELLED
                 || currentStatus == OrderStatus.REFUNDED
-                || currentStatus == OrderStatus.FAILED) {
+                || currentStatus == OrderStatus.FAILED_ORDER) {
             throw new AppException(ErrorCode.ORDER_ALREADY_FINALIZED);
         }
 
@@ -307,7 +297,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        order.setAssignedStaffId(staffId);
+        order.setStaffId(staffId);
 
         orderRepository.save(order);
     }
@@ -317,7 +307,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        order.setIsSpecial(true);
+//        order.setIsSpecial(true);
 
         orderRepository.save(order);
     }

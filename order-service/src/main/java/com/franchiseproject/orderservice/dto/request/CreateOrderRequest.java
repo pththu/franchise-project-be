@@ -3,6 +3,7 @@ package com.franchiseproject.orderservice.dto.request;
 import com.franchiseproject.orderservice.enums.TypeOrder;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,7 +25,7 @@ public class CreateOrderRequest {
     UUID staffId;
     UUID promotionId;
     String address;
-    @Positive(message = "Chỉ được nhập >= 0")
+    @PositiveOrZero(message = "Chỉ được nhập >= 0")
     BigDecimal priceShip;
     @NotNull(message = "Không để trống")
     TypeOrder typeOrder;

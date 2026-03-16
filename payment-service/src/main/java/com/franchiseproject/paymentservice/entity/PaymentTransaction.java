@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,8 +27,6 @@ public class PaymentTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
-    @Column(name = "user_id", nullable = false)
-    UUID userId; ///cần thiết không nhỉ có thể trace ngược lại nhờ orderId mà nhỉ¯\_(ツ)_/¯
     @Column(name = "order_id", nullable = false, unique = true)
     UUID orderId;
     @Column(name = "amount", nullable = false)
@@ -41,7 +39,7 @@ public class PaymentTransaction {
 
     @CreationTimestamp
     @Column(name = "create_at", updatable = false)
-    LocalDateTime createdAt;
+    Instant createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_method_id", nullable = false)
