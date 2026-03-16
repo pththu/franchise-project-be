@@ -1,5 +1,6 @@
 package franchiseproject.promotion_service.entity;
 
+import franchiseproject.promotion_service.enums.CouponStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -34,6 +35,13 @@ public class Coupon {
 
     @Column(name = "coupon_used_count")
     Integer usedCount;
+
+    @Column(name = "expiry_date")
+    Instant expiryDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    CouponStatus status;
 
     @ManyToOne
     @JoinColumn(name = "promotion_id")

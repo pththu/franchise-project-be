@@ -2,6 +2,7 @@ package franchiseproject.promotion_service.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import franchiseproject.promotion_service.enums.DiscountType;
+import franchiseproject.promotion_service.enums.PromotionStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -48,14 +49,18 @@ public class Promotion {
     @Column(name = "end_time")
     Instant endTime;
 
-    @Column(name = "coupon_code", unique = true, nullable = false)
-    String couponCode;
+//    @Column(name = "coupon_code", unique = true, nullable = false)
+//    String couponCode;
+//
+//    @Column(name = "coupon_usage_limit")
+//    Integer usageLimit;
+//
+//    @Column(name = "coupon_used_count")
+//    Integer usedCount;
 
-    @Column(name = "coupon_usage_limit")
-    Integer usageLimit;
-
-    @Column(name = "coupon_used_count")
-    Integer usedCount;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    PromotionStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
