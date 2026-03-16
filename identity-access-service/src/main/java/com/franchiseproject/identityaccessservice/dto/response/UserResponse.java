@@ -26,7 +26,7 @@ public class UserResponse {
     String username;
     String fullName;
     String email;
-    boolean isVerifyEmail;
+    boolean verifyEmail;
     String phone;
     boolean gender;
     String avatarUrl;
