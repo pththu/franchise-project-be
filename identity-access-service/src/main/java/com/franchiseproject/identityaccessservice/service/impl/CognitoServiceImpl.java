@@ -45,7 +45,6 @@ public class CognitoServiceImpl implements CognitoService {
             userAttributes.put("email", email);
             userAttributes.put("name", fullName);
             userAttributes.put("phone_number", normalizePhone(phone));
-            // email_verified được set qua flow confirmSignUp
 
             SignUpRequest request = SignUpRequest.builder()
                     .clientId(clientId)
@@ -64,7 +63,7 @@ public class CognitoServiceImpl implements CognitoService {
 
             SignUpResponse response = cognitoClient.signUp(request);
             log.info("Cognito signUp success: username={}, sub={}", username, response.userSub());
-            return response.userSub(); // cognitoSub
+            return response.userSub();
 
         } catch (UsernameExistsException e) {
             throw new AppException(ErrorCode.USERNAME_EXISTED);
@@ -77,9 +76,6 @@ public class CognitoServiceImpl implements CognitoService {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // VERIFY: Xác thực email bằng OTP code (6 số) gửi qua email
-    // ─────────────────────────────────────────────────────────────
     @Override
     public void confirmSignUp(String username, String code) {
         try {
@@ -105,9 +101,6 @@ public class CognitoServiceImpl implements CognitoService {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // LOGIN: Authenticate và lấy JWT tokens từ Cognito
-    // ─────────────────────────────────────────────────────────────
     @Override
     public AuthenticationResultType login(String username, String password) {
         try {
@@ -125,7 +118,6 @@ public class CognitoServiceImpl implements CognitoService {
             InitiateAuthResponse response = cognitoClient.initiateAuth(request);
 
             if (response.challengeName() != null) {
-                // Handle challenges nếu cần (NEW_PASSWORD_REQUIRED, MFA, v.v.)
                 log.warn("Cognito login challenge: {}", response.challengeName());
                 throw new RuntimeException("AUTH_CHALLENGE: " + response.challengeName());
             }
@@ -142,16 +134,13 @@ public class CognitoServiceImpl implements CognitoService {
         } catch (InvalidLambdaResponseException e) {
             throw new RuntimeException("LAMBDA_ERROR: " + e.getMessage());
         } catch (RuntimeException e) {
-            throw e; // re-throw known exceptions
+            throw e;
         } catch (Exception e) {
             log.error("Cognito login error: {}", e.getMessage());
             throw new RuntimeException("COGNITO_ERROR: " + e.getMessage());
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // RESEND CODE: Gửi lại code verify
-    // ─────────────────────────────────────────────────────────────
     @Override
     public void resendConfirmationCode(String username) {
         try {
@@ -170,9 +159,6 @@ public class CognitoServiceImpl implements CognitoService {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // GET USER INFO from Cognito by access token
-    // ─────────────────────────────────────────────────────────────
     @Override
     public Map<String, String> getUserInfo(String accessToken) {
         GetUserRequest request = GetUserRequest.builder()
@@ -186,9 +172,6 @@ public class CognitoServiceImpl implements CognitoService {
         return attrs;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // REFRESH TOKEN
-    // ─────────────────────────────────────────────────────────────
     @Override
     public AuthenticationResultType refreshToken(String username, String refreshToken) {
         Map<String, String> authParams = new HashMap<>();
@@ -204,9 +187,6 @@ public class CognitoServiceImpl implements CognitoService {
         return cognitoClient.initiateAuth(request).authenticationResult();
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // ADMIN: Set user role via custom attribute or group
-    // ─────────────────────────────────────────────────────────────
     @Override
     public void addUserToGroup(String username, String groupName) {
         AdminAddUserToGroupRequest request = AdminAddUserToGroupRequest.builder()
@@ -219,10 +199,47 @@ public class CognitoServiceImpl implements CognitoService {
         log.info("Added {} to Cognito group: {}", username, groupName);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Compute SECRET_HASH (required when App Client has secret)
-    // SECRET_HASH = Base64(HMAC-SHA256(username + clientId, clientSecret))
-    // ─────────────────────────────────────────────────────────────
+    @Override
+    public void removeUserFromGroup(String username, String groupName) {
+        try {
+            AdminRemoveUserFromGroupRequest request = AdminRemoveUserFromGroupRequest.builder()
+                    .userPoolId(userPoolId)
+                    .username(username)
+                    .groupName(groupName)
+                    .build();
+
+            cognitoClient.adminRemoveUserFromGroup(request);
+            log.info("Removed {} from Cognito group: {}", username, groupName);
+
+        } catch (ResourceNotFoundException e) {
+            // Group hoặc user không tồn tại trong group — bỏ qua, không cần throw
+            log.warn("Group or user not found when removing {} from group {}: {}", username, groupName, e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to remove {} from Cognito group {}: {}", username, groupName, e.getMessage());
+            throw new RuntimeException("COGNITO_REMOVE_GROUP_ERROR: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void disableUser(String username) {
+        try {
+            AdminDisableUserRequest request = AdminDisableUserRequest.builder()
+                    .userPoolId(userPoolId)
+                    .username(username)
+                    .build();
+
+            cognitoClient.adminDisableUser(request);
+            log.info("Disabled user in Cognito User Pool: {}", username);
+
+        } catch (UserNotFoundException e) {
+            // User không tồn tại trên Cognito — bỏ qua, không cần throw
+            log.warn("User not found in Cognito when disabling: {}", username);
+        } catch (Exception e) {
+            log.error("Failed to disable user {} in Cognito: {}", username, e.getMessage());
+            throw new RuntimeException("COGNITO_DISABLE_USER_ERROR: " + e.getMessage());
+        }
+    }
+
     @Override
     public String computeSecretHash(String username) {
         try {
