@@ -34,16 +34,12 @@ public class RestClientConfig {
                 .build();
     }
 
-    /// Call order-service
+
     @Bean
-    public RestClient orderRestClient() {
-        try {
-            return RestClient.builder()
-                    .baseUrl("http://localhost:3007")
-                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .build();
-        } catch (AppException a) {
-            throw new AppException(ErrorCode.NOT_FOUND_ORDER);
-        }
+    public RestClient restClient() {
+        return RestClient.builder()
+                .baseUrl("http://localhost:3007")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
     }
 }

@@ -57,53 +57,37 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-
-    //createOrder cho staff tại các POS//
+    /// Client gửi request tạo order và trả lại orderId lên Client
     @Override
     @Transactional
-    public OrderResponse createOrder(CreateOrderRequest request) {
-
+    public UUID createOrder(CreateOrderRequest request) {
         Order order = buildOrder(request);
         Map<UUID, ProductResponse> apiProducts = orderDetailService.fetchProducts(request.getItems());
         List<OrderDetail> details = orderDetailService.buildOrderDetails(request.getItems(), apiProducts, order);
         BigDecimal totalItems = orderDetailService.calculateTotal(details);
-
         BigDecimal discount = productClient.validateAndCalculate(request.getCustomerId(), request.getPromotionId(), totalItems);
         BigDecimal finalTotal = totalItems.add(request.getPriceShip().subtract(discount));//cần ý kiến nghiệp vụ về priceShip
         order.setTotalDue(finalTotal);
         order.setOrderDetails(details);
         order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
         orderRepository.save(order);
-
-        PaymentResponse payment = paymentClient.createTransaction(order.getId(), order.getCustomerId(), finalTotal);
-        order.setPaymentTransactionId(payment.getPaymentTransactionId());
-
-        Order savedOrder = orderRepository.save(order);
-        OrderResponse orderResponse = orderMapper.toOrderResponse(savedOrder);
-        orderResponse.setTransactionReference(payment.getTransactionReference());
-        return orderResponse;
+        return order.getId();
     }
 
     @Override
     @Transactional
     public void cancelOrder(UUID orderId, UUID customerId) {
-
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-
         OrderStatus oldStatus = order.getOrderStatus();
         String status = oldStatus.name();
-
         if (!order.getCustomerId().equals(customerId)) {
             throw new AppException(ErrorCode.WRONG_CUSTOMER_ID);
         }
-
         OrderStatus currentStatus = order.getOrderStatus();
-
         if (currentStatus == OrderStatus.CANCELLED) {
             return; // đã hủy rồi thì thôi
         }
-
         if (!currentStatus.canBeCancelledByCustomer()) {
             throw new AppException(ErrorCode.NO_CANCEL);
         }
@@ -112,9 +96,7 @@ public class OrderServiceImpl implements OrderService {
         } else {
             order.setOrderStatus(OrderStatus.CANCELLED);
         }
-
         orderRepository.save(order);
-
         orderStatusLogRepository.save(
                 OrderStatusLog.builder()
                         .statusId(UUID.randomUUID())
@@ -126,18 +108,12 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
-//    @KafkaListener(...)
-//    public void handlePaymentSuccess(PaymentSuccessEvent event) {
-//        Order order = orderRepository.findById(event.getOrderId());
-//        order.setOrderStatus(OrderStatus.PAID);
-//    }
 
     private Order buildOrder(CreateOrderRequest request) {
         return Order.builder()
                 .franchiseId(request.getFranchiseId())
                 .customerId(request.getCustomerId())
                 .staffId(request.getStaffId())
-                .paymentTransactionId(request.getPaymentTransactionId())
                 .promotionId(request.getPromotionId())
                 .address(request.getAddress())
                 .priceShip(request.getPriceShip())
@@ -180,7 +156,7 @@ public class OrderServiceImpl implements OrderService {
         if (currentStatus == OrderStatus.COMPLETED
                 || currentStatus == OrderStatus.CANCELLED
                 || currentStatus == OrderStatus.REFUNDED
-                || currentStatus == OrderStatus.FAILED) {
+                || currentStatus == OrderStatus.FAILED_ORDER) {
             throw new AppException(ErrorCode.ORDER_ALREADY_FINALIZED);
         }
 
@@ -321,7 +297,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        order.setAssignedStaffId(staffId);
+        order.setStaffId(staffId);
 
         orderRepository.save(order);
     }
@@ -331,7 +307,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        order.setIsSpecial(true);
+//        order.setIsSpecial(true);
 
         orderRepository.save(order);
     }

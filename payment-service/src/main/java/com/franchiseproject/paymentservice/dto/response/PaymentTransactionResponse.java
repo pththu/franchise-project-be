@@ -1,13 +1,12 @@
 package com.franchiseproject.paymentservice.dto.response;
 
-import com.franchiseproject.paymentservice.entity.PaymentMethod;
 
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Builder
@@ -23,7 +22,7 @@ public class PaymentTransactionResponse {
     BigDecimal amount;
     StatusTransaction status;
     String transactionRef;
-    LocalDateTime createdAt;
+    Instant createdAt;
     PaymentMethodResponse paymentMethodResponse;
     String paymentMethodName;
 }

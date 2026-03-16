@@ -32,29 +32,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     @Transactional
-    public List<OrderDetail> buildOrderDetails(
-            List<CreateOrderItemRequest> items,
-            Map<UUID, ProductResponse> apiProducts,
-            Order order
-    ) {
-
+    public List<OrderDetail> buildOrderDetails(List<CreateOrderItemRequest> items, Map<UUID, ProductResponse> apiProducts, Order order) {
         return items.stream()
                 .map(item -> {
-
-                    ProductResponse product =
-                            apiProducts.get(item.getProductId());
-
+                    ProductResponse product = apiProducts.get(item.getProductId());
                     if (product == null) {
-                        throw new AppException(
-                                ErrorCode.MISSING_PRODUCTS
-                        );
+                        throw new AppException(ErrorCode.MISSING_PRODUCTS);
                     }
-                    if (product.getQuantity() < item.getQuantity()) {
-                        throw new AppException(
-                                ErrorCode.NOT_ENOUGH_QUANTITY_PRODUCT
-                        );
+                    if (!"ACTIVE".equals(product.getStatus())) {
+                        throw new AppException(ErrorCode.NOT_ENOUGH_QUANTITY_PRODUCT);
                     }
-
                     return OrderDetail.builder()
                             .productId(product.getId())
                             .productNameSnapshot(product.getName())
@@ -76,6 +63,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    /// Tạo list productId để gửi sang product-service
     @Override
     @Transactional
     public Map<UUID, ProductResponse> fetchProducts(List<CreateOrderItemRequest> items) {
@@ -83,7 +71,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .map(CreateOrderItemRequest::getProductId)
                 .distinct()
                 .collect(Collectors.toList());
-
         return productClient.getProductsByIds(productIds);
     }
 
@@ -94,8 +81,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .map(UpdateOrderItemRequest::getProductId)
                 .distinct()
                 .toList();
-
         return productClient.getProductsByIds(productIds);
-
     }
 }
