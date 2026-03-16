@@ -6,5 +6,4 @@ public enum DeliverySatus {
     SHIPPING,
     DELIVERED,
     FAILED,
-    RATING
 }

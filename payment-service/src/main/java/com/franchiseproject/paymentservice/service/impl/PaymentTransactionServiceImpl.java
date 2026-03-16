@@ -2,12 +2,11 @@ package com.franchiseproject.paymentservice.service.impl;
 
 import com.franchiseproject.paymentservice.client.OrderClient;
 import com.franchiseproject.paymentservice.dto.request.PaymentResultRequest;
-import com.franchiseproject.paymentservice.dto.response.OrderResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
+import com.franchiseproject.paymentservice.dto.response.order.OrderResponse;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
 import com.franchiseproject.paymentservice.entity.PaymentTransaction;
 import com.franchiseproject.paymentservice.enums.MomoResultCode;
-import com.franchiseproject.paymentservice.enums.OrderStatus;
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
 import com.franchiseproject.paymentservice.exception.AppException;
 import com.franchiseproject.paymentservice.exception.ErrorCode;
@@ -43,9 +42,8 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Transactional
     public PaymentTransaction buildPaymentTransaction(OrderResponse orderResponse, PaymentMethod paymentMethod) {
         return PaymentTransaction.builder()
-                .userId(orderResponse.getCustomerId()) /// có xóa userId ở entity thì xóa nhé ＼(ﾟｰﾟ＼)
-                .orderId(orderResponse.getOrderId())
-                .amount(orderResponse.getFinalTotal())
+                .orderId(orderResponse.getId())
+                .amount(orderResponse.getTotalDue())
                 .status(StatusTransaction.CREATED)
                 .paymentMethod(paymentMethod)
                 .transactionRef(null)
@@ -88,17 +86,16 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     /// Kiểm tra order xem đã có tạo giao dịch từ trước chưa(tránh duplicate giao dịch)
     @Override
     @Transactional
-    public OrderResponse checkDuplicateTransaction(OrderResponse orderResponse) {
-        if (orderResponse.getOrderStatus() != OrderStatus.WAITING_PAYMENT) {
+    public void checkDuplicateTransaction(OrderResponse orderResponse) {
+        if (!orderResponse.getOrderStatus().equals("WAITING_PAYMENT")) {
             throw new AppException(ErrorCode.ORDER_NOT_PAYABLE);
         }
         boolean exists = paymentTransactionRepository
-                .findByOrderId(orderResponse.getOrderId())
+                .findByOrderId(orderResponse.getId())
                 .isPresent();
         if (exists) {
             throw new AppException(ErrorCode.DUPLICATE_ORDER_ID);
         }
-        return orderResponse;
     }
 
     /// Set lại trạng thái giao dịch sau khi Momo gửi resultCode
@@ -155,6 +152,11 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
                 log.error("Error expiring transaction {}", tx.getOrderId(), e);
             }
         }
+    }
+
+    @Override
+    public void createPaymentTransaction(PaymentTransaction paymentTransaction) {
+        paymentTransactionRepository.save(paymentTransaction);
     }
 
     @Transactional

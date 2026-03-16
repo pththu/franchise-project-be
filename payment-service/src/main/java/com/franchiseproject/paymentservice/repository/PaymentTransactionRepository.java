@@ -1,6 +1,5 @@
 package com.franchiseproject.paymentservice.repository;
 
-import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
 import com.franchiseproject.paymentservice.entity.PaymentTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,8 +16,6 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
     PaymentTransaction getById(UUID id);
 
     Optional<PaymentTransaction> findByOrderId(UUID orderId);
-
-    List<PaymentTransaction> findByUserId(UUID userId);
 
     @Query("""
                 SELECT p FROM PaymentTransaction p
