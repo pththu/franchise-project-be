@@ -3,9 +3,8 @@ package com.franchiseproject.paymentservice.service.impl;
 import com.franchiseproject.paymentservice.client.MomoClient;
 import com.franchiseproject.paymentservice.config.MomoProperties;
 import com.franchiseproject.paymentservice.dto.request.CreateMomoRequest;
-import com.franchiseproject.paymentservice.dto.request.OptionPaymentMethodRequest;
 import com.franchiseproject.paymentservice.dto.response.CreateMomoResponse;
-import com.franchiseproject.paymentservice.dto.response.OrderResponse;
+import com.franchiseproject.paymentservice.dto.response.order.OrderResponse;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
 import com.franchiseproject.paymentservice.entity.PaymentTransaction;
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
@@ -14,7 +13,6 @@ import com.franchiseproject.paymentservice.exception.ErrorCode;
 //import com.franchiseproject.paymentservice.repository.PaymenMethodRepository;
 import com.franchiseproject.paymentservice.repository.PaymentTransactionRepository;
 import com.franchiseproject.paymentservice.service.MomoService;
-import com.franchiseproject.paymentservice.service.PaymentMethodService;
 import com.franchiseproject.paymentservice.service.PaymentTransactionService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -26,10 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -48,8 +43,8 @@ public class MomoServiceImpl implements MomoService {
     public CreateMomoResponse buildCreateMomoQR(OrderResponse orderResponse, PaymentMethod paymentMethod) {
 
         String prettySignature = "";
-        String orderInfo = "ThanhToanHoaDon_" + orderResponse.getOrderId();
-        long amount = orderResponse.getFinalTotal().longValueExact();
+        String orderInfo = "ThanhToanHoaDon_" + orderResponse.getId();
+        long amount = orderResponse.getTotalDue().longValueExact();
 
         PaymentTransaction paymentTransaction = paymentTransactionService.buildPaymentTransaction(orderResponse, paymentMethod);
         paymentTransaction.changeStatus(StatusTransaction.PENDING);
@@ -58,7 +53,7 @@ public class MomoServiceImpl implements MomoService {
         String rawSignature = String.format(
                 "accessKey=%s&amount=%d&extraData=%s&ipnUrl=%s&orderId=%s&orderInfo=%s&partnerCode=%s&redirectUrl=%s&requestId=%s&requestType=%s",
                 momoProperties.getAccess_key(), amount, "", momoProperties.getIpn_url(),
-                orderResponse.getOrderId(), orderInfo, momoProperties.getPartner_code(),
+                orderResponse.getId(), orderInfo, momoProperties.getPartner_code(),
                 momoProperties.getReturn_url(), paymentTransaction.getId(), momoProperties.getRequest_type());
 
         log.info("MoMo rawSignature: {}", rawSignature);
@@ -77,7 +72,7 @@ public class MomoServiceImpl implements MomoService {
                 .requestType(momoProperties.getRequest_type())
                 .ipnUrl(momoProperties.getIpn_url())
                 .redirectUrl(momoProperties.getReturn_url())
-                .orderId(orderResponse.getOrderId().toString())
+                .orderId(orderResponse.getId().toString())
                 .orderInfo(orderInfo)
                 .requestId(paymentTransaction.getId().toString())
                 .extraData("")

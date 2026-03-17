@@ -2,12 +2,11 @@ package com.franchiseproject.paymentservice.service.impl;
 
 import com.franchiseproject.paymentservice.client.OrderClient;
 import com.franchiseproject.paymentservice.dto.request.PaymentResultRequest;
-import com.franchiseproject.paymentservice.dto.response.OrderResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
+import com.franchiseproject.paymentservice.dto.response.order.OrderResponse;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
 import com.franchiseproject.paymentservice.entity.PaymentTransaction;
 import com.franchiseproject.paymentservice.enums.MomoResultCode;
-import com.franchiseproject.paymentservice.enums.OrderStatus;
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
 import com.franchiseproject.paymentservice.exception.AppException;
 import com.franchiseproject.paymentservice.exception.ErrorCode;
@@ -23,6 +22,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +34,6 @@ import java.util.UUID;
 public class PaymentTransactionServiceImpl implements PaymentTransactionService {
 
     PaymentTransactionRepository paymentTransactionRepository;
-    PaymentTransactionService paymentTransactionService;
     OrderClient orderClient;
     PaymentTransactionMapper paymentTransactionMapper;
 
@@ -43,9 +42,8 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Transactional
     public PaymentTransaction buildPaymentTransaction(OrderResponse orderResponse, PaymentMethod paymentMethod) {
         return PaymentTransaction.builder()
-                .userId(orderResponse.getCustomerId()) /// có xóa userId ở entity thì xóa nhé ＼(ﾟｰﾟ＼)
-                .orderId(orderResponse.getOrderId())
-                .amount(orderResponse.getFinalTotal())
+                .orderId(orderResponse.getId())
+                .amount(orderResponse.getTotalDue())
                 .status(StatusTransaction.CREATED)
                 .paymentMethod(paymentMethod)
                 .transactionRef(null)
@@ -88,17 +86,16 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     /// Kiểm tra order xem đã có tạo giao dịch từ trước chưa(tránh duplicate giao dịch)
     @Override
     @Transactional
-    public OrderResponse checkDuplicateTransaction(OrderResponse orderResponse) {
-        if (orderResponse.getOrderStatus() != OrderStatus.WAITING_PAYMENT) {
+    public void checkDuplicateTransaction(OrderResponse orderResponse) {
+        if (!orderResponse.getOrderStatus().equals("WAITING_PAYMENT")) {
             throw new AppException(ErrorCode.ORDER_NOT_PAYABLE);
         }
         boolean exists = paymentTransactionRepository
-                .findByOrderId(orderResponse.getOrderId())
+                .findByOrderId(orderResponse.getId())
                 .isPresent();
         if (exists) {
             throw new AppException(ErrorCode.DUPLICATE_ORDER_ID);
         }
-        return orderResponse;
     }
 
     /// Set lại trạng thái giao dịch sau khi Momo gửi resultCode
@@ -144,7 +141,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Scheduled(fixedRate = 60000) // chạy mỗi 60s
     @Transactional
     public void expirePendingTransactions() {
-        Instant timeout = Instant.now().minus(15, ChronoUnit.MINUTES);
+        LocalDateTime timeout = LocalDateTime.now().minusMinutes(15);
         List<PaymentTransaction> transactions =
                 paymentTransactionRepository.findExpiredTransactions(timeout);
         for (PaymentTransaction tx : transactions) {
@@ -155,6 +152,11 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
                 log.error("Error expiring transaction {}", tx.getOrderId(), e);
             }
         }
+    }
+
+    @Override
+    public void createPaymentTransaction(PaymentTransaction paymentTransaction) {
+        paymentTransactionRepository.save(paymentTransaction);
     }
 
     @Transactional

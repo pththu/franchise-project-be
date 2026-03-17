@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface OrderService {
-    OrderResponse createOrder(CreateOrderRequest request);
+    UUID createOrder(CreateOrderRequest request);
 
     void cancelOrder(UUID orderId, UUID customerId);
 
