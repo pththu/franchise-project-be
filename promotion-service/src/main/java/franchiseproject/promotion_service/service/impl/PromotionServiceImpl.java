@@ -1,7 +1,9 @@
 package franchiseproject.promotion_service.service.impl;
 
+import franchiseproject.promotion_service.dto.PromotionResponse;
 import franchiseproject.promotion_service.entity.Promotion;
 import franchiseproject.promotion_service.repository.PromotionRepository;
+import franchiseproject.promotion_service.service.PromotionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -11,13 +13,31 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class PromotionServiceImpl {
+public class PromotionServiceImpl implements PromotionService {
 
     private final PromotionRepository promotionRepository;
 
     // View Promotions
-    public List<Promotion> getAllPromotions() {
-        return promotionRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    @Override
+    public List<PromotionResponse> getAllPromotions() {
+
+        return promotionRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+
+    }
+
+    private PromotionResponse mapToResponse(Promotion promotion) {
+
+        return PromotionResponse.builder()
+                .id(promotion.getId())
+                .name(promotion.getName())
+                .discountValue(promotion.getDiscountValue())
+                .status(promotion.getStatus().name())
+                .updatedAt(promotion.getUpdatedAt())
+                .build();
+
     }
 
     // View Promotion Details
@@ -43,7 +63,6 @@ public class PromotionServiceImpl {
         existing.setDiscountValue(promotion.getDiscountValue());
         existing.setStartTime(promotion.getStartTime());
         existing.setEndTime(promotion.getEndTime());
-        existing.setUsageLimit(promotion.getUsageLimit());
 
         return promotionRepository.save(existing);
     }

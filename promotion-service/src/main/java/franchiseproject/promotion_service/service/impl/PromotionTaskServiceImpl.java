@@ -3,13 +3,16 @@ package franchiseproject.promotion_service.service.impl;
 import franchiseproject.promotion_service.dto.PromotionEffectiveTimeRequest;
 import franchiseproject.promotion_service.dto.PromotionUsageCheckResponse;
 import franchiseproject.promotion_service.dto.UpdatePromotionUsageRequest;
+import franchiseproject.promotion_service.entity.Coupon;
 import franchiseproject.promotion_service.entity.Promotion;
 import franchiseproject.promotion_service.exception.ResourceNotFoundException;
+import franchiseproject.promotion_service.repository.CouponRepository;
 import franchiseproject.promotion_service.repository.PromotionRepository;
 import franchiseproject.promotion_service.service.PromotionTaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -17,6 +20,7 @@ import java.util.UUID;
 public class PromotionTaskServiceImpl implements PromotionTaskService {
 
     private final PromotionRepository promotionRepository;
+    private final CouponRepository couponRepository;
 
     @Override
     public Promotion definePromotionEffectiveTime(UUID promotionId, PromotionEffectiveTimeRequest request) {
@@ -50,11 +54,17 @@ public class PromotionTaskServiceImpl implements PromotionTaskService {
 
     @Override
     public PromotionUsageCheckResponse checkPromotionUsageLimit(UUID promotionId) {
+
         Promotion promotion = promotionRepository.findById(promotionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Promotion not found with id: " + promotionId));
 
-        Integer usageLimit = promotion.getUsageLimit();
-        Integer usedCount = promotion.getUsedCount() == null ? 0 : promotion.getUsedCount();
+        Coupon coupon = couponRepository.findByPromotionId(promotionId)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found for promotion"));
+
+        Integer usageLimit = coupon.getUsageLimit();
+        Integer usedCount = coupon.getUsedCount() == null ? 0 : coupon.getUsedCount();
 
         if (usageLimit == null) {
             return PromotionUsageCheckResponse.builder()
@@ -82,6 +92,7 @@ public class PromotionTaskServiceImpl implements PromotionTaskService {
 
     @Override
     public Promotion updatePromotionUsage(UUID promotionId, UpdatePromotionUsageRequest request) {
+
         Promotion promotion = promotionRepository.findById(promotionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Promotion not found with id: " + promotionId));
 
@@ -94,15 +105,26 @@ public class PromotionTaskServiceImpl implements PromotionTaskService {
             throw new IllegalArgumentException("incrementBy must be greater than 0");
         }
 
-        int currentUsedCount = promotion.getUsedCount() == null ? 0 : promotion.getUsedCount();
-        int newUsedCount = currentUsedCount + incrementBy;
+        List<Coupon> coupons = couponRepository.findByPromotionId(promotionId);
 
-        if (promotion.getUsageLimit() != null && newUsedCount > promotion.getUsageLimit()) {
-            throw new IllegalArgumentException("Cannot update usage because usage limit will be exceeded");
+        if (coupons.isEmpty()) {
+            throw new ResourceNotFoundException("No coupons found for promotion id: " + promotionId);
         }
 
-        promotion.setUsedCount(newUsedCount);
-        return promotionRepository.save(promotion);
+        Coupon coupon = coupons.get(0); // tạm lấy coupon đầu tiên
+
+        int currentUsedCount = coupon.getUsedCount() == null ? 0 : coupon.getUsedCount();
+        int newUsedCount = currentUsedCount + incrementBy;
+
+        if (coupon.getUsageLimit() != null && newUsedCount > coupon.getUsageLimit()) {
+            throw new IllegalArgumentException("Cannot update usage because coupon usage limit will be exceeded");
+        }
+
+        coupon.setUsedCount(newUsedCount);
+
+        couponRepository.save(coupon);
+
+        return promotion;
     }
 
     private void validateEffectiveTime(PromotionEffectiveTimeRequest request) {

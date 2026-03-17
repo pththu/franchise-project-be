@@ -35,11 +35,15 @@ public class InventoryImpl implements InventoryService {
     @Override
     public List<FranchiseOfInventoryResponse> viewInventoryDetail() {
 
-        return franchiseRepository.findAll()
+        return repository.findAll()
                 .stream()
-                .map(f -> FranchiseOfInventoryResponse.builder()
-                        .id(f.getId())
-                        .franchiseName(f.getName())
+                .map(i -> FranchiseOfInventoryResponse.builder()
+                        .id(i.getId())
+                        .franchiseName(i.getFranchise().getName())
+                        .productName(i.getProductName())
+                        .quantity(i.getQuantity())
+                        .unit(i.getUnit())
+                        .minStock(i.getMinStock())
                         .build())
                 .toList();
     }

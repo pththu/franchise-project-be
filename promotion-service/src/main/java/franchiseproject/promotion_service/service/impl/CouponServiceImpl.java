@@ -1,7 +1,10 @@
 package franchiseproject.promotion_service.service.impl;
 
+import franchiseproject.promotion_service.dto.CouponResponse;
+import franchiseproject.promotion_service.dto.CouponUpdateRequest;
 import franchiseproject.promotion_service.entity.Coupon;
 import franchiseproject.promotion_service.entity.Promotion;
+import franchiseproject.promotion_service.enums.CouponStatus;
 import franchiseproject.promotion_service.exception.CouponInvalidException;
 import franchiseproject.promotion_service.exception.CouponNotFoundException;
 import franchiseproject.promotion_service.repository.CouponRepository;
@@ -11,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,10 +37,61 @@ public class CouponServiceImpl implements CouponService {
                 .couponCode(code)
                 .usageLimit(1)
                 .usedCount(0)
+                .status(CouponStatus.ACTIVE)
                 .promotion(promotion)
                 .build();
 
         return couponRepository.save(coupon);
+    }
+
+    @Override
+    public CouponResponse updateCoupon(UUID id, CouponUpdateRequest request) {
+
+        Coupon coupon = couponRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Coupon not found"));
+
+        if (request.getUsageLimit() != null) {
+            coupon.setUsageLimit(request.getUsageLimit());
+        }
+
+        if (request.getExpiryDate() != null) {
+            coupon.setExpiryDate(request.getExpiryDate());
+        }
+
+        if (request.getStatus() != null) {
+            coupon.setStatus(request.getStatus());
+        }
+
+        couponRepository.save(coupon);
+
+        return mapToResponse(coupon);
+    }
+
+    @Override
+    public List<Coupon> generateCoupons(UUID promotionId, int quantity, int usageLimit, Instant expiryDate) {
+
+        Promotion promotion = promotionRepository.findById(promotionId)
+                .orElseThrow(() -> new RuntimeException("Promotion not found"));
+
+        List<Coupon> coupons = new ArrayList<>();
+
+        for (int i = 0; i < quantity; i++) {
+
+            String code = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+            Coupon coupon = Coupon.builder()
+                    .couponCode(code)
+                    .usageLimit(usageLimit)
+                    .usedCount(0)
+                    .status(CouponStatus.ACTIVE)
+                    .expiryDate(expiryDate)
+                    .promotion(promotion)
+                    .build();
+
+            coupons.add(coupon);
+        }
+
+        return couponRepository.saveAll(coupons);
     }
 
     @Override
@@ -45,14 +100,15 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public Coupon getCouponDetail(UUID promotionId) {
-        return couponRepository.findByPromotionId(promotionId)
+    public Coupon getCouponDetail(UUID id) {
+
+        return couponRepository.findById(id)
                 .orElseThrow(() -> new CouponNotFoundException("Coupon not found"));
     }
     @Override
-    public void deleteCoupon(UUID promotionId) {
+    public void deleteCoupon(UUID id) {
 
-        Coupon coupon = couponRepository.findByPromotionId(promotionId)
+        Coupon coupon = couponRepository.findById(id)
                 .orElseThrow(() -> new CouponNotFoundException("Coupon not found"));
 
         couponRepository.delete(coupon);
@@ -74,6 +130,16 @@ public class CouponServiceImpl implements CouponService {
             throw new CouponInvalidException("Promotion expired");
         }
 
+        if (coupon.getStatus() != CouponStatus.ACTIVE) {
+            throw new CouponInvalidException("Coupon not active");
+        }
+
+        if (coupon.getExpiryDate() != null &&
+                coupon.getExpiryDate().isBefore(Instant.now())) {
+
+            throw new CouponInvalidException("Coupon expired");
+        }
+
         if (coupon.getUsageLimit() != null &&
                 coupon.getUsedCount() >= coupon.getUsageLimit()) {
 
@@ -81,5 +147,18 @@ public class CouponServiceImpl implements CouponService {
         }
 
         return true;
+    }
+    private CouponResponse mapToResponse(Coupon coupon) {
+
+        return CouponResponse.builder()
+                .id(coupon.getId())
+                .couponCode(coupon.getCouponCode())
+                .usageLimit(coupon.getUsageLimit())
+                .usedCount(coupon.getUsedCount())
+                .expiryDate(coupon.getExpiryDate())
+                .status(coupon.getStatus())
+                .promotionId(coupon.getPromotion().getId())
+                .build();
+
     }
 }
