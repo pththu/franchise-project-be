@@ -1,0 +1,25 @@
+# Logs
+logs/
+*.log
+
+# Build
+target/
+build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Upload files
+uploads/
+
+# Run files
+*.run.xml
