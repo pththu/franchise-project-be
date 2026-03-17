@@ -42,13 +42,13 @@ public class OrderController {
     }
 
 
-    //createOrder cho staff tại các POS
+    /// createOrder cho staff tại các POS
     @PostMapping("/create-order")
-    public ApiResponse<OrderResponse> createOrder(
+    public ApiResponse<UUID> createOrder(
             @RequestBody @Valid CreateOrderRequest request
     ) {
-        OrderResponse response = orderService.createOrder(request);
-        return ApiResponse.<OrderResponse>builder()
+        UUID response = orderService.createOrder(request);
+        return ApiResponse.<UUID>builder()
                 .message("Tạo thành công!")
                 .data(response)
                 .statusCode(200)
@@ -171,34 +171,11 @@ public class OrderController {
                 .build();
     }
 
-    /// Trả Response data của Order cho Payment-Service tạo Transaction
-    /// dùng getOrder thì comment Mock test
-//    @GetMapping("/{orderId}/get-orders")
-//    public ApiResponse<PaymentResponse> getOrder(@PathVariable UUID orderId) {
-//        return ApiResponse.<PaymentResponse>builder()
-//                .message("Lấy đơn hàng trả về cho Payment-Service Thành Công!")
-//                .data(orderService.getOrder(orderId))
-//                .statusCode(200)
-//                .errors(null)
-//                .build();
-//    }
-
-    /// Mock Test Api với Payment-Service
-    @GetMapping("/{orderId}/get-orders")
-    public PaymentResponse getOrder(@PathVariable UUID orderId) {
-
-        return PaymentResponse.builder()
-                .orderId(orderId)
-                .customerId(UUID.randomUUID())
-                .finalTotal(new BigDecimal("120000"))
-                .orderStatus(OrderStatus.WAITING_PAYMENT)
-                .build();
-    }
     @PostMapping("/payment-result")
     public ResponseEntity<String> receivePaymentResult(@RequestBody PaymentResultRequest request) {
 
         System.out.println("Received payment result: " + request);
-
+        //call api delivery-service để cập nhật trạng thái giao hàng nếu cần thiết
         return ResponseEntity.ok("Payment result received");
     }
 

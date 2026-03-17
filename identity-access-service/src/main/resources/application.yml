@@ -41,6 +41,9 @@ aws:
     userPoolId: ${USER_POOL_ID}
     clientId: ${CLIENT_ID}
     clientSecret: ${CLIENT_SECRET}
+    domain: https://ap-southeast-1bxpfambw9.auth.ap-southeast-1.amazoncognito.com
+    googleCallbackUrl: http://localhost:3004/api/auth/google/callback
+    frontendUrl: http://localhost:5173
 
 app:
   cors:

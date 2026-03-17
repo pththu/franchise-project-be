@@ -17,6 +17,7 @@ public enum ErrorCode {
     INVALID_SIGNATURE(400, "Invalid signature", HttpStatus.BAD_REQUEST),
     PAYMENT_METHOD_NOT_SUPPORTED(400, "Phương thức thanh toán không được hỗ trợ", HttpStatus.BAD_REQUEST),
     ORDER_NOT_PAYABLE(409, "Order không yêu cầu thanh toán", HttpStatus.CONFLICT),
+    UPDATE_ORDER_STATUS_FAILED(500, "Cập nhật trạng thái đơn hàng thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_FOUND_ORDER(404, "Không Tìm Thấy Đơn Hàng", HttpStatus.NOT_FOUND),
     PAYMENT_METHOD_NOT_AVAILABLE(409, "Method đang bị khóa", HttpStatus.CONFLICT),
     VALIDATION_FAILED(400, "Dữ liệu không hợp lệ", HttpStatus.BAD_REQUEST);

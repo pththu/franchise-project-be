@@ -26,4 +26,9 @@ public interface CognitoService {
     void disableUser(String username);
 
     String computeSecretHash(String username);
+
+    void changePassword(String accessToken, String oldPassword, String newPassword);
+    void forgotPassword(String username);
+    void confirmForgotPassword(String username, String code, String newPassword);
+
 }
