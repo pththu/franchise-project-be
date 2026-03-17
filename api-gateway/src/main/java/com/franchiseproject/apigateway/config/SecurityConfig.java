@@ -45,6 +45,7 @@ public class SecurityConfig {
             "/api/auth/change-password",
             "/api/auth/forgot-password",
             "/api/auth/forgot-password/confirm",
+            "/api/products/getall",
     };
 
     @Bean
