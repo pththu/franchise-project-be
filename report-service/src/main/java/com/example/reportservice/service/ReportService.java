@@ -1,9 +1,8 @@
 package com.example.reportservice.service;
 
+import reactor.core.publisher.Mono;
 import java.util.Map;
 
 public interface ReportService {
-
-    Map<String, Object> getDashboard();
-
+    Mono<Map<String, Object>> getDashboard();  // Trả về Mono
 }
