@@ -6,8 +6,8 @@ import lombok.Data;
 
 @Data
 public class ConfirmForgotPasswordRequest {
-    @NotBlank(message = "Username is required")
-    private String username;
+    @NotBlank(message = "Username or email is required")
+    private String identifier;
 
     @NotBlank(message = "Confirmation code is required")
     private String code;

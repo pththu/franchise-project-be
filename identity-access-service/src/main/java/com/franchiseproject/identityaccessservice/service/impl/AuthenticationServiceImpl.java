@@ -175,19 +175,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public void confirmForgotPassword(ConfirmForgotPasswordRequest request) {
-        log.info("confirmForgotPassword: username={}", request.getUsername());
+        log.info("confirmForgotPassword: username={}", request.getIdentifier());
 
         // Kiểm tra user tồn tại trong DB
-        userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+//        userRepository.findByUsername(request.getUsername())
+//                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        User user = userRepository.findByUsernameOrEmail(request.getIdentifier(), request.getIdentifier())
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         cognitoService.confirmForgotPassword(
-                request.getUsername(),
+                user.getUsername(),
                 request.getCode(),
                 request.getNewPassword()
         );
 
-        log.info("confirmForgotPassword: success for username={}", request.getUsername());
+        log.info("confirmForgotPassword: success for username={}", user.getUsername());
     }
 
     public TokenResponse login(AuthenticationRequest req) {

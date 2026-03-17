@@ -201,7 +201,7 @@ public class AuthenticationController {
     public ApiResponse<?> confirmForgotPassword(
             @Valid @RequestBody ConfirmForgotPasswordRequest request) {
 
-        log.info("confirmForgotPassword: username={}", request.getUsername());
+        log.info("confirmForgotPassword: username={}", request.getIdentifier());
         authenticationService.confirmForgotPassword(request);
 
         return ApiResponse.builder()
