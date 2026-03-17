@@ -20,7 +20,7 @@ public interface UserMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "lastLogin", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "isVerifyEmail", ignore = true)
+    @Mapping(target = "verifyEmail", ignore = true)
     @Mapping(target = "role", ignore = true)
     User toUser(UserCreationRequest request);
 
@@ -30,8 +30,9 @@ public interface UserMapper {
     @Mapping(target = "lastLogin", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "franchiseId", ignore = true)
-    @Mapping(target = "isVerifyEmail", ignore = true)
+    @Mapping(target = "verifyEmail", ignore = true)
     User toUser(CustomerRegisterRequest request);
 
+    @Mapping(target = "verifyEmail", source = "verifyEmail")
     UserResponse toUserResponse(User user);
 }

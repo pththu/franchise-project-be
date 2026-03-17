@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -23,4 +24,33 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
             @Param("status") CustomerStatus status,
             Pageable pageable
     );
+
+    @Query("SELECT DISTINCT c FROM Customer c " +
+            "WHERE (:keyword IS NULL OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(c.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:status IS NULL OR c.status = :status)")
+    Page<Customer> searchAllCustomers(
+            @Param("keyword") String keyword,
+            @Param("status") CustomerStatus status,
+            Pageable pageable
+    );
+
+    @Query("SELECT DISTINCT c FROM Customer c " +
+            "INNER JOIN c.customerFranchises cf " +
+            "WHERE cf.franchiseId = :franchiseId " +
+            "AND (:keyword IS NULL OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(c.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:status IS NULL OR c.status = :status)")
+    Page<Customer> searchCustomersByFranchise(
+            @Param("franchiseId") UUID franchiseId,
+            @Param("keyword") String keyword,
+            @Param("status") CustomerStatus status,
+            Pageable pageable
+    );
+
+    Optional<Customer> findByPhoneOrEmail(String phone, String email);
+
+    Optional<Customer> findByPhone(String phone);
+
+    Optional<Customer> findByEmail(String email);
 }
