@@ -16,7 +16,7 @@ import java.util.UUID;
 public interface UserService {
     User getById(UUID userId);
     UserCreationResponse createOne(UserCreationRequest req, Role role);
-    boolean changePassword(ChangePasswordRequest request);
+    boolean changePassword(ChangePasswordRequest request, UUID userId);
     UserResponse getProfile(UUID userId);
     UserUpdateResponse updateAccountInformation(String subject, UserUpdateRequest request);
     UserDeleteResponse deleteAccountUser(UUID userId);

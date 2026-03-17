@@ -274,8 +274,8 @@ public class UserServiceImpl implements UserService {
     // ─────────────────────────────────────────────────────────────
 
     @Override
-    public boolean changePassword(ChangePasswordRequest request) {
-        User user = userRepository.findById(request.getUserId())
+    public boolean changePassword(ChangePasswordRequest request, UUID userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         if (passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {

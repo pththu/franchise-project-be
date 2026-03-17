@@ -27,6 +27,7 @@ public enum ErrorCode {
     EMAIL_IS_EXISTS(409, "Email is used"),
     CREATE_USER_FAIL(409, "Email is used"),
     USER_lOCKED(423, "User locked"),
+    TOO_MANY_REQUESTS(429, "Too many request"),
     CREATE_TOKEN_FAIL(500, "Failed to create token"),
     DUPLICATE_KEY(500, "Duplicate key value violates unique constraint"),
     UNCATEGORIZED_EXCEPTION(500, "Uncategorized exception"),
