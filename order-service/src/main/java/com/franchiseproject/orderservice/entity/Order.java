@@ -42,9 +42,6 @@ public class Order {
     UUID promotionId;
     @Column(name = "address")
     String address;
-//    @JdbcTypeCode(SqlTypes.JSON)
-//    @Column(columnDefinition = "jsonb")
-//    DeliveryAddress address;
     @Column(name = "total_due", precision = 12, scale = 2, nullable = false)
     BigDecimal totalDue;
     @Enumerated(EnumType.STRING)
@@ -64,10 +61,6 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonIgnore
     List<OrderDetail> orderDetails;
-    @Column(name = "assigned_staff_id")
-    UUID assignedStaffId;
-    @Column(name = "is_special")
-    Boolean isSpecial;
     @Column(name = "estimated_delivery_time")
     Instant estimatedDeliveryTime;
 }

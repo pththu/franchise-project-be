@@ -13,7 +13,6 @@ import java.util.UUID;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChangePasswordRequest {
-    UUID userId;
     String oldPassword;
     @Size(min = 8, message = "INVALID_PASSWORD")
     String newPassword;

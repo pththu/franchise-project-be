@@ -12,11 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface OrderDetailService {
-    List<OrderDetail> buildOrderDetails(
-            List<CreateOrderItemRequest> items,
-            Map<UUID, ProductResponse> apiProducts,
-            Order order
-    );
+    List<OrderDetail> buildOrderDetails(List<CreateOrderItemRequest> items, Map<UUID, ProductResponse> apiProducts, Order order);
 
     BigDecimal calculateTotal(List<OrderDetail> details);
 

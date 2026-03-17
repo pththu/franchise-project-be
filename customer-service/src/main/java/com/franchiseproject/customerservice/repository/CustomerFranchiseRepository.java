@@ -10,4 +10,6 @@ import java.util.UUID;
 @Repository
 public interface CustomerFranchiseRepository extends JpaRepository<CustomerFranchise, UUID> {
     List<CustomerFranchise> findByCustomerId(UUID customerId);
+
+    boolean existsByCustomerIdAndFranchiseId(UUID customerId, UUID franchiseId);
 }

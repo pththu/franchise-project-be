@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -34,7 +34,7 @@ public class Refund {
 
     @CreationTimestamp
     @Column(name= "created_at", updatable = false)
-    LocalDateTime createdAt;
+    Instant createdAt;
 
     @ManyToOne
     @JoinColumn(name = "payment_transaction_id", nullable = false)

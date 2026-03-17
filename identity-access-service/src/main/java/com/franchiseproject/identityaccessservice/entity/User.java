@@ -36,7 +36,7 @@ public class User implements Persistable<UUID> {
     String phone;
     boolean gender;
     @Column(name = "is_verify_email")
-    boolean isVerifyEmail;
+    boolean verifyEmail;
     @Column(name = "avatar_url")
     String avatarUrl;
     @Enumerated(EnumType.STRING)

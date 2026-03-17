@@ -48,7 +48,8 @@ public class SecurityConfig {
             api_prefix + "resend-code",
             api_prefix + "refresh",
             api_prefix + "logout",
-
+            api_prefix + "forgot-password",
+            api_prefix + "forgot-password/confirm",
     };
 
     @Bean
