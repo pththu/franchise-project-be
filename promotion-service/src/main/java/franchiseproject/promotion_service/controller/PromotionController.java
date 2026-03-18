@@ -1,8 +1,10 @@
 package franchiseproject.promotion_service.controller;
 
+import franchiseproject.promotion_service.dto.PromotionResponse;
 import franchiseproject.promotion_service.entity.Promotion;
 import franchiseproject.promotion_service.service.impl.PromotionServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +19,12 @@ public class PromotionController {
 
     // View Promotions
     @GetMapping
-    public List<Promotion> getAllPromotions() {
-        return promotionService.getAllPromotions();
+    public ResponseEntity<List<PromotionResponse>> getAll() {
+
+        return ResponseEntity.ok(
+                promotionService.getAllPromotions()
+        );
+
     }
 
     // View Promotion Details

@@ -22,6 +22,6 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
                 WHERE p.status = 'PENDING'
                 AND p.createdAt < :timeout
             """)
-    List<PaymentTransaction> findExpiredTransactions(LocalDateTime timeout);
+    List<PaymentTransaction> findExpiredTransactions(Instant timeout);
 
 }
