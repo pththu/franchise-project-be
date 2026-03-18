@@ -141,7 +141,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Scheduled(fixedRate = 60000) // chạy mỗi 60s
     @Transactional
     public void expirePendingTransactions() {
-        LocalDateTime timeout = LocalDateTime.now().minusMinutes(15);
+        Instant timeout = Instant.now().minus(15, ChronoUnit.MINUTES);
         List<PaymentTransaction> transactions =
                 paymentTransactionRepository.findExpiredTransactions(timeout);
         for (PaymentTransaction tx : transactions) {
