@@ -12,6 +12,7 @@ public enum ErrorCode {
 
     // --- CUSTOMER & FRANCHISE ---
     CUSTOMER_PROFILE_NOT_FOUND(4041, "Customer loyalty profile not found for this franchise"),
+    CUSTOMER_NOT_FOUND(4042, "Customer not found"),
     FRANCHISE_ID_REQUIRED(4006, "Franchise ID is required"),
     CUSTOMER_ID_REQUIRED(4007, "Customer ID is required"),
 
