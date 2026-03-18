@@ -1,0 +1,355 @@
+package com.franchiseproject.identityaccessservice.service.impl;
+
+import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
+import com.franchiseproject.identityaccessservice.dto.request.SeachUsersRequest;
+import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
+import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
+import com.franchiseproject.identityaccessservice.dto.response.*;
+import com.franchiseproject.identityaccessservice.entity.Role;
+import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.enums.UserStatus;
+import com.franchiseproject.identityaccessservice.exception.AppException;
+import com.franchiseproject.identityaccessservice.exception.ErrorCode;
+import com.franchiseproject.identityaccessservice.mapper.UserMapper;
+import com.franchiseproject.identityaccessservice.repository.UserRepository;
+import com.franchiseproject.identityaccessservice.service.CognitoService;
+import com.franchiseproject.identityaccessservice.service.UserService;
+import jakarta.transaction.Transactional;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+@Slf4j
+@Service
+@AllArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+public class UserServiceImpl implements UserService {
+
+    CognitoService cognitoService;
+    UserRepository userRepository;
+    UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
+
+    static final int DEFAULT_PAGE_SIZE = 20;
+
+    @Override
+    public User getById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
+
+    @Override
+    public Page<User> getAll(int page) {
+        Pageable pageable = PageRequest.of(
+                page,
+                DEFAULT_PAGE_SIZE,
+                Sort.by("username").ascending()
+        );
+        return userRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<User> search(SeachUsersRequest request) {
+
+        String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
+                ? request.getKeyword().trim() : null;
+
+        String roleName = (request.getRole() != null && !request.getRole().trim().isEmpty())
+                ? request.getRole().trim() : null;
+
+        String sortProperty = request.getSortBy();
+        if ("name".equalsIgnoreCase(sortProperty)) {
+            sortProperty = "fullName";
+        }
+
+        UserStatus status = (request.getStatus() != null && !request.getStatus().trim().isEmpty())
+                ? UserStatus.valueOf(request.getStatus().trim()) : null;
+
+        Sort sort = request.getSortDir().equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortProperty).ascending()
+                : Sort.by(sortProperty).descending();
+
+        Pageable pageable = PageRequest.of(
+                request.getPage().intValue(),
+                request.getSize().intValue(),
+                sort
+        );
+        return userRepository.searchUsers(keyword, roleName, status, request.getGender(), pageable);
+    }
+
+    @Override
+    public StatsCountUserResponse countUsers() {
+        Object[] result = (Object[]) userRepository.countUserStats()[0];
+        return StatsCountUserResponse.builder()
+                .totals(((Long) result[0]).intValue())
+                .totalIsActive(((Long) result[1]).intValue())
+                .totalIsSuspended(((Long) result[2]).intValue())
+                .totalIsDeleted(((Long) result[3]).intValue())
+                .totalAdmin(((Long) result[4]).intValue())
+                .totalManager(((Long) result[5]).intValue())
+                .totalStaff(((Long) result[6]).intValue())
+                .totalCustomer(((Long) result[7]).intValue())
+                .build();
+    }
+
+    /**
+     * Admin/Manager tạo user thủ công.
+     * Sau khi tạo trên Cognito + lưu DB → add ngay vào Cognito group theo roleName.
+     * (Không cần qua flow verify vì admin tạo, email verify sẽ được admin xử lý riêng)
+     */
+    @Override
+    @Transactional
+    public UserCreationResponse createOne(UserCreationRequest req, Role role) {
+
+        if (userRepository.existsByUsername(req.getUsername())) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
+        if (userRepository.existsByEmail(req.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_IS_EXISTS);
+        }
+
+        String passwordDefault = "Franchise@01";
+        String cognitoSub;
+
+        try {
+            cognitoSub = cognitoService.registerUser(
+                    req.getUsername(),
+                    passwordDefault,
+                    req.getEmail(),
+                    req.getFullName(),
+                    req.getPhone()
+            );
+            log.info("cognitoSub: {}", cognitoSub);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("CreateUser failed at Cognito registration", e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+
+        User user = User.builder()
+                .id(UUID.fromString(cognitoSub))
+                .username(req.getUsername())
+                .email(req.getEmail())
+                .fullName(req.getFullName())
+                .phone(req.getPhone())
+                .verifyEmail(false)
+                .gender(req.isGender())
+                .role(role)
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        userRepository.save(user);
+
+        // Add vào Cognito group theo roleName được chỉ định trong request
+        try {
+            cognitoService.addUserToGroup(user.getUsername(), role.getName());
+            log.info("CreateUser: added {} to Cognito group '{}'", user.getUsername(), role.getName());
+        } catch (Exception e) {
+            // Log warning nhưng không rollback — Cognito group có thể sync lại sau
+            log.warn("CreateUser: failed to add {} to Cognito group '{}': {}",
+                    user.getUsername(), role.getName(), e.getMessage());
+        }
+
+        return UserCreationResponse.builder()
+                .isCreated(true)
+                .userResponse(userMapper.toUserResponse(user))
+                .build();
+    }
+
+    /**
+     * Assign role mới cho user:
+     * 1. Xóa user khỏi Cognito group cũ
+     * 2. Add user vào Cognito group mới
+     * 3. Cập nhật role trong DB
+     */
+    @Override
+    @Transactional
+    public AssignRoleResponse assignRole(Role newRole, User user) {
+        if (newRole == null || user == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
+        }
+
+        String oldRoleName = user.getRole() != null ? user.getRole().getName() : null;
+        String newRoleName = newRole.getName();
+
+        // Không cần làm gì nếu role không đổi
+        if (newRoleName.equals(oldRoleName)) {
+            log.info("AssignRole: user {} already has role '{}', skipping", user.getUsername(), newRoleName);
+            return AssignRoleResponse.builder()
+                    .isAssigned(true)
+                    .build();
+        }
+
+        // 1. Xóa khỏi Cognito group cũ
+        if (oldRoleName != null) {
+            try {
+                cognitoService.removeUserFromGroup(user.getUsername(), oldRoleName);
+                log.info("AssignRole: removed {} from Cognito group '{}'", user.getUsername(), oldRoleName);
+            } catch (Exception e) {
+                log.warn("AssignRole: could not remove {} from old Cognito group '{}': {}",
+                        user.getUsername(), oldRoleName, e.getMessage());
+            }
+        }
+
+        // 2. Add vào Cognito group mới
+        try {
+            cognitoService.addUserToGroup(user.getUsername(), newRoleName);
+            log.info("AssignRole: added {} to Cognito group '{}'", user.getUsername(), newRoleName);
+        } catch (Exception e) {
+            log.error("AssignRole: failed to add {} to Cognito group '{}': {}",
+                    user.getUsername(), newRoleName, e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+
+        // 3. Cập nhật DB
+        user.setRole(newRole);
+        userRepository.save(user);
+
+        return AssignRoleResponse.builder()
+                .isAssigned(true)
+                .build();
+    }
+
+    /**
+     * Update trạng thái user (ACTIVE / SUSPENDED / DELETED).
+     * Chỉ lưu xuống DB — không cần tác động Cognito vì login đã check status.
+     */
+    @Override
+    @Transactional
+    public UserStatusResponse updateStatus(UUID userId, UserStatus newStatus) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        log.info("UpdateStatus: user={}, {} → {}", user.getUsername(), user.getStatus(), newStatus);
+        user.setStatus(newStatus);
+        userRepository.save(user);
+
+        return UserStatusResponse.builder()
+                .userId(userId)
+                .status(newStatus)
+                .isUpdated(true)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public UserDeleteResponse deleteAccountUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // 1. Cập nhật status DB
+        user.setStatus(UserStatus.DELETED);
+        userRepository.save(user);
+        log.info("DeleteAccount: status=DELETED saved for user={}", user.getUsername());
+
+        // 2. Disable trên Cognito
+        try {
+            cognitoService.disableUser(user.getUsername());
+        } catch (Exception e) {
+            log.warn("DeleteAccount: failed to disable user {} in Cognito: {}",
+                    user.getUsername(), e.getMessage());
+        }
+
+        return UserDeleteResponse.builder()
+                .isDeleted(true)
+                .build();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // USER SELF-SERVICE
+    // ─────────────────────────────────────────────────────────────
+
+    @Override
+    public boolean changePassword(ChangePasswordRequest request, UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
+            user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public UserResponse getProfile(UUID userId) {
+        return userMapper.toUserResponse(
+                userRepository.findById(userId)
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED))
+        );
+    }
+
+    /**
+     * Cập nhật thông tin cá nhân (fullName, phone, gender).
+     * Chỉ update field nào có giá trị mới khác giá trị hiện tại.
+     *
+     * subject: JWT sub — có thể là UUID (từ Cognito access token) hoặc username.
+     */
+    @Override
+    @Transactional
+    public UserUpdateResponse updateAccountInformation(String subject, UserUpdateRequest request) {
+        log.info("UpdateAccountInformation: subject={}, request={}", subject, request);
+
+        // Tìm user theo UUID (JWT sub) trước, fallback sang username
+        User user;
+        try {
+            UUID userId = UUID.fromString(subject);
+            user = userRepository.findById(userId)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        } catch (IllegalArgumentException e) {
+            user = userRepository.findByUsername(subject)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        }
+
+        boolean changed = false;
+
+        String fullName = request.getFullName();
+        if (fullName != null && !fullName.isBlank() && !fullName.equals(user.getFullName())) {
+            user.setFullName(fullName);
+            changed = true;
+            log.info("UpdateAccountInformation: updated fullName for {}", user.getUsername());
+        }
+
+        String phone = request.getPhone();
+        if (phone != null && !phone.isBlank() && !phone.equals(user.getPhone())) {
+            user.setPhone(phone);
+            changed = true;
+            log.info("UpdateAccountInformation: updated phone for {}", user.getUsername());
+        }
+
+        String gender = request.getGender();
+        if (gender != null && !gender.isBlank()) {
+            // Boolean.parseBoolean handles "true"/"false" case-insensitively; getBoolean reads system property
+            boolean newGender = Boolean.parseBoolean(gender);
+            if (user.isGender() != newGender) {
+                user.setGender(newGender);
+                changed = true;
+                log.info("UpdateAccountInformation: updated gender for {}", user.getUsername());
+            }
+        }
+
+        if (changed) {
+            userRepository.save(user);
+        }
+
+        return UserUpdateResponse.builder()
+                .isUpdated(changed)
+                .userResponse(userMapper.toUserResponse(user))
+                .build();
+    }
+}
