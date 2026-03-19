@@ -1,6 +1,7 @@
 package com.franchiseproject.loyaltyservice.service.impl;
 
 import com.franchiseproject.loyaltyservice.dto.response.CustomerBenefitResponse;
+import com.franchiseproject.loyaltyservice.dto.response.CustomerLoyaltyResponse;
 import com.franchiseproject.loyaltyservice.enums.LoyaltyTier;
 import com.franchiseproject.loyaltyservice.exception.AppException;
 import com.franchiseproject.loyaltyservice.exception.ErrorCode;
@@ -53,5 +54,30 @@ public class CustomerBenefitServiceImpl implements CustomerBenefitService {
         return tierBenefitRepository.findById(tier.name())
                 .map(TierBenefit::getBenefits)
                 .orElse(new ArrayList<>());
+    }
+
+    @Override
+    public List<CustomerLoyaltyResponse> getCustomersByTier(LoyaltyTier tier) {
+        List<CustomerFranchise> customerFranchises;
+
+        if (tier == null) {
+            customerFranchises = customerFranchiseRepository.findAll();
+        } else {
+            customerFranchises = customerFranchiseRepository.findByLoyaltyTier(tier);
+        }
+
+        if (customerFranchises == null || customerFranchises.isEmpty()) {
+            throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
+        }
+
+        return customerFranchises.stream()
+                .map(cf -> CustomerLoyaltyResponse.builder()
+                        .customerId(cf.getCustomerId())
+                        .franchiseId(cf.getFranchiseId())
+                        .loyaltyTier(cf.getLoyaltyTier())
+                        .loyaltyCurrentPoint(cf.getLoyaltyCurrentPoint())
+                        .loyaltyTotalPoint(cf.getLoyaltyTotalPoint())
+                        .build())
+                .toList();
     }
 }

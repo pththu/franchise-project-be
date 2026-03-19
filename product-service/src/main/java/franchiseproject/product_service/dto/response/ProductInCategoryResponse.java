@@ -1,9 +1,8 @@
-package franchiseproject.product_service.dto;
+package franchiseproject.product_service.dto.response;
 
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Getter
 @Setter

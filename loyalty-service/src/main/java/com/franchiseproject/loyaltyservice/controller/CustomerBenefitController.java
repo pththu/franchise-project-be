@@ -2,12 +2,15 @@ package com.franchiseproject.loyaltyservice.controller;
 
 import com.franchiseproject.loyaltyservice.dto.ApiResponse;
 import com.franchiseproject.loyaltyservice.dto.response.CustomerBenefitResponse;
+import com.franchiseproject.loyaltyservice.dto.response.CustomerLoyaltyResponse;
+import com.franchiseproject.loyaltyservice.enums.LoyaltyTier;
 import com.franchiseproject.loyaltyservice.service.CustomerBenefitService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,6 +30,17 @@ public class CustomerBenefitController {
                 .statusCode(200)
                 .message("Get customer tier benefits successfully")
                 .data(customerBenefitService.getCustomerBenefits(customerId, franchiseId))
+                .build();
+    }
+
+    @GetMapping("/customers")
+    public ApiResponse<List<CustomerLoyaltyResponse>> getCustomersByTier(
+            @RequestParam(value = "tier", required = false) LoyaltyTier tier) {
+
+        return ApiResponse.<List<CustomerLoyaltyResponse>>builder()
+                .statusCode(200)
+                .message("Get customers by tier successfully")
+                .data(customerBenefitService.getCustomersByTier(tier))
                 .build();
     }
 }
