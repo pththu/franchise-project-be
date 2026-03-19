@@ -13,9 +13,10 @@ import java.util.List;
 public interface ProductMapper {
 
 
-    @Mapping(target = "productVariantResponses", source = "productVariants")
+    @Mapping(target = "variants", source = "variants")
     ProductResponse toProductResponse (Product product);
 
+    @Mapping(target = "status", source = "status")
     @Mapping(target = "price", source = "salePrice")
     ProductVariantResponse toProductVariantResponse(ProductVariant productVariant);
 

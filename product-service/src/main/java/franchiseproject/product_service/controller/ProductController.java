@@ -7,6 +7,9 @@ import franchiseproject.product_service.dto.response.ProductDetailResponse;
 import franchiseproject.product_service.dto.response.ProductListItemResponse;
 import franchiseproject.product_service.dto.response.ProductResponse;
 import franchiseproject.product_service.entity.Product;
+import franchiseproject.product_service.entity.ProductVariant;
+import franchiseproject.product_service.enums.ProductStatus;
+import franchiseproject.product_service.enums.ProductVariantStatus;
 import franchiseproject.product_service.exception.AppException;
 import franchiseproject.product_service.exception.ErrorCode;
 import franchiseproject.product_service.mapper.ProductMapper;
@@ -47,6 +50,15 @@ public class ProductController {
                 .build();
     }
 
+    @GetMapping("/{id}")
+    public ApiResponse<ProductResponse> getDetail(@PathVariable UUID id) {
+        return ApiResponse.<ProductResponse>builder()
+                .statusCode(200)
+                .message("Get product by id")
+                .data(productMapper.toProductResponse(productService.getById(id)))
+                .build();
+    }
+
     @GetMapping("/search")
     public ApiResponse<Page<ProductResponse>> search(@Valid @ModelAttribute SearchProductRequest request) {
         log.info("Search products API called with request: {} {}", request.getFromPrice(), request.getToPrice());
@@ -61,6 +73,44 @@ public class ProductController {
                 .statusCode(200)
                 .message("Search product with param")
                 .data(productService.search(request).map(productMapper::toProductResponse))
+                .build();
+    }
+
+    @DeleteMapping("/inactive/{productId}")
+    public ApiResponse<Boolean> deleteProduct(@PathVariable("productId") UUID productId) {
+        Product product = productService.getById(productId);
+        return ApiResponse.<Boolean>builder()
+                .statusCode(200)
+                .message("Deleted product")
+                .data(productService.delete(product))
+                .build();
+    }
+
+    @DeleteMapping("/{productId}/inactive-variant/{variantId}")
+    public ApiResponse<Boolean> deleteProductVariant(
+            @PathVariable("productId") UUID productId,
+            @PathVariable("variantId") UUID variantId
+    ) {
+        Product product = productService.getById(productId);
+
+        if (product.getStatus() == ProductStatus.INACTIVE) {
+            throw new AppException(ErrorCode.PRODUCT_IS_DELETED);
+        }
+
+        ProductVariant variant = product.getVariants()
+                .stream()
+                .filter(v -> v.getId().equals(variantId))
+                .findFirst()
+                .orElseThrow(() -> new AppException(ErrorCode.VARTIANT_NOT_FOUND));
+
+        if (variant.getStatus() == ProductVariantStatus.INACTIVE) {
+            throw new AppException(ErrorCode.VARTIAN_IS_DELETED);
+        }
+
+        return ApiResponse.<Boolean>builder()
+                .statusCode(200)
+                .message("Delete variant")
+                .data(productService.deleteVariant(variant))
                 .build();
     }
 

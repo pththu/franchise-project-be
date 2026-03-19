@@ -24,5 +24,5 @@ public class ProductResponse {
     CategoryResponse category;
     Instant createdAt;
     Instant updatedAt;
-    List<ProductVariantResponse> productVariantResponses;
+    List<ProductVariantResponse> variants;
 }

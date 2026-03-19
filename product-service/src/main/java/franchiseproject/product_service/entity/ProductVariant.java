@@ -3,6 +3,7 @@ package franchiseproject.product_service.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import franchiseproject.product_service.enums.ProductColor;
 import franchiseproject.product_service.enums.ProductSize;
+import franchiseproject.product_service.enums.ProductVariantStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -38,6 +39,10 @@ public class ProductVariant {
 
     @Column(name = "image_url", columnDefinition = "TEXT")
     String imageUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    ProductVariantStatus status;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", columnDefinition = "UUID", nullable = false)

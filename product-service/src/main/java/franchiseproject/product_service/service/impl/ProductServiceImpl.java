@@ -1,25 +1,28 @@
 package franchiseproject.product_service.service.impl;
 
 import franchiseproject.product_service.dto.request.SearchProductRequest;
-import franchiseproject.product_service.dto.response.PageResponse;
-import franchiseproject.product_service.dto.response.ProductDetailResponse;
-import franchiseproject.product_service.dto.response.ProductListItemResponse;
-import franchiseproject.product_service.dto.response.ProductResponse;
+import franchiseproject.product_service.dto.response.*;
+import franchiseproject.product_service.entity.ProductVariant;
 import franchiseproject.product_service.enums.ProductColor;
 import franchiseproject.product_service.enums.ProductSize;
 import franchiseproject.product_service.enums.ProductStatus;
+import franchiseproject.product_service.enums.ProductVariantStatus;
+import franchiseproject.product_service.exception.AppException;
+import franchiseproject.product_service.exception.ErrorCode;
 import franchiseproject.product_service.exception.NotFoundException;
 import franchiseproject.product_service.entity.Category;
 import franchiseproject.product_service.entity.Product;
 import franchiseproject.product_service.mapper.ProductMapper;
 import franchiseproject.product_service.repository.CategoryRepository;
 import franchiseproject.product_service.repository.ProductRepository;
+import franchiseproject.product_service.repository.ProductVariantRepository;
 import franchiseproject.product_service.repository.spec.ProductSpecifications;
 import franchiseproject.product_service.service.ProductService;
 import franchiseproject.product_service.specification.ProductSpecification;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -32,14 +35,17 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductServiceImpl implements ProductService {
 
     ProductRepository productRepository;
+    ProductVariantRepository productVariantRepository;
     CategoryRepository categoryRepository;
     ProductMapper productMapper;
+
 
     @Override
     public Page<Product> getAll(int page) {
@@ -51,8 +57,73 @@ public class ProductServiceImpl implements ProductService {
 
         return productRepository.findAll(pageable);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public Product getById(UUID id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
 
     @Override
+    public ProductVariant getProductVariantById(UUID id) {
+        return productVariantRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.VARTIANT_NOT_FOUND));
+    }
+
+    /**
+     * xóa (inactive) product thì kéo theo xóa (inactive) variants của sản phẩm đó
+     * @param product
+     * @return
+     */
+    @Override
+    public boolean delete(Product product) {
+        if (product == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
+        }
+
+        product.setStatus(ProductStatus.INACTIVE);
+        Product deleted = productRepository.save(product);
+        log.info("deleted: {}", deleted.getName());
+
+        if (deleted == null) {
+            return false;
+        }
+
+        List<ProductVariant> variants = productVariantRepository.findAllByProductId(product.getId());
+        if (variants.size() <= 0) {
+            log.info("Variants empty");
+        }
+
+        variants.forEach(v -> {
+            v.setStatus(ProductVariantStatus.INACTIVE);
+            ProductVariant pv = productVariantRepository.save(v);
+            if (pv == null) {
+                new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            }
+        });
+        return true;
+    }
+
+    @Override
+    public boolean deleteVariant(ProductVariant variant) {
+
+        if (variant == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
+        }
+
+        variant.setStatus(ProductVariantStatus.INACTIVE);
+        ProductVariant pv = productVariantRepository.save(variant);
+
+        return  pv == null ? false : true;
+    }
+
+    /**
+     * tìm kiếm với nhiều parameter
+     * @param request
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
     public Page<Product> search(SearchProductRequest request) {
 
         String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
@@ -89,74 +160,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
 //    @Override
-//    @Transactional(readOnly = true)
-//    public List<ProductListItemResponse> getAllAsListItem() {
-//        return productRepository.findAll().stream()
-//                .map(p -> new ProductListItemResponse(
-//                        p.getId(),
-//                        p.getProductType(),
-//                        p.getName(),
-//                        p.getPrice(),
-//                        p.getUnit(),
-//                        p.getStatus(),
-//                        p.getImageUrl(),
-//                        p.getCategory() != null ? p.getCategory().getId() : null,
-//                        p.getCategory() != null ? p.getCategory().getName() : null,
-//                        p.getCreatedAt(),
-//                        p.getUpdatedAt()
-//                ))
-//                .toList();
-//    }
-
-//    @Override
-//    @Transactional(readOnly = true)
-//    public Product getById(UUID id) {
-//        return productRepository.findById(id)
-//                .orElseThrow(() -> new NotFoundException("Product not found: " + id));
-//    }
-//    @Override
-//    public List<Product> search(String name,
-//                                String productType,
-//                                String status,
-//                                BigDecimal minPrice,
-//                                BigDecimal maxPrice,
-//                                UUID categoryId) {
-//
-//        Specification<Product> spec =
-//                ProductSpecification.filter(
-//                        name,
-//                        productType,
-//                        status,
-//                        minPrice,
-//                        maxPrice,
-//                        categoryId
-//                );
-//
-//        return productRepository.findAll(spec);
-//    }
-
-//    @Override
-//    @Transactional(readOnly = true)
-//    public ProductDetailResponse getDetail(UUID id) {
-//        Product p = getById(id);
-//
-//        return new ProductDetailResponse(
-//                p.getId(),
-//                p.getProductType(),
-//                p.getName(),
-//                p.getDescription(),
-//                p.getPrice(),
-//                p.getUnit(),
-//                p.getStatus(),
-//                p.getImageUrl(),
-//                p.getCategory() != null ? p.getCategory().getId() : null,
-//                p.getCategory() != null ? p.getCategory().getName() : null,
-//                p.getCreatedAt(),
-//                p.getUpdatedAt()
-//        );
-//    }
-
-//    @Override
 //    @Transactional
 //    public Product create(Product product, UUID categoryId) {
 //        Category category = categoryRepository.findById(categoryId)
@@ -188,63 +191,6 @@ public class ProductServiceImpl implements ProductService {
 //        if (product.getImageUrl() != null) existing.setImageUrl(product.getImageUrl());
 //
 //        return productRepository.save(existing);
-//    }
-
-//    @Override
-//    @Transactional
-//    public void delete(UUID id) {
-//        if (!productRepository.existsById(id)) {
-//            throw new NotFoundException("Product not found");
-//        }
-//        productRepository.deleteById(id);
-//    }
-
-//    @Override
-//    @Transactional(readOnly = true)
-//    public PageResponse<ProductListItemResponse> list(
-//            String q,
-//            String status,
-//            UUID categoryId,
-//            BigDecimal minPrice,
-//            BigDecimal maxPrice,
-//            int page,
-//            int size,
-//            String sort
-//    ) {
-//        Sort sortObj = parseSort(sort);
-//        Pageable pageable = PageRequest.of(page, size, sortObj);
-//
-//        Specification<Product> spec = Specification.allOf(
-//                ProductSpecifications.nameContains(q),
-//                ProductSpecifications.hasStatus(status),
-//                ProductSpecifications.hasCategory(categoryId),
-//                ProductSpecifications.priceGte(minPrice),
-//                ProductSpecifications.priceLte(maxPrice)
-//        );
-//
-//        Page<Product> result = productRepository.findAll(spec, pageable);
-//
-//        Page<ProductListItemResponse> dtoPage = result.map(p -> new ProductListItemResponse(
-//                p.getId(),
-//                p.getProductType(),
-//                p.getName(),
-//                p.getPrice(),
-//                p.getUnit(),
-//                p.getStatus(),
-//                p.getImageUrl(),
-//                p.getCategory() != null ? p.getCategory().getId() : null,
-//                p.getCategory() != null ? p.getCategory().getName() : null,
-//                p.getCreatedAt(),
-//                p.getUpdatedAt()
-//        ));
-
-//        return new PageResponse<>(
-//                dtoPage.getContent(),
-//                dtoPage.getNumber(),
-//                dtoPage.getSize(),
-//                dtoPage.getTotalElements(),
-//                dtoPage.getTotalPages()
-//        );
 //    }
 
     private Sort parseSort(String sort) {

@@ -2,6 +2,7 @@ package franchiseproject.product_service.dto.response;
 
 import franchiseproject.product_service.enums.ProductColor;
 import franchiseproject.product_service.enums.ProductSize;
+import franchiseproject.product_service.enums.ProductVariantStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,7 @@ public class ProductVariantResponse {
     ProductSize size;
     ProductColor color;
     BigDecimal price;
+    ProductVariantStatus status;
     int quantity;
     String imageUrl;
 }

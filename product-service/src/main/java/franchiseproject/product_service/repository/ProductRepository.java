@@ -24,7 +24,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID>,
     @Query("""
         SELECT DISTINCT p
         FROM Product p
-        LEFT JOIN FETCH p.productVariants v
+        LEFT JOIN FETCH p.variants v
         LEFT JOIN FETCH p.category c
         WHERE (
                 :keyword IS NULL OR

@@ -55,5 +55,5 @@ public class Product {
     Category category;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    List<ProductVariant> productVariants;
+    List<ProductVariant> variants;
 }
