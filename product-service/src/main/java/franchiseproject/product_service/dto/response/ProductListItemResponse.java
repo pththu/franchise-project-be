@@ -1,14 +1,16 @@
-package franchiseproject.product_service.dto;
+package franchiseproject.product_service.dto.response;
+
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-public record ProductDetailDTO(
+public record ProductListItemResponse(
         UUID id,
         String productType,
         String name,
-        String description,
         BigDecimal price,
         String unit,
         String status,
@@ -17,5 +19,4 @@ public record ProductDetailDTO(
         String categoryName,
         Instant createdAt,
         Instant updatedAt
-) {
-}
+) {}

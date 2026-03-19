@@ -1,20 +1,21 @@
 package franchiseproject.product_service.service;
 
-import franchiseproject.product_service.dto.CategoryDetailResponse;
-import franchiseproject.product_service.dto.CategoryRequest;
-import franchiseproject.product_service.dto.CategoryResponse;
+import franchiseproject.product_service.dto.request.CategoryCreationRequest;
+import franchiseproject.product_service.dto.request.CategoryUpdateRequest;
+import franchiseproject.product_service.dto.response.CategoryResponse;
+import franchiseproject.product_service.entity.Category;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface CategoryService {
-    CategoryResponse create(CategoryRequest request);
+    Category create(CategoryCreationRequest request);
 
-    List<CategoryResponse> getAll();
+    List<Category> getAll();
 
-    CategoryDetailResponse getById(UUID id);
+    Category getById (UUID id);
 
-    CategoryResponse update(UUID id, CategoryRequest request);
+    Category update(Category category, CategoryUpdateRequest request);
 
-    void delete(UUID id);
+    boolean delete(Category category);
 }
