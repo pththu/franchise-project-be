@@ -28,7 +28,7 @@ public class CategoryController {
     CategoryService categoryService;
     CategoryMapper categoryMapper;
 
-    @PostMapping
+    @PostMapping()
     public ApiResponse<CategoryResponse> create(@RequestBody @Valid CategoryCreationRequest request) {
 
         if (request.getName().isEmpty() || request.getName().equals("")) {
@@ -41,7 +41,7 @@ public class CategoryController {
                 .build();
     }
 
-    @GetMapping
+    @GetMapping("/get-all")
     public ApiResponse<List<CategoryResponse>> getAll() {
         return ApiResponse.<List<CategoryResponse>>builder()
                 .statusCode(200)

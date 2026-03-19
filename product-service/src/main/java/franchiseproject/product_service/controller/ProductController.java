@@ -40,7 +40,7 @@ public class ProductController {
     ProductService productService;
     ProductMapper productMapper;
 
-    @GetMapping
+    @GetMapping("/get-all")
     public ApiResponse<Page<ProductResponse>> getAll(@RequestParam("page") int page) {
         return ApiResponse.<Page<ProductResponse>>builder()
                 .statusCode(200)
@@ -50,7 +50,7 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail/{id}")
     public ApiResponse<ProductResponse> getDetail(@PathVariable UUID id) {
         return ApiResponse.<ProductResponse>builder()
                 .statusCode(200)
@@ -59,7 +59,7 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/search")
+    @GetMapping("/search-dashboard")
     public ApiResponse<Page<ProductResponse>> search(@Valid @ModelAttribute SearchProductRequest request) {
         log.info("Search products API called with request: {} {}", request.getFromPrice(), request.getToPrice());
 
