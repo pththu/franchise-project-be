@@ -1,10 +1,11 @@
 package franchiseproject.product_service.service.impl;
 
-import franchiseproject.product_service.dto.response.CategoryDetailResponse;
-import franchiseproject.product_service.dto.request.CategoryRequest;
+import franchiseproject.product_service.dto.request.CategoryCreationRequest;
 import franchiseproject.product_service.dto.response.CategoryResponse;
-import franchiseproject.product_service.dto.response.ProductInCategoryResponse;
 import franchiseproject.product_service.entity.Category;
+import franchiseproject.product_service.enums.CategoryStatus;
+import franchiseproject.product_service.exception.AppException;
+import franchiseproject.product_service.exception.ErrorCode;
 import franchiseproject.product_service.repository.CategoryRepository;
 import franchiseproject.product_service.service.CategoryService;
 import jakarta.transaction.Transactional;
@@ -21,87 +22,53 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    public CategoryResponse create(CategoryRequest request) {
+    public Category create(CategoryCreationRequest request) {
 
         Category category = Category.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .status("ACTIVE")
+                .status(CategoryStatus.ACTIVE)
                 .build();
 
-        Category saved = categoryRepository.save(category);
-
-        return mapToResponse(saved);
+        return categoryRepository.save(category);
     }
 
     @Override
-    public List<CategoryResponse> getAll() {
-        return categoryRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+    public List<Category> getAll() {
+        return categoryRepository.findAll();
     }
 
-//    @Override
-//    public CategoryDetailResponse getById(UUID id) {
-//
-//        Category category = categoryRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Category not found"));
-//
-//        List<ProductInCategoryResponse> productResponses =
-//                category.getProducts()
-//                        .stream()
-//                        .map(product -> ProductInCategoryResponse.builder()
-//                                .name(product.getName())
-//                                .price(product.getPrice())   // BigDecimal
-//                                .build())
-//                        .toList();
-//
-//        return CategoryDetailResponse.builder()
-//                .id(category.getId())
-//                .name(category.getName())
-//                .description(category.getDescription())
-//                .product(productResponses)
-//                .build();
-//    }
+    @Override
+    public Category getById(UUID id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGOTY_NOT_FOUND));
+    }
 
     @Override
-    public CategoryResponse update(UUID id, CategoryRequest request) {
+    public Category update(Category category, CategoryCreationRequest request) {
+        if (category == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
+        }
 
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-
-        category.setName(request.getName());
+        if (!request.getName().equals("")) category.setName(request.getName());
         category.setDescription(request.getDescription());
-        category.setStatus(request.getStatus());
-
-        return mapToResponse(categoryRepository.save(category));
+        category.setStatus(CategoryStatus.valueOf(request.getStatus()));
+        return categoryRepository.save(category);
     }
 
     @Transactional
     @Override
-    public void delete(UUID id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+    public boolean delete(Category category) {
+
+        if (category == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
+        }
 
         if (category.getProducts() != null && !category.getProducts().isEmpty()) {
-            throw new RuntimeException("Cannot delete category because it contains products");
+            throw new AppException(ErrorCode.CONTAINS_PRODUCTS);
         }
 
         categoryRepository.delete(category);
+        return true;
     }
-
-    private CategoryResponse mapToResponse(Category category) {
-        int productCount = category.getProducts() == null ? 0 : category.getProducts().size();
-
-        return CategoryResponse.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .description(category.getDescription())
-                .status(category.getStatus())
-                .productCount(productCount)
-                .lastUpdated(category.getUpdatedAt())
-                .build();
-    }
-
 }

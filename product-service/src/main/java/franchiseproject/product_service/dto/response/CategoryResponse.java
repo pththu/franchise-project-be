@@ -1,20 +1,24 @@
 package franchiseproject.product_service.dto.response;
 
+import franchiseproject.product_service.enums.CategoryStatus;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryResponse {
-    private UUID id;
-    private String name;
-    private String description;
-    private Integer productCount;
-    private Instant lastUpdated;
-    private String status;
+    UUID id;
+    String name;
+    String description;
+    CategoryStatus status;
+    Instant createdAt;
+    Instant lastUpdated;
+    Integer productCount;
 }

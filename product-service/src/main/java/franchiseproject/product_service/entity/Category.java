@@ -1,6 +1,7 @@
 package franchiseproject.product_service.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import franchiseproject.product_service.enums.CategoryStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -33,8 +34,9 @@ public class Category {
     @Column(name = "description", nullable = false)
     String description;
 
-    @Column(name = "status", nullable = false)
-    String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    CategoryStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -44,8 +46,7 @@ public class Category {
     @Column(name = "updated_at")
     Instant updatedAt;
 
-    @OneToMany(mappedBy = "category")
-    @JsonIgnore
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     List<Product> products;
 
 
