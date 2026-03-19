@@ -1,10 +1,10 @@
 package franchiseproject.product_service.service.impl;
 
-import franchiseproject.product_service.dto.CategoryDetailResponse;
-import franchiseproject.product_service.dto.CategoryRequest;
-import franchiseproject.product_service.dto.CategoryResponse;
-import franchiseproject.product_service.dto.ProductInCategoryResponse;
-import franchiseproject.product_service.model.Category;
+import franchiseproject.product_service.dto.response.CategoryDetailResponse;
+import franchiseproject.product_service.dto.request.CategoryRequest;
+import franchiseproject.product_service.dto.response.CategoryResponse;
+import franchiseproject.product_service.dto.response.ProductInCategoryResponse;
+import franchiseproject.product_service.entity.Category;
 import franchiseproject.product_service.repository.CategoryRepository;
 import franchiseproject.product_service.service.CategoryService;
 import jakarta.transaction.Transactional;
@@ -42,28 +42,28 @@ public class CategoryServiceImpl implements CategoryService {
                 .toList();
     }
 
-    @Override
-    public CategoryDetailResponse getById(UUID id) {
-
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-
-        List<ProductInCategoryResponse> productResponses =
-                category.getProducts()
-                        .stream()
-                        .map(product -> ProductInCategoryResponse.builder()
-                                .name(product.getName())
-                                .price(product.getPrice())   // BigDecimal
-                                .build())
-                        .toList();
-
-        return CategoryDetailResponse.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .description(category.getDescription())
-                .product(productResponses)
-                .build();
-    }
+//    @Override
+//    public CategoryDetailResponse getById(UUID id) {
+//
+//        Category category = categoryRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Category not found"));
+//
+//        List<ProductInCategoryResponse> productResponses =
+//                category.getProducts()
+//                        .stream()
+//                        .map(product -> ProductInCategoryResponse.builder()
+//                                .name(product.getName())
+//                                .price(product.getPrice())   // BigDecimal
+//                                .build())
+//                        .toList();
+//
+//        return CategoryDetailResponse.builder()
+//                .id(category.getId())
+//                .name(category.getName())
+//                .description(category.getDescription())
+//                .product(productResponses)
+//                .build();
+//    }
 
     @Override
     public CategoryResponse update(UUID id, CategoryRequest request) {

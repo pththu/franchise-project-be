@@ -1,8 +1,8 @@
 package franchiseproject.product_service.controller;
 
-import franchiseproject.product_service.dto.CategoryDetailResponse;
-import franchiseproject.product_service.dto.CategoryRequest;
-import franchiseproject.product_service.dto.CategoryResponse;
+import franchiseproject.product_service.dto.response.CategoryDetailResponse;
+import franchiseproject.product_service.dto.request.CategoryRequest;
+import franchiseproject.product_service.dto.response.CategoryResponse;
 import franchiseproject.product_service.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +29,10 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CategoryDetailResponse> getDetail(@PathVariable UUID id) {
-        return ResponseEntity.ok(categoryService.getById(id));
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<CategoryDetailResponse> getDetail(@PathVariable UUID id) {
+//        return ResponseEntity.ok(categoryService.getById(id));
+//    }
 
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> update(

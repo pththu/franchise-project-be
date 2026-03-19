@@ -1,4 +1,4 @@
-package franchiseproject.product_service.dto;
+package franchiseproject.product_service.dto.response;
 
 import lombok.*;
 

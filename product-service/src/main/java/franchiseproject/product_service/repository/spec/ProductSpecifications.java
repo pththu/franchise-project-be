@@ -1,6 +1,6 @@
 package franchiseproject.product_service.repository.spec;
 
-import franchiseproject.product_service.model.Product;
+import franchiseproject.product_service.entity.Product;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;

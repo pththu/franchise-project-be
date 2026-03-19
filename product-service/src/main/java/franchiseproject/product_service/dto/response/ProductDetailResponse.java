@@ -1,13 +1,14 @@
-package franchiseproject.product_service.dto;
+package franchiseproject.product_service.dto.response;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-public record ProductListItemDTO(
+public record ProductDetailResponse(
         UUID id,
         String productType,
         String name,
+        String description,
         BigDecimal price,
         String unit,
         String status,
@@ -16,4 +17,5 @@ public record ProductListItemDTO(
         String categoryName,
         Instant createdAt,
         Instant updatedAt
-) {}
+) {
+}
