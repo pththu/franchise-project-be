@@ -2,6 +2,7 @@ package franchiseproject.product_service.controller;
 
 import franchiseproject.product_service.dto.ApiResponse;
 import franchiseproject.product_service.dto.request.CategoryCreationRequest;
+import franchiseproject.product_service.dto.request.CategoryUpdateRequest;
 import franchiseproject.product_service.dto.response.CategoryResponse;
 import franchiseproject.product_service.entity.Category;
 import franchiseproject.product_service.enums.CategoryStatus;
@@ -55,7 +56,7 @@ public class CategoryController {
     @PutMapping("/update/{id}")
     public ApiResponse<CategoryResponse> update(
             @PathVariable UUID id,
-            @RequestBody CategoryCreationRequest request
+            @RequestBody CategoryUpdateRequest request
     ) {
         Category category = categoryService.getById(id);
         if (request.getName().isEmpty() || request.getName().equals("")) {
@@ -69,9 +70,8 @@ public class CategoryController {
                 .build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ApiResponse<Boolean> delete(@PathVariable UUID id) {
-
         Category category = categoryService.getById(id);
 
         if (category.getStatus() == CategoryStatus.INACTIVE) {

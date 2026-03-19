@@ -1,6 +1,7 @@
 package franchiseproject.product_service.service;
 
 import franchiseproject.product_service.dto.request.CategoryCreationRequest;
+import franchiseproject.product_service.dto.request.CategoryUpdateRequest;
 import franchiseproject.product_service.dto.response.CategoryResponse;
 import franchiseproject.product_service.entity.Category;
 
@@ -14,7 +15,7 @@ public interface CategoryService {
 
     Category getById (UUID id);
 
-    Category update(Category category, CategoryCreationRequest request);
+    Category update(Category category, CategoryUpdateRequest request);
 
     boolean delete(Category category);
 }
