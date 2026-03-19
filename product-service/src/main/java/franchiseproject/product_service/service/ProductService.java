@@ -1,5 +1,6 @@
 package franchiseproject.product_service.service;
 
+import franchiseproject.product_service.dto.request.SearchProductRequest;
 import franchiseproject.product_service.dto.response.PageResponse;
 import franchiseproject.product_service.dto.response.ProductDetailResponse;
 import franchiseproject.product_service.dto.response.ProductListItemResponse;
@@ -17,7 +18,9 @@ public interface ProductService {
 
 //    List<Product> getAll();
 
-    Page<ProductResponse> getAll(int page);
+    Page<Product> getAll(int page);
+
+    Page<Product> search(SearchProductRequest request);
 
 //    List<ProductListItemResponse> getAllAsListItem();
 //

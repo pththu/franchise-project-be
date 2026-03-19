@@ -1,15 +1,21 @@
 package franchiseproject.product_service.controller;
 
 import franchiseproject.product_service.dto.ApiResponse;
+import franchiseproject.product_service.dto.request.SearchProductRequest;
 import franchiseproject.product_service.dto.response.PageResponse;
 import franchiseproject.product_service.dto.response.ProductDetailResponse;
 import franchiseproject.product_service.dto.response.ProductListItemResponse;
 import franchiseproject.product_service.dto.response.ProductResponse;
 import franchiseproject.product_service.entity.Product;
+import franchiseproject.product_service.exception.AppException;
+import franchiseproject.product_service.exception.ErrorCode;
+import franchiseproject.product_service.mapper.ProductMapper;
 import franchiseproject.product_service.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -28,13 +35,32 @@ import java.util.UUID;
 public class ProductController {
 
     ProductService productService;
+    ProductMapper productMapper;
 
     @GetMapping
     public ApiResponse<Page<ProductResponse>> getAll(@RequestParam("page") int page) {
         return ApiResponse.<Page<ProductResponse>>builder()
                 .statusCode(200)
                 .message("Get all products success")
-                .data(productService.getAll(page))
+                .data(productService.getAll(page)
+                        .map(productMapper::toProductResponse))
+                .build();
+    }
+
+    @GetMapping("/search")
+    public ApiResponse<Page<ProductResponse>> search(@Valid @ModelAttribute SearchProductRequest request) {
+        log.info("Search products API called with request: {} {}", request.getFromPrice(), request.getToPrice());
+
+        if (request.getFromPrice() != null && request.getToPrice() != null) {
+            if (request.getFromPrice().compareTo(request.getToPrice()) > 0) {
+                throw new AppException(ErrorCode.INVALID_PRICE_RANGE);
+            }
+        }
+
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .statusCode(200)
+                .message("Search product with param")
+                .data(productService.search(request).map(productMapper::toProductResponse))
                 .build();
     }
 

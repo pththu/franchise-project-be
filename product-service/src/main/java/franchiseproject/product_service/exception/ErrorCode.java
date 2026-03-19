@@ -16,8 +16,10 @@ public enum ErrorCode {
     PRODUCT_EXISTED(409, "Products is existed"),
     TOO_MANY_REQUESTS(429, "Too many request"),
     UNCATEGORIZED_EXCEPTION(500, "Uncategorized exception"),
-    INVALID_INPUT(400, "Invalid input data!");
+    INVALID_INPUT(400, "Invalid input data!"),
+    INVALID_PRICE_RANGE(400, "toPrice must be greater than or equal to fromPrice"),
 
+    ;
     private int code;
     private String message;
 }

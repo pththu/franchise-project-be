@@ -1,9 +1,13 @@
 package franchiseproject.product_service.service.impl;
 
+import franchiseproject.product_service.dto.request.SearchProductRequest;
 import franchiseproject.product_service.dto.response.PageResponse;
 import franchiseproject.product_service.dto.response.ProductDetailResponse;
 import franchiseproject.product_service.dto.response.ProductListItemResponse;
 import franchiseproject.product_service.dto.response.ProductResponse;
+import franchiseproject.product_service.enums.ProductColor;
+import franchiseproject.product_service.enums.ProductSize;
+import franchiseproject.product_service.enums.ProductStatus;
 import franchiseproject.product_service.exception.NotFoundException;
 import franchiseproject.product_service.entity.Category;
 import franchiseproject.product_service.entity.Product;
@@ -37,22 +41,51 @@ public class ProductServiceImpl implements ProductService {
     CategoryRepository categoryRepository;
     ProductMapper productMapper;
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public List<Product> getAll() {
-//        return productRepository.findAll();
-//    }
-
     @Override
-    public Page<ProductResponse> getAll(int page) {
+    public Page<Product> getAll(int page) {
         Pageable pageable = PageRequest.of(
                 page,
                 10,
                 Sort.by("name").ascending()
         );
 
-        return productRepository.findAll(pageable)
-                .map(productMapper::toProductResponse);
+        return productRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Product> search(SearchProductRequest request) {
+
+        String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
+                ? request.getKeyword().trim() : null;
+
+        String categoryName = (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty())
+                ? request.getCategoryName().trim() : null;
+
+        ProductStatus status = (request.getStatus() != null && !request.getStatus().trim().isEmpty())
+                ? ProductStatus.valueOf(request.getStatus().trim()) : null;
+
+        ProductColor color = (request.getColor() != null && !request.getColor().trim().isEmpty())
+                ? ProductColor.valueOf(request.getColor().trim()) : null;
+
+        ProductSize size = (request.getSize() != null && !request.getSize().trim().isEmpty())
+                ? ProductSize.valueOf(request.getSize().trim()) : null;
+
+        Pageable pageable = PageRequest.of(
+                request.getPage().intValue(),
+                request.getSizePage().intValue(),
+                Sort.by(request.getSortBy()).ascending()
+        );
+
+        return productRepository.search(
+                keyword,
+                categoryName,
+                status,
+                color,
+                size,
+                request.getFromPrice(),
+                request.getToPrice(),
+                pageable
+        );
     }
 
 //    @Override
