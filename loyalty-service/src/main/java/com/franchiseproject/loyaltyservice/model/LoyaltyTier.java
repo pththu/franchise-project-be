@@ -4,16 +4,14 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
-
 @Entity
-@Table(name = "tier_benefits")
+@Table(name = "loyalty_tiers")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TierBenefit {
+public class LoyaltyTier {
 
     @Id
     @Column(name = "tier_name", nullable = false, unique = true)
@@ -21,9 +19,4 @@ public class TierBenefit {
 
     @Column(name = "required_points", nullable = false)
     Integer requiredPoints;
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "tier_benefit_items", joinColumns = @JoinColumn(name = "tier_name"))
-    @Column(name = "benefit", columnDefinition = "TEXT")
-    List<String> benefits;
 }

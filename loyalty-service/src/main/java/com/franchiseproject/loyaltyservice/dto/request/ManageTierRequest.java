@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ManageTierBenefitRequest {
+public class ManageTierRequest {
 
     @NotNull(message = "TIER_NAME_REQUIRED")
     String tierName;
@@ -19,6 +19,4 @@ public class ManageTierBenefitRequest {
     @NotNull(message = "REQUIRED_POINTS_REQUIRED")
     Integer requiredPoints;
 
-    @NotNull(message = "BENEFITS_REQUIRED")
-    List<String> benefits;
 }

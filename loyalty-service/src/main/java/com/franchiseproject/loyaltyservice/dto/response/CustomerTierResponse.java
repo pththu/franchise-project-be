@@ -3,7 +3,6 @@ package com.franchiseproject.loyaltyservice.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -11,11 +10,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CustomerBenefitResponse {
+public class CustomerTierResponse {
     UUID customerId;
     UUID franchiseId;
     String currentTier;
     Integer currentPoints;
     Integer totalPoints;
-    List<String> currentBenefits;
 }
