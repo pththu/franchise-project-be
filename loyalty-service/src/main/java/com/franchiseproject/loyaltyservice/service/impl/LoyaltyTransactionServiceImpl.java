@@ -1,32 +1,29 @@
 package com.franchiseproject.loyaltyservice.service.impl;
 
+import com.franchiseproject.loyaltyservice.dto.request.DeductPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.request.EarnPointsRequest;
-import com.franchiseproject.loyaltyservice.dto.request.RedeemPromotionRequest;
 import com.franchiseproject.loyaltyservice.dto.response.EarnPointsResponse;
-import com.franchiseproject.loyaltyservice.dto.response.RedeemPromotionResponse;
 import com.franchiseproject.loyaltyservice.dto.response.TransactionHistoryResponse;
-import com.franchiseproject.loyaltyservice.enums.LoyaltyTier;
+import com.franchiseproject.loyaltyservice.enums.CustomerLoyaltyTier;
 import com.franchiseproject.loyaltyservice.enums.LoyaltyTransactionType;
 import com.franchiseproject.loyaltyservice.exception.AppException;
 import com.franchiseproject.loyaltyservice.exception.ErrorCode;
 import com.franchiseproject.loyaltyservice.mapper.LoyaltyMapper;
 import com.franchiseproject.loyaltyservice.model.CustomerFranchise;
 import com.franchiseproject.loyaltyservice.model.LoyaltyTransaction;
-import com.franchiseproject.loyaltyservice.model.Promotion;
-import com.franchiseproject.loyaltyservice.model.TierBenefit;
+import com.franchiseproject.loyaltyservice.model.LoyaltyTier;
 import com.franchiseproject.loyaltyservice.repository.CustomerFranchiseRepository;
 import com.franchiseproject.loyaltyservice.repository.LoyaltyTransactionRepository;
-import com.franchiseproject.loyaltyservice.repository.PromotionRepository;
-import com.franchiseproject.loyaltyservice.repository.TierBenefitRepository;
+import com.franchiseproject.loyaltyservice.repository.LoyaltyTierRepository;
 import com.franchiseproject.loyaltyservice.service.LoyaltyTransactionService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,9 +34,8 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
 
     LoyaltyTransactionRepository loyaltyTransactionRepository;
     CustomerFranchiseRepository customerFranchiseRepository;
-    PromotionRepository promotionRepository;
     LoyaltyMapper loyaltyMapper;
-    TierBenefitRepository tierBenefitRepository;
+    LoyaltyTierRepository tierBenefitRepository;
 
     private static final double AMOUNT_PER_POINT = 10000.0;
 
@@ -53,54 +49,31 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
                 .toList();
     }
 
-    /*** REDEEM PROMOTION ***/
+    /*** MANAGE POINTS ***/
+
     @Override
     @Transactional
-        public RedeemPromotionResponse redeemPromotion(RedeemPromotionRequest request) {
-        Promotion promotion = promotionRepository.findById(request.getPromotionId())
-                .orElseThrow(   () -> new AppException(ErrorCode.PROMOTION_NOT_FOUND));
-
-        int pointsRequired = promotion.getPointsToRedeem() != null ? promotion.getPointsToRedeem() : 0;
-
-        if (pointsRequired <= 0) {
-            throw new AppException(ErrorCode.INVALID_POINTS_AMOUNT);
-        }
-
-            LocalDateTime now = LocalDateTime.now();
-        if ((promotion.getStartTime() != null && now.isBefore(promotion.getStartTime())) ||
-                (promotion.getEndTime() != null && now.isAfter(promotion.getEndTime()))) {
-            throw new AppException(ErrorCode.PROMOTION_EXPIRED);
-        }
-
-        int usedCount = promotion.getCouponUsedCount() != null ? promotion.getCouponUsedCount() : 0;
-        int limit = promotion.getUsageLimit() != null ? promotion.getUsageLimit() : Integer.MAX_VALUE;
-        if (usedCount >= limit) {
-            throw new AppException(ErrorCode.PROMOTION_OUT_OF_STOCK);
-        }
-
+    public EarnPointsResponse deductPoints(DeductPointsRequest request) {
         CustomerFranchise cf = customerFranchiseRepository
                 .findByCustomerIdAndFranchiseId(request.getCustomerId(), request.getFranchiseId())
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_PROFILE_NOT_FOUND));
 
         int currentPoints = cf.getLoyaltyCurrentPoint();
 
-        if (currentPoints < pointsRequired) {
+        if (currentPoints < request.getPointsToDeduct()) {
             throw new AppException(ErrorCode.INSUFFICIENT_POINTS);
         }
 
         int balanceBefore = currentPoints;
-        int balanceAfter = balanceBefore - pointsRequired;
+        int balanceAfter = balanceBefore - request.getPointsToDeduct();
         cf.setLoyaltyCurrentPoint(balanceAfter);
         customerFranchiseRepository.save(cf);
 
-        promotion.setCouponUsedCount(usedCount + 1);
-        promotionRepository.save(promotion);
-
         LoyaltyTransaction transaction = LoyaltyTransaction.builder()
                 .customerId(request.getCustomerId())
-                .franchiseId(cf.getFranchiseId())
-                .promotionId(request.getPromotionId())
-                .points(-pointsRequired)
+                .franchiseId(request.getFranchiseId())
+                .promotionId(UUID.fromString(request.getOrderId()))
+                .points(-request.getPointsToDeduct())
                 .balanceBefore(balanceBefore)
                 .balanceAfter(balanceAfter)
                 .type(LoyaltyTransactionType.REDEEM)
@@ -109,10 +82,8 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
 
         transaction = loyaltyTransactionRepository.save(transaction);
 
-        return loyaltyMapper.toRedeemPromotionResponse(transaction);
+        return loyaltyMapper.toEarnPointsResponse(transaction, cf.getCustomerLoyaltyTier().name());
     }
-
-    /*** EARN POINTS ***/
 
     @Override
     @Transactional
@@ -135,8 +106,8 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
         cf.setLoyaltyCurrentPoint(balanceAfter);
         cf.setLoyaltyTotalPoint(totalPointsAfter);
 
-        LoyaltyTier newTier = determineTier(totalPointsAfter);
-        cf.setLoyaltyTier(newTier);
+        CustomerLoyaltyTier newTier = determineTier(totalPointsAfter);
+        cf.setCustomerLoyaltyTier(newTier);
 
         customerFranchiseRepository.save(cf);
 
@@ -155,23 +126,23 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
         return loyaltyMapper.toEarnPointsResponse(transaction, newTier.name());
     }
 
-    private LoyaltyTier determineTier(int totalPoints) {
+    private CustomerLoyaltyTier determineTier(int totalPoints) {
         int diamondPts = getRequiredPoints("DIAMOND", 3000);
         int platinumPts = getRequiredPoints("PLATINUM", 2000);
         int goldPts = getRequiredPoints("GOLD", 1000);
         int silverPts = getRequiredPoints("SILVER", 500);
 
-        if (totalPoints >= diamondPts) return LoyaltyTier.DIAMOND;
-        if (totalPoints >= platinumPts) return LoyaltyTier.PLATINUM;
-        if (totalPoints >= goldPts) return LoyaltyTier.GOLD;
-        if (totalPoints >= silverPts) return LoyaltyTier.SILVER;
+        if (totalPoints >= diamondPts) return CustomerLoyaltyTier.DIAMOND;
+        if (totalPoints >= platinumPts) return CustomerLoyaltyTier.PLATINUM;
+        if (totalPoints >= goldPts) return CustomerLoyaltyTier.GOLD;
+        if (totalPoints >= silverPts) return CustomerLoyaltyTier.SILVER;
 
-        return LoyaltyTier.BRONZE;
+        return CustomerLoyaltyTier.BRONZE;
     }
 
     private int getRequiredPoints(String tierName, int defaultPoints) {
         return tierBenefitRepository.findById(tierName)
-                .map(TierBenefit::getRequiredPoints)
+                .map(LoyaltyTier::getRequiredPoints)
                 .orElse(defaultPoints);
     }
 }

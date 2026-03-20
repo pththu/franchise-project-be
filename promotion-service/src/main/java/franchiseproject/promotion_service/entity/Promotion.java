@@ -77,4 +77,5 @@ public class Promotion {
     @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
     @JsonManagedReference
     List<PromotionScope> scopes;
+
 }
