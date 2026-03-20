@@ -29,7 +29,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID>,
         WHERE (
                 :keyword IS NULL OR
                 LOWER(p.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR
-                LOWER(p.branch) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR
+                LOWER(p.brand) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR
                 LOWER(c.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))
               )
           AND (:categoryName IS NULL OR c.name = CAST(:categoryName AS string))
