@@ -1,6 +1,6 @@
 package com.franchiseproject.loyaltyservice.model;
 
-import com.franchiseproject.loyaltyservice.enums.LoyaltyTier;
+import com.franchiseproject.loyaltyservice.enums.CustomerLoyaltyTier;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -28,7 +28,7 @@ public class CustomerFranchise {
     UUID franchiseId;
 
     @Enumerated(EnumType.STRING)
-    LoyaltyTier loyaltyTier;
+    CustomerLoyaltyTier customerLoyaltyTier;
 
     @Column(name = "loyalty_current_point")
     int loyaltyCurrentPoint;

@@ -26,6 +26,4 @@ public class PromotionResponse {
 
     Instant updatedAt;
 
-    Integer requiredPoints;
-
 }
