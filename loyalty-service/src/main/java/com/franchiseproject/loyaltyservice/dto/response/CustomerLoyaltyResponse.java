@@ -1,6 +1,6 @@
 package com.franchiseproject.loyaltyservice.dto.response;
 
-import com.franchiseproject.loyaltyservice.enums.LoyaltyTier;
+import com.franchiseproject.loyaltyservice.enums.CustomerLoyaltyTier;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,7 +14,7 @@ import java.util.UUID;
 public class CustomerLoyaltyResponse {
     UUID customerId;
     UUID franchiseId;
-    LoyaltyTier loyaltyTier;
+    CustomerLoyaltyTier customerLoyaltyTier;
     int loyaltyCurrentPoint;
     int loyaltyTotalPoint;
 }
