@@ -2,9 +2,6 @@ package franchiseproject.product_service.controller;
 
 import franchiseproject.product_service.dto.ApiResponse;
 import franchiseproject.product_service.dto.request.SearchProductRequest;
-import franchiseproject.product_service.dto.response.PageResponse;
-import franchiseproject.product_service.dto.response.ProductDetailResponse;
-import franchiseproject.product_service.dto.response.ProductListItemResponse;
 import franchiseproject.product_service.dto.response.ProductResponse;
 import franchiseproject.product_service.entity.Product;
 import franchiseproject.product_service.entity.ProductVariant;
@@ -20,14 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
