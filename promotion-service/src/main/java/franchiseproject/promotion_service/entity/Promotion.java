@@ -78,6 +78,4 @@ public class Promotion {
     @JsonManagedReference
     List<PromotionScope> scopes;
 
-    @Column(name = "required_points")
-    Integer requiredPoints;
 }

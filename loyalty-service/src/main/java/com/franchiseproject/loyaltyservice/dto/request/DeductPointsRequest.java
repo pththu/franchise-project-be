@@ -1,7 +1,8 @@
 package com.franchiseproject.loyaltyservice.dto.request;
 
-import lombok.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.UUID;
@@ -11,13 +12,16 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RedeemPromotionRequest {
+public class DeductPointsRequest {
     @NotNull(message = "CUSTOMER_ID_REQUIRED")
     UUID customerId;
 
     @NotNull(message = "FRANCHISE_ID_REQUIRED")
     UUID franchiseId;
 
-    @NotNull(message = "PROMOTION_ID_REQUIRED")
-    UUID promotionId;
+    @NotNull(message = "ORDER_ID_REQUIRED")
+    String orderId;
+
+    @Min(value = 1, message = "POINTS_MUST_BE_GREATER_THAN_ZERO")
+    int pointsToDeduct;
 }

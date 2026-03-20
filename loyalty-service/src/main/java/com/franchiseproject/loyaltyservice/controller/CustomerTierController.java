@@ -1,10 +1,10 @@
 package com.franchiseproject.loyaltyservice.controller;
 
 import com.franchiseproject.loyaltyservice.dto.ApiResponse;
-import com.franchiseproject.loyaltyservice.dto.response.CustomerBenefitResponse;
+import com.franchiseproject.loyaltyservice.dto.response.CustomerTierResponse;
 import com.franchiseproject.loyaltyservice.dto.response.CustomerLoyaltyResponse;
-import com.franchiseproject.loyaltyservice.enums.LoyaltyTier;
-import com.franchiseproject.loyaltyservice.service.CustomerBenefitService;
+import com.franchiseproject.loyaltyservice.enums.CustomerLoyaltyTier;
+import com.franchiseproject.loyaltyservice.service.CustomerTierService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,30 +17,30 @@ import java.util.UUID;
 @RequestMapping("/api/loyalty")
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class CustomerBenefitController {
+public class CustomerTierController {
 
-    CustomerBenefitService customerBenefitService;
+    CustomerTierService customerTierService;
 
-    @GetMapping("/customers/{customerId}/franchises/{franchiseId}/benefits")
-    public ApiResponse<CustomerBenefitResponse> getMyBenefits(
+    @GetMapping("/customers/{customerId}/franchises/{franchiseId}/tier-info")
+    public ApiResponse<CustomerTierResponse> getMyBenefits(
             @PathVariable UUID customerId,
             @PathVariable UUID franchiseId) {
 
-        return ApiResponse.<CustomerBenefitResponse>builder()
+        return ApiResponse.<CustomerTierResponse>builder()
                 .statusCode(200)
-                .message("Get customer tier benefits successfully")
-                .data(customerBenefitService.getCustomerBenefits(customerId, franchiseId))
+                .message("Get customer tier info successfully")
+                .data(customerTierService.getCustomerTierInfo(customerId, franchiseId))
                 .build();
     }
 
     @GetMapping("/customers")
     public ApiResponse<List<CustomerLoyaltyResponse>> getCustomersByTier(
-            @RequestParam(value = "tier", required = false) LoyaltyTier tier) {
+            @RequestParam(value = "tier", required = false) CustomerLoyaltyTier tier) {
 
         return ApiResponse.<List<CustomerLoyaltyResponse>>builder()
                 .statusCode(200)
                 .message("Get customers by tier successfully")
-                .data(customerBenefitService.getCustomersByTier(tier))
+                .data(customerTierService.getCustomersByTier(tier))
                 .build();
     }
 }
