@@ -21,7 +21,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CustomerFranchise {
+    public class CustomerFranchise {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(unique = true, nullable = false)
