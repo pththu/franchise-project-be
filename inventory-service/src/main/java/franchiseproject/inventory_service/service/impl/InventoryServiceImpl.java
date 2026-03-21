@@ -1,12 +1,15 @@
 package franchiseproject.inventory_service.service.impl;
 
-import franchiseproject.inventory_service.dto.ExportInventoryRequest;
-import franchiseproject.inventory_service.dto.SetMinStockRequest;
-import franchiseproject.inventory_service.model.FranchiseIngredient;
-import franchiseproject.inventory_service.model.InventoryTransaction;
-import franchiseproject.inventory_service.repository.FranchiseIngredientRepository;
+import franchiseproject.inventory_service.dto.request.ExportInventoryRequest;
+import franchiseproject.inventory_service.dto.request.SetMinStockRequest;
+import franchiseproject.inventory_service.dto.response.FranchiseOfInventoryResponse;
+import franchiseproject.inventory_service.dto.response.InventoryResponse;
+import franchiseproject.inventory_service.entity.InventoryTransaction;
 import franchiseproject.inventory_service.repository.InventoryTransactionRepository;
+import franchiseproject.inventory_service.service.InventoryService;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -14,44 +17,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class InventoryServiceImpl {
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+public class InventoryServiceImpl implements InventoryService {
 
-    private final FranchiseIngredientRepository ingredientRepository;
-    private final InventoryTransactionRepository transactionRepository;
+    InventoryTransactionRepository transactionRepository;
 
-
-    //Manage warehouse release forms
-    //Export Inventory
-    public InventoryTransaction exportInventory(ExportInventoryRequest request){
-
-        FranchiseIngredient ingredient = ingredientRepository.findById(request.getFranchiseIngredientId())
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
-
-        int beforeQuantity = ingredient.getQuantity();
-
-        if(beforeQuantity < request.getQuantity()){
-            throw new RuntimeException("Not enough inventory");
-        }
-
-        int afterQuantity = beforeQuantity - request.getQuantity();
-
-        ingredient.setQuantity(afterQuantity);
-        ingredientRepository.save(ingredient);
-
-        InventoryTransaction transaction = InventoryTransaction.builder()
-                .franchiseIngredient(ingredient)
-                .quantity(request.getQuantity())
-                .beforeQuantity(beforeQuantity)
-                .afterQuantity(afterQuantity)
-                .type("EXPORT")
-                .staffId(request.getStaffId())
-                .status("SUCCESS")
-                .build();
-
-        return transactionRepository.save(transaction);
-    }
 
     //View Export Records
+    @Override
     public List<InventoryTransaction> getExportRecords(){
         return transactionRepository.findAll()
                 .stream()
@@ -60,6 +33,7 @@ public class InventoryServiceImpl {
     }
 
     //View Export Record Details
+    @Override
     public InventoryTransaction getExportRecordDetail(UUID id){
 
         InventoryTransaction transaction = transactionRepository.findById(id)
@@ -72,149 +46,254 @@ public class InventoryServiceImpl {
         return transaction;
     }
 
+//    @Override
+//    public List<InventoryResponse> viewInventoryByFranchise(UUID franchiseId) {
+//
+//        return repository.findByFranchiseId(franchiseId)
+//                .stream()
+//                .map(i -> InventoryMapper.toResponse(i, i.getProductName()))
+//                .toList();
+//    }
+
+    // 2 View Inventory Details
+//    @Override
+//    public List<FranchiseOfInventoryResponse> viewInventoryDetail() {
+//
+//        return repository.findAll()
+//                .stream()
+//                .map(i -> FranchiseOfInventoryResponse.builder()
+//                        .id(i.getId())
+//                        .franchiseName(i.getFranchise().getName())
+//                        .productName(i.getProductName())
+//                        .quantity(i.getQuantity())
+//                        .unit(i.getUnit())
+//                        .minStock(i.getMinStock())
+//                        .build())
+//                .toList();
+//    }
+
+    // 3 View Low Stock Items
+//    @Override
+//    public List<InventoryResponse> viewLowStockItems() {
+//
+//        return repository.findAll()
+//                .stream()
+//                .filter(i -> i.getQuantity() <= i.getMinStock())
+//                .map(i -> InventoryMapper.toResponse(i, i.getProductName()))
+//                .toList();
+//    }
+
+    // 4 Update Inventory Threshold
+//    @Override
+//    public InventoryResponse updateInventoryThreshold(UUID inventoryId, Integer minStock) {
+//
+//        FranchiseIngredient inventory = repository.findById(inventoryId)
+//                .orElseThrow(() -> new RuntimeException("Inventory not found"));
+//
+//        inventory.setMinStock(minStock);
+//        repository.save(inventory);
+//
+//        return InventoryMapper.toResponse(inventory, inventory.getProductName());
+//    }
+
+    // 5 Search Inventory theo chi nhánh
+//    @Override
+//    public List<InventoryResponse> searchInventory(String productName, UUID franchiseId) {
+//
+//        return repository
+//                .findByProductNameContainingIgnoreCaseAndFranchise_Id(productName, franchiseId)
+//                .stream()
+//                .map(i -> InventoryMapper.toResponse(i, i.getProductName()))
+//                .toList();
+//    }
+
+    // 6 Filter Inventory tất cả chi nhánh
+//    @Override
+//    public List<InventoryResponse> filterInventoryByFranchise(String productName) {
+//
+//        return repository.findByProductNameContainingIgnoreCase(productName)
+//                .stream()
+//                .map(i -> InventoryMapper.toResponse(i, i.getProductName()))
+//                .toList();
+//    }
+
+
+    //Manage warehouse release forms
+    //Export Inventory
+//    public InventoryTransaction exportInventory(ExportInventoryRequest request){
+//
+//        FranchiseIngredient ingredient = ingredientRepository.findById(request.getFranchiseIngredientId())
+//                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+//
+//        int beforeQuantity = ingredient.getQuantity();
+//
+//        if(beforeQuantity < request.getQuantity()){
+//            throw new RuntimeException("Not enough inventory");
+//        }
+//
+//        int afterQuantity = beforeQuantity - request.getQuantity();
+//
+//        ingredient.setQuantity(afterQuantity);
+//        ingredientRepository.save(ingredient);
+//
+//        InventoryTransaction transaction = InventoryTransaction.builder()
+//                .franchiseIngredient(ingredient)
+//                .quantity(request.getQuantity())
+//                .beforeQuantity(beforeQuantity)
+//                .afterQuantity(afterQuantity)
+//                .type("EXPORT")
+//                .staffId(request.getStaffId())
+//                .status("SUCCESS")
+//                .build();
+//
+//        return transactionRepository.save(transaction);
+//    }
+
+
+
     //Edit Export Record
-    public InventoryTransaction editExportRecord(UUID id, ExportInventoryRequest request){
-
-        InventoryTransaction transaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Export record not found"));
-        if(!"EXPORT".equals(transaction.getType())){
-            throw new RuntimeException("Record is not export type");
-        }
-
-        FranchiseIngredient ingredient = transaction.getFranchiseIngredient();
-
-        int oldQuantity = transaction.getQuantity();
-        int newQuantity = request.getQuantity();
-
-        int currentStock = ingredient.getQuantity();
-
-        int diff = newQuantity - oldQuantity;
-
-        if(diff > 0){
-            if(currentStock < diff){
-                throw new RuntimeException("Not enough inventory");
-            }
-            ingredient.setQuantity(currentStock - diff);
-        }
-        else if(diff < 0){
-            ingredient.setQuantity(currentStock + Math.abs(diff));
-        }
-
-        ingredientRepository.save(ingredient);
-
-        transaction.setBeforeQuantity(ingredient.getQuantity() + newQuantity);
-        transaction.setQuantity(newQuantity);
-        transaction.setAfterQuantity(ingredient.getQuantity());
-
-        return transactionRepository.save(transaction);
-    }
+//    public InventoryTransaction editExportRecord(UUID id, ExportInventoryRequest request){
+//
+//        InventoryTransaction transaction = transactionRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Export record not found"));
+//        if(!"EXPORT".equals(transaction.getType())){
+//            throw new RuntimeException("Record is not export type");
+//        }
+//
+//        FranchiseIngredient ingredient = transaction.getFranchiseIngredient();
+//
+//        int oldQuantity = transaction.getQuantity();
+//        int newQuantity = request.getQuantity();
+//
+//        int currentStock = ingredient.getQuantity();
+//
+//        int diff = newQuantity - oldQuantity;
+//
+//        if(diff > 0){
+//            if(currentStock < diff){
+//                throw new RuntimeException("Not enough inventory");
+//            }
+//            ingredient.setQuantity(currentStock - diff);
+//        }
+//        else if(diff < 0){
+//            ingredient.setQuantity(currentStock + Math.abs(diff));
+//        }
+//
+//        ingredientRepository.save(ingredient);
+//
+//        transaction.setBeforeQuantity(ingredient.getQuantity() + newQuantity);
+//        transaction.setQuantity(newQuantity);
+//        transaction.setAfterQuantity(ingredient.getQuantity());
+//
+//        return transactionRepository.save(transaction);
+//    }
 
     //Delete Export Record
-    public void deleteExportRecord(UUID id){
-
-        InventoryTransaction transaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Export record not found"));
-
-        if(!"EXPORT".equals(transaction.getType())){
-            throw new RuntimeException("Record is not export type");
-        }
-
-        FranchiseIngredient ingredient = transaction.getFranchiseIngredient();
-
-        ingredient.setQuantity(
-                ingredient.getQuantity() + transaction.getQuantity()
-        );
-
-        ingredientRepository.save(ingredient);
-
-        transactionRepository.delete(transaction);
-    }
+//    public void deleteExportRecord(UUID id){
+//
+//        InventoryTransaction transaction = transactionRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Export record not found"));
+//
+//        if(!"EXPORT".equals(transaction.getType())){
+//            throw new RuntimeException("Record is not export type");
+//        }
+//
+//        FranchiseIngredient ingredient = transaction.getFranchiseIngredient();
+//
+//        ingredient.setQuantity(
+//                ingredient.getQuantity() + transaction.getQuantity()
+//        );
+//
+//        ingredientRepository.save(ingredient);
+//
+//        transactionRepository.delete(transaction);
+//    }
 
     //Inventory alert management
     //Set Min Stock
-    public InventoryTransaction setMinStock(SetMinStockRequest request){
-
-        FranchiseIngredient ingredient = ingredientRepository.findById(request.getFranchiseIngredientId())
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
-
-        InventoryTransaction transaction = InventoryTransaction.builder()
-                .franchiseIngredient(ingredient)
-                .threshold(request.getThreshold())
-                .type("SET_MIN_STOCK")
-                .staffId(request.getStaffId())
-                .status("SUCCESS")
-                .build();
-
-        return transactionRepository.save(transaction);
-    }
+//    public InventoryTransaction setMinStock(SetMinStockRequest request){
+//
+//        FranchiseIngredient ingredient = ingredientRepository.findById(request.getFranchiseIngredientId())
+//                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+//
+//        InventoryTransaction transaction = InventoryTransaction.builder()
+//                .franchiseIngredient(ingredient)
+//                .threshold(request.getThreshold())
+//                .type("SET_MIN_STOCK")
+//                .staffId(request.getStaffId())
+//                .status("SUCCESS")
+//                .build();
+//
+//        return transactionRepository.save(transaction);
+//    }
 
     //View Stock Alerts
-    public List<InventoryTransaction> getStockAlerts(){
-
-        List<FranchiseIngredient> ingredients = ingredientRepository.findAll();
-
-        List<InventoryTransaction> thresholds = transactionRepository.findAll()
-                .stream()
-                .filter(t -> "SET_MIN_STOCK".equals(t.getType()))
-                .toList();
-
-        Map<UUID, Integer> thresholdMap = thresholds.stream()
-                .collect(Collectors.toMap(
-                        t -> t.getFranchiseIngredient().getId(),
-                        InventoryTransaction::getThreshold,
-                        (oldVal,newVal) -> newVal
-                ));
-
-        List<InventoryTransaction> alerts = new ArrayList<>();
-
-        for(FranchiseIngredient ingredient : ingredients){
-
-            Integer threshold = thresholdMap.get(ingredient.getId());
-
-            if(threshold != null && ingredient.getQuantity() < threshold){
-
-                InventoryTransaction alert = InventoryTransaction.builder()
-                        .franchiseIngredient(ingredient)
-                        .beforeQuantity(ingredient.getQuantity())
-                        .threshold(threshold)
-                        .type("ALERT")
-                        .status("LOW_STOCK")
-                        .staffId(null)   // FIX tránh lỗi DB
-                        .build();
-
-                alerts.add(alert);
-            }
-        }
-
-        return alerts;
-    }
+//    public List<InventoryTransaction> getStockAlerts(){
+//
+//        List<FranchiseIngredient> ingredients = ingredientRepository.findAll();
+//
+//        List<InventoryTransaction> thresholds = transactionRepository.findAll()
+//                .stream()
+//                .filter(t -> "SET_MIN_STOCK".equals(t.getType()))
+//                .toList();
+//
+//        Map<UUID, Integer> thresholdMap = thresholds.stream()
+//                .collect(Collectors.toMap(
+//                        t -> t.getFranchiseIngredient().getId(),
+//                        InventoryTransaction::getThreshold,
+//                        (oldVal,newVal) -> newVal
+//                ));
+//
+//        List<InventoryTransaction> alerts = new ArrayList<>();
+//
+//        for(FranchiseIngredient ingredient : ingredients){
+//
+//            Integer threshold = thresholdMap.get(ingredient.getId());
+//
+//            if(threshold != null && ingredient.getQuantity() < threshold){
+//
+//                InventoryTransaction alert = InventoryTransaction.builder()
+//                        .franchiseIngredient(ingredient)
+//                        .beforeQuantity(ingredient.getQuantity())
+//                        .threshold(threshold)
+//                        .type("ALERT")
+//                        .status("LOW_STOCK")
+//                        .staffId(null)   // FIX tránh lỗi DB
+//                        .build();
+//
+//                alerts.add(alert);
+//            }
+//        }
+//
+//        return alerts;
+//    }
 
     //View Low Stock by Franchise
-    public List<FranchiseIngredient> getLowStockByFranchise(UUID franchiseId){
-
-        List<FranchiseIngredient> ingredients = ingredientRepository.findAll()
-                .stream()
-                .filter(i -> i.getFranchise().getId().equals(franchiseId))
-                .toList();
-
-        List<InventoryTransaction> thresholds = transactionRepository.findAll()
-                .stream()
-                .filter(t -> "SET_MIN_STOCK".equals(t.getType()))
-                .toList();
-
-        Map<UUID, Integer> thresholdMap = thresholds.stream()
-                .collect(Collectors.toMap(
-                        t -> t.getFranchiseIngredient().getId(),
-                        InventoryTransaction::getThreshold,
-                        (oldVal,newVal) -> newVal
-                ));
-
-        return ingredients.stream()
-                .filter(i -> {
-                    Integer threshold = thresholdMap.get(i.getId());
-                    return threshold != null && i.getQuantity() < threshold;
-                })
-                .toList();
-    }
+//    public List<FranchiseIngredient> getLowStockByFranchise(UUID franchiseId){
+//
+//        List<FranchiseIngredient> ingredients = ingredientRepository.findAll()
+//                .stream()
+//                .filter(i -> i.getFranchise().getId().equals(franchiseId))
+//                .toList();
+//
+//        List<InventoryTransaction> thresholds = transactionRepository.findAll()
+//                .stream()
+//                .filter(t -> "SET_MIN_STOCK".equals(t.getType()))
+//                .toList();
+//
+//        Map<UUID, Integer> thresholdMap = thresholds.stream()
+//                .collect(Collectors.toMap(
+//                        t -> t.getFranchiseIngredient().getId(),
+//                        InventoryTransaction::getThreshold,
+//                        (oldVal,newVal) -> newVal
+//                ));
+//
+//        return ingredients.stream()
+//                .filter(i -> {
+//                    Integer threshold = thresholdMap.get(i.getId());
+//                    return threshold != null && i.getQuantity() < threshold;
+//                })
+//                .toList();
+//    }
 
 }

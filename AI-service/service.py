@@ -16,7 +16,6 @@ from log_config import setup_logging
 setup_logging()
 logger = logging.getLogger(__name__)
 
-# ── Config persistence ────────────────────────────────────────────
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "ai_config.json")
 
 DEFAULT_CONFIG = {
@@ -44,10 +43,8 @@ def save_config(cfg: dict):
         json.dump(cfg, f, indent=2, ensure_ascii=False)
     logger.info(f"Config saved: {cfg}")
 
-# Load config on startup
 ai_config = load_config()
 
-# ── FastAPI App ───────────────────────────────────────────────────
 app = FastAPI()
 
 app.add_middleware(
@@ -80,18 +77,15 @@ class ConfigUpdate(BaseModel):
     schedule_enabled: bool = None
     schedule_interval_hours: int = None
 
-# ── Initialize services ──────────────────────────────────────────
 semantic_search = Semantic_Search(model_name = "intfloat/multilingual-e5-base", vector_path = "Vector/vectors.txt")
 recommend_system = RecommendationSystem(
-    product_api="http://127.0.0.1:3001/product/getall",
-    order_api="http://localhost:3007/api/orders",
+    product_api="http://localhost:3000/api/products/get-all",
+    order_api="http://localhost:3000/api/orders",
 )
 
-# Apply weights from config on startup
 semantic_search._setweight(ai_config["w_core"], ai_config["w_desc"])
 logger.info(f"Applied weights from config: w_core={ai_config['w_core']}, w_desc={ai_config['w_desc']}")
 
-# ── Scheduled Training ───────────────────────────────────────────
 _schedule_thread = None
 _schedule_stop = threading.Event()
 
@@ -138,7 +132,6 @@ def restart_scheduler():
 if ai_config.get("schedule_enabled", False):
     start_scheduler()
 
-# ── Endpoints ─────────────────────────────────────────────────────
 
 @app.get("/api/ai/config")
 def get_config():

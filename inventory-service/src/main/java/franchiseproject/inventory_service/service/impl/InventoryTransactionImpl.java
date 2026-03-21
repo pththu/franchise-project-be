@@ -1,6 +1,6 @@
 package franchiseproject.inventory_service.service.impl;
 
-import franchiseproject.inventory_service.model.InventoryTransaction;
+import franchiseproject.inventory_service.entity.InventoryTransaction;
 import franchiseproject.inventory_service.repository.InventoryTransactionRepository;
 import franchiseproject.inventory_service.service.InventoryTransactionService;
 import lombok.AccessLevel;
