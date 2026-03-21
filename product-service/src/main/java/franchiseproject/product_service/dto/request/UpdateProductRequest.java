@@ -1,8 +1,6 @@
 package franchiseproject.product_service.dto.request;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -15,17 +13,25 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CreateProductRequest {
+public class UpdateProductRequest {
 
-    @NotBlank(message = "Tên sản phẩm không được để trống")
+    // ===== Product Info =====
     String name;
 
     String description;
 
-    @NotNull(message = "Category không được null")
     UUID categoryId;
 
+    String productType;
+
+    String unit;
+
+    String brand;
+
+    String status; // ACTIVE / INACTIVE
+
+
+    // ===== Variants =====
     @Valid
-    @NotNull(message = "Danh sách variant không được null")
-    List<CreateProductVariantRequest> variants;
+    List<UpdateProductVariantRequest> variants;
 }
