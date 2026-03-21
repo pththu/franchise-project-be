@@ -19,14 +19,17 @@ import java.util.UUID;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InventoryTransaction {
-
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(name = "id", unique = true, nullable = false, updatable = false)
     UUID id;
 
-    @Column(name = "quantity")
-    Integer quantity;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_stock_id", nullable = false)
+    ProductStock productStock;
+
+    @Column(name = "change_quantity")
+    Integer changeQuantity;
 
     @Column(name = "before_quantity")
     Integer beforeQuantity;
@@ -34,21 +37,18 @@ public class InventoryTransaction {
     @Column(name = "after_quantity")
     Integer afterQuantity;
 
-    // + || -
-    @Column(name = "type")
+    // Type: SALE, IMPORT, TRANSFER_IN, TRANSFER_OUT, ADJUSTMENT, RETURN
+    @Column(name = "type", nullable = false, length = 30)
     String type;
 
-    @Column(name = "threshold")
-    Integer threshold;
-
-    @Column(name = "alert_triggered_at")
-    Instant alertTriggeredAt;
-
-    @Column(name = "without_threshold")
-    Boolean withoutThreshold;
-
-    @Column(name = "status")
+    @Column(name = "status", length = 20)
     String status;
+
+    @Column(name = "reference_id")
+    UUID referenceId; // ID of Order, StockTransfer, or StockRequest
+
+    @Column(name = "reference_type")
+    String referenceType; // "ORDER", "TRANSFER", "REQUEST", "IMPORT"
 
     @Column(name = "created_by")
     UUID createdBy;
@@ -60,8 +60,4 @@ public class InventoryTransaction {
     @UpdateTimestamp
     @Column(name = "updated_at")
     Instant updatedAt;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "product_franchise_id", columnDefinition = "UUID", nullable = false)
-    ProductFranchise productFranchise;
 }
