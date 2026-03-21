@@ -20,7 +20,7 @@ public class ProductResponse {
     String name;
     String unit;
     ProductStatus status;
-    String branch;
+    String brand;
     CategoryResponse category;
     Instant createdAt;
     Instant updatedAt;

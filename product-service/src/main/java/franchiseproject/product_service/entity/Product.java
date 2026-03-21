@@ -39,7 +39,8 @@ public class Product {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     ProductStatus status;
-    String branch;
+    @Column(name = "brand", nullable = false)
+    String brand;
 
     @CreationTimestamp
     @Column(name = "created_at")
