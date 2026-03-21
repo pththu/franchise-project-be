@@ -1,12 +1,16 @@
 package com.franchiseproject.franchiseservice.model;
 
 import com.franchiseproject.franchiseservice.enums.RequestStatus;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,16 +34,17 @@ public class StoreRequest {
     private Franchise franchise;
 
     @Column(name = "customer_id", nullable = false)
-    private Integer customerId;
+    private String customerId;
 
     @Column(nullable = false)
     private LocalDate requestDate;
 
     @Column(columnDefinition = "jsonb", nullable = false)
-    private String requestData; // Lưu JSON dạng String, PostgreSQL sẽ tự xử lý jsonb
+    @JdbcTypeCode(SqlTypes.JSON)  // Cách 1: Dùng JdbcTypeCode
+    private String requestData;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 10)
+    @Column(length = 20)
     private RequestStatus status = RequestStatus.PENDING;
 
     @Column(columnDefinition = "TEXT")

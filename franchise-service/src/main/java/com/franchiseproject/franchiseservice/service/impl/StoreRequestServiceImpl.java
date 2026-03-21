@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -84,7 +85,6 @@ public class StoreRequestServiceImpl implements StoreRequestService {
         StoreRequest request = storeRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found with id: " + id));
 
-        // Validate status transition
         if (request.getStatus() != RequestStatus.PENDING) {
             throw new BadRequestException("Only pending requests can be reviewed");
         }
@@ -103,29 +103,29 @@ public class StoreRequestServiceImpl implements StoreRequestService {
     @Override
     @Transactional
     public StoreRequestDTO createRequest(StoreRequestDTO requestDTO) {
-        // Validate franchise
         Franchise franchise = franchiseRepository.findById(requestDTO.getFranchiseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + requestDTO.getFranchiseId()));
 
-        // Validate customer từ customer-service
         try {
+            log.info("Creating request for customer: {}", requestDTO.getCustomerId());
+
             CustomerInfoDTO customerInfo = customerServiceClient.getCustomerById(requestDTO.getCustomerId());
             if (customerInfo == null) {
                 throw new BadRequestException("Invalid customer id: " + requestDTO.getCustomerId());
             }
 
-            // Tạo request code
             String requestCode = generateRequestCode();
-
-            // Build request data JSON với customer info snapshot
             Map<String, Object> requestData = buildRequestData(requestDTO, customerInfo);
+
+            String requestDataJson = objectMapper.writeValueAsString(requestData);
+            log.debug("Request data JSON: {}", requestDataJson);
 
             StoreRequest storeRequest = new StoreRequest();
             storeRequest.setRequestCode(requestCode);
             storeRequest.setFranchise(franchise);
             storeRequest.setCustomerId(requestDTO.getCustomerId());
             storeRequest.setRequestDate(LocalDate.now());
-            storeRequest.setRequestData(objectMapper.writeValueAsString(requestData));
+            storeRequest.setRequestData(requestDataJson);
             storeRequest.setStatus(RequestStatus.PENDING);
 
             StoreRequest savedRequest = storeRequestRepository.save(storeRequest);
@@ -143,7 +143,7 @@ public class StoreRequestServiceImpl implements StoreRequestService {
     }
 
     @Override
-    public List<StoreRequestDTO> getRequestsByCustomer(Integer customerId) {
+    public List<StoreRequestDTO> getRequestsByCustomer(String customerId) {
         return storeRequestRepository.findByCustomerId(customerId)
                 .stream()
                 .map(storeRequestMapper::toDTO)
@@ -151,7 +151,7 @@ public class StoreRequestServiceImpl implements StoreRequestService {
     }
 
     @Override
-    public List<StoreRequestDTO> getRequestsByCustomerAndStatus(Integer customerId, RequestStatus status) {
+    public List<StoreRequestDTO> getRequestsByCustomerAndStatus(String customerId, RequestStatus status) {
         return storeRequestRepository.findByCustomerIdAndStatus(customerId, status)
                 .stream()
                 .map(storeRequestMapper::toDTO)
@@ -168,24 +168,19 @@ public class StoreRequestServiceImpl implements StoreRequestService {
     }
 
     private Map<String, Object> buildRequestData(StoreRequestDTO dto, CustomerInfoDTO customerInfo) {
-        Map<String, Object> data = new java.util.HashMap<>();
+        Map<String, Object> data = new HashMap<>();
 
-        // Customer info snapshot
-        Map<String, Object> customerSnapshot = new java.util.HashMap<>();
+        Map<String, Object> customerSnapshot = new HashMap<>();
         customerSnapshot.put("customer_id", customerInfo.getId());
         customerSnapshot.put("full_name", customerInfo.getFullName());
         customerSnapshot.put("email", customerInfo.getEmail());
         customerSnapshot.put("phone", customerInfo.getPhone());
         data.put("customer_info", customerSnapshot);
 
-        // Items
         data.put("items", dto.getItems());
-
-        // Notes
         data.put("notes", dto.getNotes());
-
-        // Total amount
         data.put("total_amount", dto.getTotalAmount());
+        data.put("created_at", LocalDateTime.now().toString());
 
         return data;
     }

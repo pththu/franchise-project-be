@@ -27,7 +27,7 @@
       <env name="DB_USERNAME" value="franchise_user" />
       <env name="DB_PASSWORD" value="FNLbwoIxRBofbo4fblMhULaUHqGbThi7" />
     </envs>
-    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
     <module name="promotion-service" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="franchiseproject.promotion_service.PromotionServiceApplication" />
     <extension name="coverage">

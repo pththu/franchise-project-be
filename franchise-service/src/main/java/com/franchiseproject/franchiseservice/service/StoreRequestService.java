@@ -16,6 +16,6 @@ public interface StoreRequestService {
 
     // Store manager endpoints
     StoreRequestDTO createRequest(StoreRequestDTO requestDTO);
-    List<StoreRequestDTO> getRequestsByCustomer(Integer customerId);
-    List<StoreRequestDTO> getRequestsByCustomerAndStatus(Integer customerId, RequestStatus status);
+    List<StoreRequestDTO> getRequestsByCustomer(String customerId);  // String
+    List<StoreRequestDTO> getRequestsByCustomerAndStatus(String customerId, RequestStatus status);  // String
 }

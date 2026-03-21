@@ -12,6 +12,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.UUID;
+
 @Repository
 public interface StoreRequestRepository extends JpaRepository<StoreRequest, Long> {
 
@@ -19,12 +21,12 @@ public interface StoreRequestRepository extends JpaRepository<StoreRequest, Long
 
     List<StoreRequest> findByStatus(RequestStatus status);
 
-    List<StoreRequest> findByCustomerId(Integer customerId);
+    List<StoreRequest> findByCustomerId(String customerId);  // GIỮ NGUYÊN String
 
     Optional<StoreRequest> findByRequestCode(String requestCode);
 
     @Query("SELECT sr FROM StoreRequest sr WHERE sr.customerId = :customerId AND sr.status = :status")
-    List<StoreRequest> findByCustomerIdAndStatus(@Param("customerId") Integer customerId,
+    List<StoreRequest> findByCustomerIdAndStatus(@Param("customerId") String customerId,
                                                  @Param("status") RequestStatus status);
 
     @Query("SELECT sr FROM StoreRequest sr WHERE sr.franchise.id = :franchiseId AND sr.status = :status")

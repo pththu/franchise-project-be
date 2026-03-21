@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Data
 public class StoreRequestDTO {
@@ -15,10 +16,10 @@ public class StoreRequestDTO {
     private String requestCode;
     private Long franchiseId;
     private String franchiseName;
-    private Integer customerId;
+    private String customerId;  // GIỮ NGUYÊN String
     private String customerName;
     private LocalDate requestDate;
-    private Map<String, Object> requestData; // JSON gốc
+    private Map<String, Object> requestData;
     private List<RequestItemDTO> items;
     private String notes;
     private BigDecimal totalAmount;

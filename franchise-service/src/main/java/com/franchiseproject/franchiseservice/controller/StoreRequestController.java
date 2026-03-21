@@ -25,13 +25,13 @@ public class StoreRequestController {
     }
 
     @GetMapping("/my-requests/{customerId}")
-    public ResponseEntity<List<StoreRequestDTO>> getMyRequests(@PathVariable("customerId") Integer customerId) {
+    public ResponseEntity<List<StoreRequestDTO>> getMyRequests(@PathVariable("customerId") String customerId) {
         return ResponseEntity.ok(storeRequestService.getRequestsByCustomer(customerId));
     }
 
     @GetMapping("/my-requests/{customerId}/status/{status}")
     public ResponseEntity<List<StoreRequestDTO>> getMyRequestsByStatus(
-            @PathVariable("customerId") Integer customerId,
+            @PathVariable("customerId") String customerId,
             @PathVariable("status") RequestStatus status) {
         return ResponseEntity.ok(storeRequestService.getRequestsByCustomerAndStatus(customerId, status));
     }

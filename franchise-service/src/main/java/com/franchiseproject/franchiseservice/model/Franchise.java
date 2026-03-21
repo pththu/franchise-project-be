@@ -43,4 +43,10 @@ public class Franchise {
     @Convert(converter = FranchiseStatusConverter.class)
     @Column(length = 10)
     private FranchiseStatus status = FranchiseStatus.NEW;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;  // THÊM
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;  // THÊM
 }
