@@ -19,21 +19,21 @@ public class InventoryLogController {
 
     InventoryLogService inventoryLogService;
 
-    @GetMapping
-    public ResponseEntity<Map<String, Object>> getAllLogs(
-            @RequestParam(required = false) UUID franchiseId
-    ) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Get inventory logs successfully");
-        response.put("data", inventoryLogService.getAllLogs(franchiseId));
-        return ResponseEntity.ok(response);
-    }
+//    @GetMapping
+//    public ResponseEntity<Map<String, Object>> getAllLogs(
+//            @RequestParam(required = false) UUID franchiseId
+//    ) {
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("message", "Get inventory logs successfully");
+//        response.put("data", inventoryLogService.getAllLogs(franchiseId));
+//        return ResponseEntity.ok(response);
+//    }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getLogDetail(@PathVariable UUID id) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Get inventory log detail successfully");
-        response.put("data", inventoryLogService.getLogDetail(id));
-        return ResponseEntity.ok(response);
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<Map<String, Object>> getLogDetail(@PathVariable UUID id) {
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("message", "Get inventory log detail successfully");
+//        response.put("data", inventoryLogService.getLogDetail(id));
+//        return ResponseEntity.ok(response);
+//    }
 }
