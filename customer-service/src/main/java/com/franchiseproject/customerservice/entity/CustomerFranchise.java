@@ -1,11 +1,13 @@
-package com.franchiseproject.customerservice.model;
+package com.franchiseproject.customerservice.entity;
 
-import com.franchiseproject.customerservice.enums.CustomerFranchiseStatus;
+import com.franchiseproject.customerservice.enums.CustomerStatus;
+import com.franchiseproject.customerservice.enums.CustomerType;
 import com.franchiseproject.customerservice.enums.LoyaltyTier;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.Instant;
@@ -24,14 +26,22 @@ public class CustomerFranchise {
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(unique = true, nullable = false)
     UUID id;
+    @Column(name = "customer_id", columnDefinition = "UUID", nullable = false)
+    UUID customerId;
     @Column(name = "franchise_id")
     UUID franchiseId;
     @Enumerated(EnumType.STRING)
     LoyaltyTier loyaltyTier;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    CustomerType type;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    CustomerStatus status;
     @Column(name = "loyalty_current_point")
-    int loyaltyCurrentPoint;
+    Integer loyaltyCurrentPoint;
     @Column(name = "loyalty_total_point")
-    int loyaltyTotalPoint;
+    Integer loyaltyTotalPoint;
     @Column(name = "first_order_at")
     Instant firstOrderAt;
     @Column(name = "last_order_at")
@@ -39,8 +49,7 @@ public class CustomerFranchise {
     @CreationTimestamp
     @Column(name = "created_at")
     Instant createdAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", columnDefinition = "UUID")
-    Customer customer;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    Instant updatedAt;
 }
