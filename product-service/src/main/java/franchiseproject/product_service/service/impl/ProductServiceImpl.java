@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Service
@@ -53,7 +54,13 @@ public class ProductServiceImpl implements ProductService {
     ProductMapper productMapper;
     InventoryClient inventoryClient;
 
-
+    private String convertListToJson(List<String> urls) {
+        try {
+            return new ObjectMapper().writeValueAsString(urls);
+        } catch (Exception e) {
+            throw new RuntimeException("Convert imageUrls failed");
+        }
+    }
     @Override
     public Page<Product> getAll(int page) {
         Pageable pageable = PageRequest.of(
@@ -198,7 +205,7 @@ public class ProductServiceImpl implements ProductService {
             ProductSize size = ProductSize.valueOf(v.getSize().toUpperCase());
 
             String imageUrl = (v.getImageUrls() != null && !v.getImageUrls().isEmpty())
-                    ? v.getImageUrls().get(0)
+                    ? convertListToJson(v.getImageUrls())
                     : null;
 
             return ProductVariant.builder()
@@ -309,7 +316,7 @@ public class ProductServiceImpl implements ProductService {
                     }
 
                     if (v.getImageUrls() != null && !v.getImageUrls().isEmpty()) {
-                        existing.setImageUrl(v.getImageUrls().get(0));
+                        existing.setImageUrl(convertListToJson(v.getImageUrls()));
                     }
 
                     newVariants.add(existing);
@@ -325,7 +332,7 @@ public class ProductServiceImpl implements ProductService {
                             .size(v.getSize() != null ? ProductSize.valueOf(v.getSize().toUpperCase()) : null)
                             .imageUrl(
                                     (v.getImageUrls() != null && !v.getImageUrls().isEmpty())
-                                            ? v.getImageUrls().get(0)
+                                            ? convertListToJson(v.getImageUrls())
                                             : null
                             )
                             .status(ProductVariantStatus.ACTIVE)

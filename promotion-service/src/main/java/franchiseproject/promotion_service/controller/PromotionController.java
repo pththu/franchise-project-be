@@ -1,13 +1,12 @@
 package franchiseproject.promotion_service.controller;
 
-import franchiseproject.promotion_service.dto.PromotionResponse;
-import franchiseproject.promotion_service.entity.Promotion;
-import franchiseproject.promotion_service.service.impl.PromotionServiceImpl;
+import franchiseproject.promotion_service.dto.ApplyDiscountRequest;
+import franchiseproject.promotion_service.dto.PromotionRequest;
+import franchiseproject.promotion_service.service.PromotionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
@@ -15,42 +14,53 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PromotionController {
 
-    private final PromotionServiceImpl promotionService;
+    private final PromotionService service;
 
-    // View Promotions
-    @GetMapping
-    public ResponseEntity<List<PromotionResponse>> getAll() {
-
-        return ResponseEntity.ok(
-                promotionService.getAllPromotions()
-        );
-
-    }
-
-    // View Promotion Details
-    @GetMapping("/{id}")
-    public Promotion getPromotionById(@PathVariable UUID id) {
-        return promotionService.getPromotionById(id);
-    }
-
-    // Create Promotion
     @PostMapping
-    public Promotion createPromotion(@RequestBody Promotion promotion) {
-        return promotionService.createPromotion(promotion);
+    public void create(@RequestBody PromotionRequest req) {
+        service.create(req);
     }
 
-    // Update Promotion
+    @GetMapping
+    public Object getAll() {
+        return service.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public Object getById(@PathVariable UUID id) {
+        return service.getById(id);
+    }
+
     @PutMapping("/{id}")
-    public Promotion updatePromotion(
-            @PathVariable UUID id,
-            @RequestBody Promotion promotion
-    ) {
-        return promotionService.updatePromotion(id, promotion);
+    public void update(@PathVariable UUID id, @RequestBody PromotionRequest req) {
+        service.update(id, req);
     }
 
-    // Delete Promotion
     @DeleteMapping("/{id}")
-    public void deletePromotion(@PathVariable UUID id) {
-        promotionService.deletePromotion(id);
+    public void delete(@PathVariable UUID id) {
+        service.delete(id);
+    }
+
+    // 🔥 lấy promotion user dùng được
+    @GetMapping("/available")
+    public Object available(
+            @RequestParam UUID userId,
+            @RequestParam UUID franchiseId,
+            @RequestParam BigDecimal orderValue
+    ) {
+        return service.getAvailablePromotions(userId, franchiseId, orderValue);
+    }
+    @PostMapping("/confirm")
+    public void confirm(
+            @RequestParam UUID orderId,
+            @RequestParam String status
+    ){
+        service.confirmOrder(orderId, status);
+    }
+
+    // 🔥 APPLY DISCOUNT
+    @PostMapping("/apply")
+    public Object apply(@RequestBody ApplyDiscountRequest req) {
+        return service.applyDiscount(req);
     }
 }

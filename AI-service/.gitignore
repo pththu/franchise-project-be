@@ -1,3 +1,7 @@
 .venv/
 __pycache__/
 log/
+ChatBotFranchise/
+chatbot.py
+mock_product_api.py
+models/
