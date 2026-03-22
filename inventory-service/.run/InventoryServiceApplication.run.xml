@@ -2,7 +2,7 @@
   <configuration default="false" name="InventoryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
       <env name="DB_PASSWORD" value="sapassword" />
-      <env name="DB_URL" value="jdbc:postgresql://localhost:5432/inventory" />
+      <env name="DB_URL" value="jdbc:postgresql://localhost:5432/franchise" />
       <env name="DB_USERNAME" value="postgres" />
     </envs>
     <module name="inventory-service" />
