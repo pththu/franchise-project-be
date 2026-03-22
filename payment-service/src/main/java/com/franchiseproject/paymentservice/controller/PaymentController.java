@@ -36,7 +36,7 @@ public class PaymentController {
     }
 
     /// resolve request option payment method(COD, MOMO, VNPAY)
-    @PostMapping("/option")
+    @PostMapping("/init")
     public ApiResponse<PaymentQRResponse> optionPaymentMethod(@Valid @RequestBody OptionPaymentMethodRequest optionPaymentMethodRequest) {
         PaymentQRResponse paymentQRResponse = paymentMethodService.optionPaymentMethod(optionPaymentMethodRequest);
         return ApiResponse.<PaymentQRResponse>builder()

@@ -1,12 +1,9 @@
 package com.franchiseproject.orderservice.client;
 
-import com.franchiseproject.orderservice.dto.request.CreateOrderItemRequest;
-import com.franchiseproject.orderservice.dto.request.DiscountRequest;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -34,18 +31,6 @@ public class ProductClient {
 //                .collect(Collectors.toMap(ProductResponse::getId, p -> p));
 //    }
 
-//    public BigDecimal validateAndCalculate(UUID customerId, UUID promotionId, BigDecimal totalItems) {
-//
-//        DiscountRequest request = new DiscountRequest(customerId, promotionId, totalItems);
-//
-//        BigDecimal discount = productRestClient.post()
-//                .uri("/api/promotions/validate")
-//                .body(request)
-//                .retrieve()
-//                .body(BigDecimal.class);
-//        return Optional.ofNullable(discount)
-//                .orElseThrow(() -> new AppException(ErrorCode.VALIDATION_FAILED));
-//    }
 
     //Mock Test
     List<ProductResponse> items = List.of(
@@ -72,15 +57,4 @@ public class ProductClient {
         return products.stream()
                 .collect(Collectors.toMap(ProductResponse::getId, p -> p));
     }
-
-    public BigDecimal validateAndCalculate(UUID customerId,
-                                           UUID promotionId,
-                                           BigDecimal totalItems) {
-        if (promotionId == null) {
-            return BigDecimal.ZERO;
-        }
-        // Giả lập giảm 10%
-        return totalItems.multiply(BigDecimal.valueOf(0.1));
-    }
-
 }

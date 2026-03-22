@@ -139,7 +139,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
 
     @Override
     @Scheduled(fixedRate = 60000) // chạy mỗi 60s
-    @Transactional
+    @Transactional /// cần update thêm
     public void expirePendingTransactions() {
         Instant timeout = Instant.now().minus(15, ChronoUnit.MINUTES);
         List<PaymentTransaction> transactions =
