@@ -158,13 +158,16 @@ public class StockRequestServiceImpl implements StockRequestService {
         req.setStatus(StockRequestStatus.APPROVED);
         req.setApprovedBy(approvedBy);
         StockRequest saved = stockRequestRepository.save(req);
+        StockRequestResponse response = stockRequestMapper.toResponse(saved);
+        enrichRequestItems(response);
         
-        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.builder()
+        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.<StockRequestResponse>builder()
                 .type("STOCK_REQUEST_APPROVED")
                 .message("Yêu cầu duyệt " + req.getRequestCode())
+                .payload(response)
                 .build());
 
-        return stockRequestMapper.toResponse(saved);
+        return response;
     }
 
     @Override
@@ -183,13 +186,16 @@ public class StockRequestServiceImpl implements StockRequestService {
 
         req.setStatus(StockRequestStatus.SHIPPED);
         StockRequest saved = stockRequestRepository.save(req);
+        StockRequestResponse response = stockRequestMapper.toResponse(saved);
+        enrichRequestItems(response);
 
-        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.builder()
+        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.<StockRequestResponse>builder()
                 .type("STOCK_REQUEST_SHIPPED")
                 .message("Yêu cầu nhập hàng " + req.getRequestCode() + " đã xuất hàng")
+                .payload(response)
                 .build());
 
-        return stockRequestMapper.toResponse(saved);
+        return response;
     }
 
     @Override
@@ -208,13 +214,16 @@ public class StockRequestServiceImpl implements StockRequestService {
 
         req.setStatus(StockRequestStatus.RECEIVED);
         StockRequest saved = stockRequestRepository.save(req);
+        StockRequestResponse response = stockRequestMapper.toResponse(saved);
+        enrichRequestItems(response);
 
-        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.builder()
+        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.<StockRequestResponse>builder()
                 .type("STOCK_REQUEST_RECEIVED")
                 .message("Yêu cầu nhập hàng " + req.getRequestCode() + " đã nhận được")
+                .payload(response)
                 .build());
 
-        return stockRequestMapper.toResponse(saved);
+        return response;
     }
 
     @Override
@@ -240,13 +249,16 @@ public class StockRequestServiceImpl implements StockRequestService {
             req.setNotes(req.getNotes() != null ? req.getNotes() + " | Lý do từ chối: " + reason : "Lý do từ chối: " + reason);
         }
         StockRequest saved = stockRequestRepository.save(req);
+        StockRequestResponse response = stockRequestMapper.toResponse(saved);
+        enrichRequestItems(response);
         
-        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.builder()
+        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.<StockRequestResponse>builder()
                 .type("STOCK_REQUEST_REJECTED")
                 .message("Yêu cầu từ chối " + req.getRequestCode())
+                .payload(response)
                 .build());
 
-        return stockRequestMapper.toResponse(saved);
+        return response;
     }
 
     @Override

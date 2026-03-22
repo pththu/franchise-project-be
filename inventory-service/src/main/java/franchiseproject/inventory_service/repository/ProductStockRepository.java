@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,4 +24,7 @@ public interface ProductStockRepository extends JpaRepository<ProductStock, UUID
     Page<ProductStock> findLowStockByLocation(@Param("locationId") UUID locationId, Pageable pageable);
 
     Optional<ProductStock> findByProductVariantIdAndLocationId(UUID productVariantId, UUID locationId);
+
+    @Query("SELECT ps.productVariantId FROM ProductStock ps WHERE ps.locationId = :locationId AND ps.quantity > 0")
+    List<UUID> findInStockVariantIds(@Param("locationId") UUID locationId);
 }

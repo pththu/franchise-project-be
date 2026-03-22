@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ public class StockTransferServiceImpl implements StockTransferService {
     ProductStockRepository productStockRepository;
     InventoryTransactionRepository inventoryTransactionRepository;
     ProductClient productClient;
+    SimpMessagingTemplate messagingTemplate;
 
     @Override
     @Transactional
@@ -71,8 +73,15 @@ public class StockTransferServiceImpl implements StockTransferService {
 
         transfer.setItems(items);
         StockTransfer saved = stockTransferRepository.save(transfer);
+        StockTransferResponse response = mapToResponse(saved);
 
-        return mapToResponse(saved);
+        messagingTemplate.convertAndSend("/topic/admin/notifications", franchiseproject.inventory_service.dto.response.NotificationDTO.<StockTransferResponse>builder()
+                .type("NEW_STOCK_TRANSFER")
+                .message("Có lệnh điều chuyển mới: " + response.getTransferCode())
+                .payload(response)
+                .build());
+
+        return response;
     }
 
     @Override
@@ -130,7 +139,16 @@ public class StockTransferServiceImpl implements StockTransferService {
                     .build());
         }
         t.setStatus(TransferStatus.IN_TRANSIT);
-        return mapToResponse(stockTransferRepository.save(t));
+        StockTransfer saved = stockTransferRepository.save(t);
+        StockTransferResponse response = mapToResponse(saved);
+
+        messagingTemplate.convertAndSend("/topic/admin/notifications", franchiseproject.inventory_service.dto.response.NotificationDTO.<StockTransferResponse>builder()
+                .type("STOCK_TRANSFER_SHIPPED")
+                .message("Lệnh điều chuyển " + response.getTransferCode() + " đã xuất hàng")
+                .payload(response)
+                .build());
+
+        return response;
     }
 
     @Override
@@ -154,7 +172,7 @@ public class StockTransferServiceImpl implements StockTransferService {
                 destStock = ProductStock.builder()
                         .productVariantId(item.getProductVariantId())
                         .locationId(t.getToLocationId())
-                        .locationType(t.getType().name().contains("WAREHOUSE") ? "WAREHOUSE" : "FRANCHISE")
+                        .locationType(t.getType() == TransferType.FRANCHISE_TO_WAREHOUSE ? "WAREHOUSE" : "FRANCHISE")
                         .quantity(item.getQuantity())
                         .reservedQuantity(0)
                         .minStock(5)
@@ -174,7 +192,16 @@ public class StockTransferServiceImpl implements StockTransferService {
                     .build());
         }
         t.setStatus(TransferStatus.COMPLETED);
-        return mapToResponse(stockTransferRepository.save(t));
+        StockTransfer saved = stockTransferRepository.save(t);
+        StockTransferResponse response = mapToResponse(saved);
+
+        messagingTemplate.convertAndSend("/topic/admin/notifications", franchiseproject.inventory_service.dto.response.NotificationDTO.<StockTransferResponse>builder()
+                .type("STOCK_TRANSFER_COMPLETED")
+                .message("Lệnh điều chuyển " + response.getTransferCode() + " đã hoàn tất")
+                .payload(response)
+                .build());
+
+        return response;
     }
 
     private StockTransferResponse mapToResponse(StockTransfer t) {

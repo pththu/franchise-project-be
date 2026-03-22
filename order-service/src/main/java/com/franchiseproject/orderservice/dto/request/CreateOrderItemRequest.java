@@ -19,6 +19,8 @@ public class CreateOrderItemRequest {
     @NotNull(message = "Không để trống id sản phẩm")
     UUID productId;
 
+    UUID variantId;
+
     @Positive(message = "số lượng sản phẩm không âm")
     Integer quantity;
 }

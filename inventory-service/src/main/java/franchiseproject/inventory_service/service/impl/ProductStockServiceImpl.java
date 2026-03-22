@@ -1,6 +1,5 @@
 package franchiseproject.inventory_service.service.impl;
 
-import franchiseproject.inventory_service.dto.ApiResponse;
 import franchiseproject.inventory_service.dto.request.InitialStockRequest;
 import franchiseproject.inventory_service.dto.response.PageResponse;
 import franchiseproject.inventory_service.dto.response.ProductStockResponse;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import franchiseproject.inventory_service.client.ProductClient;
@@ -37,10 +37,10 @@ public class ProductStockServiceImpl implements ProductStockService {
     ProductStockMapper productStockMapper;
     ProductClient productClient;
 
-    private static final java.util.UUID SYSTEM_WAREHOUSE_ID = java.util.UUID.fromString("00000000-0000-0000-0000-000000000000");
+    private static final UUID SYSTEM_WAREHOUSE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     @Override
-    public PageResponse<ProductStockResponse> getStocks(java.util.UUID locationId, boolean lowStock, int page, int size) {
+    public PageResponse<ProductStockResponse> getStocks(UUID locationId, boolean lowStock, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<ProductStock> productStockPage;
 
@@ -63,15 +63,15 @@ public class ProductStockServiceImpl implements ProductStockService {
                 .collect(Collectors.toList());
 
         // Enrich with product details via Bulk Feign
-        java.util.List<java.util.UUID> variantIds = responses.stream()
+        List<UUID> variantIds = responses.stream()
                 .map(ProductStockResponse::getProductVariantId)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
 
         try {
             var apiRes = productClient.getProductVariantsBulk(variantIds);
             if (apiRes != null && apiRes.getData() != null) {
-                java.util.Map<java.util.UUID, ProductVariantDetailResponse> detailMap = apiRes.getData().stream()
-                        .collect(java.util.stream.Collectors.toMap(ProductVariantDetailResponse::getId, d -> d));
+                Map<UUID, ProductVariantDetailResponse> detailMap = apiRes.getData().stream()
+                        .collect(Collectors.toMap(ProductVariantDetailResponse::getId, d -> d));
                 
                 responses.forEach(res -> {
                     var detail = detailMap.get(res.getProductVariantId());
@@ -100,7 +100,7 @@ public class ProductStockServiceImpl implements ProductStockService {
     @Override
     @Transactional
     public void addInitialStock(InitialStockRequest request) {
-        java.util.UUID targetLocationId = request.getLocationId() != null ? request.getLocationId() : SYSTEM_WAREHOUSE_ID;
+        UUID targetLocationId = request.getLocationId() != null ? request.getLocationId() : SYSTEM_WAREHOUSE_ID;
         String locationType = request.getLocationId() != null ? "FRANCHISE" : "WAREHOUSE";
 
         Optional<ProductStock> existingStockOpt = productStockRepository.findByProductVariantIdAndLocationId(
@@ -139,5 +139,13 @@ public class ProductStockServiceImpl implements ProductStockService {
                 .build();
 
         inventoryTransactionRepository.save(tx);
+    }
+
+    @Override
+    public List<UUID> getInStockVariantIds(UUID locationId) {
+        if (locationId == null) {
+            return List.of();
+        }
+        return productStockRepository.findInStockVariantIds(locationId);
     }
 }
