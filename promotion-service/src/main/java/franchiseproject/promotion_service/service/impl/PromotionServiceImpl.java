@@ -265,5 +265,19 @@ public class PromotionServiceImpl implements PromotionService {
 
         usageRepo.saveAll(list);
     }
+    @Scheduled(fixedRate = 60000) // cứ 60s check 1 lần
+    public void autoExpirePromotions() {
+
+        List<Promotion> list = repo.findAll().stream()
+                .filter(p -> p.getStatus() == PromotionStatus.ACTIVE)
+                .filter(p -> p.getExpiryDate() != null && p.getExpiryDate().isBefore(LocalDateTime.now()))
+                .toList();
+
+        for (Promotion p : list) {
+            p.setStatus(PromotionStatus.EXPIRED);
+        }
+
+        repo.saveAll(list);
+    }
 
 }
