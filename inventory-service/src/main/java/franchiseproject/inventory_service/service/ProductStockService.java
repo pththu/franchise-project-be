@@ -5,9 +5,11 @@ import franchiseproject.inventory_service.dto.request.InitialStockRequest;
 import franchiseproject.inventory_service.dto.response.PageResponse;
 import franchiseproject.inventory_service.dto.response.ProductStockResponse;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ProductStockService {
-    PageResponse<ProductStockResponse> getStocks(Long locationId, boolean lowStock, int page, int size);
+    PageResponse<ProductStockResponse> getStocks(java.util.UUID locationId, boolean lowStock, int page, int size);
     void addInitialStock(InitialStockRequest request);
+    List<UUID> getInStockVariantIds(UUID locationId);
 }

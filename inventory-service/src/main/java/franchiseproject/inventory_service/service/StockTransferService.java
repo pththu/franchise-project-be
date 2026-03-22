@@ -8,6 +8,8 @@ import java.util.UUID;
 
 public interface StockTransferService {
     StockTransferResponse createTransfer(CreateStockTransferRequest request);
-    PageResponse<StockTransferResponse> getAllTransfers(int page, int size);
+    PageResponse<StockTransferResponse> getAllTransfers(int page, int size, UUID fromLocationId);
     StockTransferResponse getTransferById(UUID id);
+    StockTransferResponse shipTransfer(UUID id);
+    StockTransferResponse receiveTransfer(UUID id);
 }

@@ -13,5 +13,6 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PosCartItem {
     UUID productId;
+    UUID variantId;
     Integer quantity;
 }

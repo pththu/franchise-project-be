@@ -360,8 +360,8 @@
     <urls />
   </component>
   <component name="ProjectColorInfo">{
-        &quot;associatedIndex&quot;: 8
-        }</component>
+  &quot;associatedIndex&quot;: 8
+}</component>
   <component name="ProjectId" id="3B7SlqmILMqJqKSZXt33KBCxHrV" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -374,6 +374,7 @@
     "Maven.customer-service [clean].executor": "Run",
     "Maven.franchise-service [clean].executor": "Run",
     "Maven.franchise-service [install].executor": "Run",
+    "Maven.identity-access-service [clean].executor": "Run",
     "Maven.inventory-service [clean].executor": "Run",
     "Maven.inventory-service [install].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
@@ -438,6 +439,11 @@
             <set>
               <option value="DeliveryServiceApplication" />
             </set>
+          </value>
+        </entry>
+        <entry key="TomeeConfiguration">
+          <value>
+            <set />
           </value>
         </entry>
       </map>

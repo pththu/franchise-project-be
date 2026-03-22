@@ -13,7 +13,7 @@ import java.util.UUID;
 public class InitialStockRequest {
     UUID productVariantId;
     Integer quantity;
-    Long locationId; // null means Central Warehouse
+    UUID locationId; // null means Central Warehouse
     String notes;
     UUID createdBy;
 }

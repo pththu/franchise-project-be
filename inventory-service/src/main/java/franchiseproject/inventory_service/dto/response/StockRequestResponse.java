@@ -16,12 +16,13 @@ import java.util.UUID;
 public class StockRequestResponse {
     UUID id;
     String requestCode;
-    Long franchiseId;
+    UUID franchiseId;
     StockRequestStatus status;
     String notes;
     UUID createdBy;
     UUID approvedBy;
     Instant createdAt;
     Instant updatedAt;
+    UUID sourceLocationId;
     List<StockRequestItemResponse> items;
 }
