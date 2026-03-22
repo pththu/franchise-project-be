@@ -1,203 +1,396 @@
 package franchiseproject.product_service.service.impl;
 
-import franchiseproject.product_service.dto.PageResponse;
-import franchiseproject.product_service.dto.ProductDetailDTO;
-import franchiseproject.product_service.dto.ProductListItemDTO;
+import franchiseproject.product_service.dto.request.CreateProductRequest;
+import franchiseproject.product_service.dto.request.SearchProductRequest;
+import franchiseproject.product_service.dto.response.*;
+import franchiseproject.product_service.entity.ProductVariant;
+import franchiseproject.product_service.enums.ProductColor;
+import franchiseproject.product_service.enums.ProductSize;
+import franchiseproject.product_service.enums.ProductStatus;
+import franchiseproject.product_service.enums.ProductVariantStatus;
+import franchiseproject.product_service.exception.AppException;
+import franchiseproject.product_service.exception.ErrorCode;
 import franchiseproject.product_service.exception.NotFoundException;
-import franchiseproject.product_service.model.Category;
-import franchiseproject.product_service.model.Product;
+import franchiseproject.product_service.entity.Category;
+import franchiseproject.product_service.entity.Product;
+import franchiseproject.product_service.mapper.ProductMapper;
 import franchiseproject.product_service.repository.CategoryRepository;
 import franchiseproject.product_service.repository.ProductRepository;
+import franchiseproject.product_service.repository.ProductVariantRepository;
 import franchiseproject.product_service.repository.spec.ProductSpecifications;
 import franchiseproject.product_service.service.ProductService;
 import franchiseproject.product_service.specification.ProductSpecification;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import franchiseproject.product_service.dto.request.UpdateProductRequest;
+import franchiseproject.product_service.dto.request.UpdateProductVariantRequest;
 
+import java.util.*;
+import java.util.stream.Collectors;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductServiceImpl implements ProductService {
 
     ProductRepository productRepository;
+    ProductVariantRepository productVariantRepository;
     CategoryRepository categoryRepository;
+    ProductMapper productMapper;
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<Product> getAll() {
-        return productRepository.findAll();
+    private String convertListToJson(List<String> urls) {
+        try {
+            return new ObjectMapper().writeValueAsString(urls);
+        } catch (Exception e) {
+            throw new RuntimeException("Convert imageUrls failed");
+        }
     }
-
     @Override
-    @Transactional(readOnly = true)
-    public List<ProductListItemDTO> getAllAsListItem() {
-        return productRepository.findAll().stream()
-                .map(p -> new ProductListItemDTO(
-                        p.getId(),
-                        p.getProductType(),
-                        p.getName(),
-                        p.getPrice(),
-                        p.getUnit(),
-                        p.getStatus(),
-                        p.getImageUrl(),
-                        p.getCategory() != null ? p.getCategory().getId() : null,
-                        p.getCategory() != null ? p.getCategory().getName() : null,
-                        p.getCreatedAt(),
-                        p.getUpdatedAt()
-                ))
-                .toList();
-    }
+    public Page<Product> getAll(int page) {
+        Pageable pageable = PageRequest.of(
+                page,
+                10,
+                Sort.by("name").ascending()
+        );
 
+        return productRepository.findAll(pageable);
+    }
     @Override
     @Transactional(readOnly = true)
     public Product getById(UUID id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Product not found: " + id));
-    }
-    @Override
-    public List<Product> search(String name,
-                                String productType,
-                                String status,
-                                BigDecimal minPrice,
-                                BigDecimal maxPrice,
-                                UUID categoryId) {
-
-        Specification<Product> spec =
-                ProductSpecification.filter(
-                        name,
-                        productType,
-                        status,
-                        minPrice,
-                        maxPrice,
-                        categoryId
-                );
-
-        return productRepository.findAll(spec);
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public ProductDetailDTO getDetail(UUID id) {
-        Product p = getById(id);
-
-        return new ProductDetailDTO(
-                p.getId(),
-                p.getProductType(),
-                p.getName(),
-                p.getDescription(),
-                p.getPrice(),
-                p.getUnit(),
-                p.getStatus(),
-                p.getImageUrl(),
-                p.getCategory() != null ? p.getCategory().getId() : null,
-                p.getCategory() != null ? p.getCategory().getName() : null,
-                p.getCreatedAt(),
-                p.getUpdatedAt()
-        );
+    public ProductVariant getProductVariantById(UUID id) {
+        return productVariantRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.VARTIANT_NOT_FOUND));
     }
 
     @Override
-    @Transactional
-    public Product create(Product product, UUID categoryId) {
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new NotFoundException("Category not found: " + categoryId));
-
-        product.setId(null);
-        product.setCategory(category);
-
-        return productRepository.save(product);
+    public List<ProductVariant> getProductVariantsByIds(List<UUID> ids) {
+        return productVariantRepository.findAllById(ids);
     }
 
-    @Override
-    @Transactional
-    public Product update(UUID id, Product product, UUID categoryId) {
-        Product existing = getById(id);
 
-        if (categoryId != null) {
-            Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new NotFoundException("Category not found"));
-            existing.setCategory(category);
+    /**
+     * xóa (inactive) product thì kéo theo xóa (inactive) variants của sản phẩm đó
+     * @param product
+     * @return
+     */
+    @Override
+    public boolean delete(Product product) {
+        if (product == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
         }
 
-        if (product.getProductType() != null) existing.setProductType(product.getProductType());
-        if (product.getName() != null) existing.setName(product.getName());
-        if (product.getDescription() != null) existing.setDescription(product.getDescription());
-        if (product.getPrice() != null) existing.setPrice(product.getPrice());
-        if (product.getUnit() != null) existing.setUnit(product.getUnit());
-        if (product.getStatus() != null) existing.setStatus(product.getStatus());
-        if (product.getImageUrl() != null) existing.setImageUrl(product.getImageUrl());
+        product.setStatus(ProductStatus.INACTIVE);
+        Product deleted = productRepository.save(product);
+        log.info("deleted: {}", deleted.getName());
 
-        return productRepository.save(existing);
+        if (deleted == null) {
+            return false;
+        }
+
+        List<ProductVariant> variants = productVariantRepository.findAllByProductId(product.getId());
+        if (variants.size() <= 0) {
+            log.info("Variants empty");
+        }
+
+        variants.forEach(v -> {
+            v.setStatus(ProductVariantStatus.INACTIVE);
+            ProductVariant pv = productVariantRepository.save(v);
+            if (pv == null) {
+                new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            }
+        });
+        return true;
     }
 
     @Override
-    @Transactional
-    public void delete(UUID id) {
-        if (!productRepository.existsById(id)) {
-            throw new NotFoundException("Product not found");
+    public boolean deleteVariant(ProductVariant variant) {
+
+        if (variant == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
         }
-        productRepository.deleteById(id);
+
+        variant.setStatus(ProductVariantStatus.INACTIVE);
+        ProductVariant pv = productVariantRepository.save(variant);
+
+        return  pv == null ? false : true;
     }
 
+    /**
+     * tìm kiếm với nhiều parameter
+     * @param request
+     * @return
+     */
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ProductListItemDTO> list(
-            String q,
-            String status,
-            UUID categoryId,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
-            int page,
-            int size,
-            String sort
-    ) {
-        Sort sortObj = parseSort(sort);
-        Pageable pageable = PageRequest.of(page, size, sortObj);
+    public Page<Product> search(SearchProductRequest request) {
 
-        Specification<Product> spec = Specification.allOf(
-                ProductSpecifications.nameContains(q),
-                ProductSpecifications.hasStatus(status),
-                ProductSpecifications.hasCategory(categoryId),
-                ProductSpecifications.priceGte(minPrice),
-                ProductSpecifications.priceLte(maxPrice)
+        String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
+                ? request.getKeyword().trim() : null;
+
+        String categoryName = (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty())
+                ? request.getCategoryName().trim() : null;
+
+        ProductStatus status = (request.getStatus() != null && !request.getStatus().trim().isEmpty())
+                ? ProductStatus.valueOf(request.getStatus().trim()) : null;
+
+        ProductColor color = (request.getColor() != null && !request.getColor().trim().isEmpty())
+                ? ProductColor.valueOf(request.getColor().trim()) : null;
+
+        ProductSize size = (request.getSize() != null && !request.getSize().trim().isEmpty())
+                ? ProductSize.valueOf(request.getSize().trim()) : null;
+
+        Pageable pageable = PageRequest.of(
+                request.getPage().intValue(),
+                request.getSizePage().intValue(),
+                Sort.by(request.getSortBy()).ascending()
         );
 
-        Page<Product> result = productRepository.findAll(spec, pageable);
-
-        Page<ProductListItemDTO> dtoPage = result.map(p -> new ProductListItemDTO(
-                p.getId(),
-                p.getProductType(),
-                p.getName(),
-                p.getPrice(),
-                p.getUnit(),
-                p.getStatus(),
-                p.getImageUrl(),
-                p.getCategory() != null ? p.getCategory().getId() : null,
-                p.getCategory() != null ? p.getCategory().getName() : null,
-                p.getCreatedAt(),
-                p.getUpdatedAt()
-        ));
-
-        return new PageResponse<>(
-                dtoPage.getContent(),
-                dtoPage.getNumber(),
-                dtoPage.getSize(),
-                dtoPage.getTotalElements(),
-                dtoPage.getTotalPages()
+        return productRepository.search(
+                keyword,
+                categoryName,
+                status,
+                color,
+                size,
+                request.getFromPrice(),
+                request.getToPrice(),
+                pageable
         );
     }
+    @Override
+    @Transactional
+    public ProductResponse createProduct(CreateProductRequest request) {
+
+        // 1. category
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGOTY_NOT_FOUND));
+
+        // 2. product
+        Product product = Product.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .category(category)
+                .status(ProductStatus.ACTIVE)
+                .productType("DEFAULT")
+                .unit("Cái")
+                .brand("No Brand")
+                .build();
+
+        Product savedProduct = productRepository.save(product);
+
+        List<ProductVariant> variants = request.getVariants().stream().map(v -> {
+
+            ProductColor color = ProductColor.valueOf(v.getColor().toUpperCase());
+            ProductSize size = ProductSize.valueOf(v.getSize().toUpperCase());
+
+            String imageUrl = (v.getImageUrls() != null && !v.getImageUrls().isEmpty())
+                    ? convertListToJson(v.getImageUrls())
+                    : null;
+
+            return ProductVariant.builder()
+                    .product(savedProduct)
+                    // ✅ FIX
+                    .color(color)
+                    .size(size)
+                    .price(v.getPrice())
+                    .salePrice(v.getPrice())
+                    .quantity(v.getStock())
+                    .imageUrl(imageUrl)
+                    .status(ProductVariantStatus.ACTIVE)
+                    .build();
+        }).toList();
+
+        productVariantRepository.saveAll(variants);
+
+        savedProduct.setVariants(variants);
+
+        return productMapper.toProductResponse(savedProduct);
+    }
+    @Override
+    @Transactional
+    public ProductResponse updateProduct(UUID id, UpdateProductRequest request) {
+
+        // ===== 1. GET PRODUCT =====
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        // ===== 2. UPDATE PRODUCT INFO =====
+        if (request.getName() != null && !request.getName().isBlank()) {
+            product.setName(request.getName());
+        }
+
+        if (request.getDescription() != null && !request.getDescription().isBlank()) {
+            product.setDescription(request.getDescription());
+        }
+
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.CATEGOTY_NOT_FOUND));
+            product.setCategory(category);
+        }
+
+        if (request.getProductType() != null && !request.getProductType().isBlank()) {
+            product.setProductType(request.getProductType());
+        }
+
+        if (request.getUnit() != null && !request.getUnit().isBlank()) {
+            product.setUnit(request.getUnit());
+        }
+
+        if (request.getBrand() != null && !request.getBrand().isBlank()) {
+            product.setBrand(request.getBrand());
+        }
+
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            product.setStatus(ProductStatus.valueOf(request.getStatus().toUpperCase()));
+        }
+
+        // ===== 3. HANDLE VARIANTS =====
+        if (request.getVariants() != null) {
+
+            // map existing variants
+            List<ProductVariant> existingVariants = productVariantRepository.findAllByProductId(product.getId());
+
+            // convert to map for easy lookup
+            Map<UUID, ProductVariant> existingMap = existingVariants.stream()
+                    .collect(Collectors.toMap(ProductVariant::getId, v -> v));
+
+            // track request ids
+            Set<UUID> requestIds = new HashSet<>();
+
+            List<ProductVariant> newVariants = new ArrayList<>();
+
+            for (UpdateProductVariantRequest v : request.getVariants()) {
+
+                // ===== CASE 1: UPDATE EXISTING =====
+                if (v.getId() != null) {
+
+                    ProductVariant existing = existingMap.get(v.getId());
+
+                    if (existing == null) {
+                        throw new AppException(ErrorCode.VARTIANT_NOT_FOUND);
+                    }
+
+                    requestIds.add(existing.getId());
+
+                    if (v.getPrice() != null) {
+                        existing.setPrice(v.getPrice());
+                        existing.setSalePrice(v.getPrice());
+                    }
+
+                    if (v.getStock() != null) {
+                        existing.setQuantity(v.getStock());
+                    }
+
+                    if (v.getColor() != null) {
+                        existing.setColor(ProductColor.valueOf(v.getColor().toUpperCase()));
+                    }
+
+                    if (v.getSize() != null) {
+                        existing.setSize(ProductSize.valueOf(v.getSize().toUpperCase()));
+                    }
+
+                    if (v.getStatus() != null) {
+                        existing.setStatus(ProductVariantStatus.valueOf(v.getStatus().toUpperCase()));
+                    }
+
+                    if (v.getImageUrls() != null && !v.getImageUrls().isEmpty()) {
+                        existing.setImageUrl(convertListToJson(v.getImageUrls()));
+                    }
+
+                    newVariants.add(existing);
+
+                } else {
+                    // ===== CASE 2: CREATE NEW =====
+                    ProductVariant newVariant = ProductVariant.builder()
+                            .product(product)
+                            .price(v.getPrice())
+                            .salePrice(v.getPrice())
+                            .quantity(v.getStock())
+                            .color(v.getColor() != null ? ProductColor.valueOf(v.getColor().toUpperCase()) : null)
+                            .size(v.getSize() != null ? ProductSize.valueOf(v.getSize().toUpperCase()) : null)
+                            .imageUrl(
+                                    (v.getImageUrls() != null && !v.getImageUrls().isEmpty())
+                                            ? convertListToJson(v.getImageUrls())
+                                            : null
+                            )
+                            .status(ProductVariantStatus.ACTIVE)
+                            .build();
+
+                    newVariants.add(newVariant);
+                }
+            }
+
+            // ===== CASE 3: SOFT DELETE =====
+            for (ProductVariant existing : existingVariants) {
+                if (!requestIds.contains(existing.getId())) {
+                    existing.setStatus(ProductVariantStatus.INACTIVE);
+                    newVariants.add(existing);
+                }
+            }
+
+            productVariantRepository.saveAll(newVariants);
+            product.setVariants(newVariants);
+        }
+
+        // ===== 4. SAVE PRODUCT =====
+        Product updatedProduct = productRepository.save(product);
+
+        // ===== 5. RETURN =====
+        return productMapper.toProductResponse(updatedProduct);
+    }
+//    @Override
+//    @Transactional
+//    public Product create(Product product, UUID categoryId) {
+//        Category category = categoryRepository.findById(categoryId)
+//                .orElseThrow(() -> new NotFoundException("Category not found: " + categoryId));
+//
+//        product.setId(null);
+//        product.setCategory(category);
+//
+//        return productRepository.save(product);
+//    }
+
+//    @Override
+//    @Transactional
+//    public Product update(UUID id, Product product, UUID categoryId) {
+//        Product existing = getById(id);
+//
+//        if (categoryId != null) {
+//            Category category = categoryRepository.findById(categoryId)
+//                    .orElseThrow(() -> new NotFoundException("Category not found"));
+//            existing.setCategory(category);
+//        }
+//
+//        if (product.getProductType() != null) existing.setProductType(product.getProductType());
+//        if (product.getName() != null) existing.setName(product.getName());
+//        if (product.getDescription() != null) existing.setDescription(product.getDescription());
+//        if (product.getPrice() != null) existing.setPrice(product.getPrice());
+//        if (product.getUnit() != null) existing.setUnit(product.getUnit());
+//        if (product.getStatus() != null) existing.setStatus(product.getStatus());
+//        if (product.getImageUrl() != null) existing.setImageUrl(product.getImageUrl());
+//
+//        return productRepository.save(existing);
+//    }
 
     private Sort parseSort(String sort) {
         if (sort == null || sort.isBlank()) {
@@ -215,58 +408,58 @@ public class ProductServiceImpl implements ProductService {
         return Sort.by(direction, field);
     }
 
-    @Override
-    public Product uploadImage(UUID id, MultipartFile file) {
-        Product product = getById(id);
+//    @Override
+//    public Product uploadImage(UUID id, MultipartFile file) {
+//        Product product = getById(id);
+//
+//        try {
+//            String uploadDir = System.getProperty("user.dir") + "/uploads/";
+//            File dir = new File(uploadDir);
+//
+//            if (!dir.exists()) dir.mkdirs();
+//
+//            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+//            File dest = new File(uploadDir + fileName);
+//
+//            file.transferTo(dest);
+//
+//            product.setImageUrl("/uploads/" + fileName);
+//
+//            return productRepository.save(product);
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException("Upload failed");
+//        }
+//    }
 
-        try {
-            String uploadDir = System.getProperty("user.dir") + "/uploads/";
-            File dir = new File(uploadDir);
-
-            if (!dir.exists()) dir.mkdirs();
-
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            File dest = new File(uploadDir + fileName);
-
-            file.transferTo(dest);
-
-            product.setImageUrl("/uploads/" + fileName);
-
-            return productRepository.save(product);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Upload failed");
-        }
-    }
-
-    @Override
-    public Product updateImage(UUID id, MultipartFile file) {
-
-        Product product = getById(id);
-
-        try {
-            String uploadDir = System.getProperty("user.dir") + "/uploads/";
-            File dir = new File(uploadDir);
-
-            if (!dir.exists()) dir.mkdirs();
-
-            if (product.getImageUrl() != null) {
-                String oldFileName = product.getImageUrl().replace("/uploads/", "");
-                File oldFile = new File(uploadDir + oldFileName);
-                if (oldFile.exists()) oldFile.delete();
-            }
-
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            File dest = new File(uploadDir + fileName);
-
-            file.transferTo(dest);
-
-            product.setImageUrl("/uploads/" + fileName);
-
-            return productRepository.save(product);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Update failed");
-        }
-    }
+//    @Override
+//    public Product updateImage(UUID id, MultipartFile file) {
+//
+//        Product product = getById(id);
+//
+//        try {
+//            String uploadDir = System.getProperty("user.dir") + "/uploads/";
+//            File dir = new File(uploadDir);
+//
+//            if (!dir.exists()) dir.mkdirs();
+//
+//            if (product.getImageUrl() != null) {
+//                String oldFileName = product.getImageUrl().replace("/uploads/", "");
+//                File oldFile = new File(uploadDir + oldFileName);
+//                if (oldFile.exists()) oldFile.delete();
+//            }
+//
+//            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+//            File dest = new File(uploadDir + fileName);
+//
+//            file.transferTo(dest);
+//
+//            product.setImageUrl("/uploads/" + fileName);
+//
+//            return productRepository.save(product);
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException("Update failed");
+//        }
+//    }
 }

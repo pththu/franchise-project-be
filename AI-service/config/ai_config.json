@@ -1,0 +1,6 @@
+{
+  "w_core": 0.5,
+  "w_desc": 0.5,
+  "schedule_enabled": false,
+  "schedule_interval_hours": 12
+}

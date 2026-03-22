@@ -1,0 +1,18 @@
+package com.franchiseproject.franchiseservice.service;
+
+import com.franchiseproject.franchiseservice.dto.FranchiseDTO;
+import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface FranchiseService {
+    List<FranchiseDTO> getAllFranchises();
+    FranchiseDTO getFranchiseById(UUID id);  // Đã sửa
+    FranchiseDTO createFranchise(FranchiseDTO franchiseDTO);
+    FranchiseDTO updateFranchise(UUID id, FranchiseDTO franchiseDTO);  // Đã sửa
+    void deleteFranchise(UUID id);  // Đã sửa
+    List<FranchiseDTO> getFranchisesByStatus(FranchiseStatus status);
+    List<FranchiseDTO> getFranchisesByManagerId(Integer managerId);
+    FranchiseDTO updateFranchiseStatus(UUID id, FranchiseStatus status);  // Đã sửa
+}
