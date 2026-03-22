@@ -72,8 +72,9 @@ public class OrderServiceImpl implements OrderService {
             Map<UUID, ProductResponse> apiProducts = orderDetailService.fetchProducts(request.getItems());
             List<OrderDetail> details = orderDetailService.buildOrderDetails(request.getItems(), apiProducts, order);
             order.setOrderDetails(details);
-            orderRepository.save(order); // save lần một lấy orderId
             BigDecimal totalItems = orderDetailService.calculateTotal(details);
+            order.setTotalDue(totalItems);//tổng hóa đơn khi chưa trừ
+            orderRepository.save(order); // save lần một lấy orderId
             return handleReserve(order, request, totalItems);
         } catch (Exception e) {
             log.error("Create order failed at initial step", e);

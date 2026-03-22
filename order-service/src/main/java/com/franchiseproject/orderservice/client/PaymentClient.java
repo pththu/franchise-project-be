@@ -27,7 +27,7 @@ public class PaymentClient {
     public PaymentQRResponse createTransaction(UUID orderId, UUID paymentMethodId) {
         try {
             PaymentTransactionRequest request = new PaymentTransactionRequest(orderId, paymentMethodId);
-            paymentRestClient.post()
+            return paymentRestClient.post()
                     .uri("/api/payments/init")
                     .body(request)
                     .retrieve()

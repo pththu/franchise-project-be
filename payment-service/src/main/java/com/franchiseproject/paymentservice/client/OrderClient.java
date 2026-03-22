@@ -47,7 +47,6 @@ public class OrderClient {
         }
     }
 
-
     /// Gửi kết quả giao dịch cho order set lại trạng thái
     public void sendPaymentResult(PaymentResultRequest request) {
 
