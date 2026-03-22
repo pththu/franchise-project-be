@@ -14,13 +14,13 @@ import java.util.UUID;
 @Repository
 public interface ProductStockRepository extends JpaRepository<ProductStock, UUID> {
     
-    Page<ProductStock> findByLocationId(Long locationId, Pageable pageable);
+    Page<ProductStock> findByLocationId(UUID locationId, Pageable pageable);
     
     @Query("SELECT ps FROM ProductStock ps WHERE ps.quantity <= ps.minStock")
     Page<ProductStock> findLowStock(Pageable pageable);
     
     @Query("SELECT ps FROM ProductStock ps WHERE ps.locationId = :locationId AND ps.quantity <= ps.minStock")
-    Page<ProductStock> findLowStockByLocation(@Param("locationId") Long locationId, Pageable pageable);
+    Page<ProductStock> findLowStockByLocation(@Param("locationId") UUID locationId, Pageable pageable);
 
-    Optional<ProductStock> findByProductVariantIdAndLocationId(UUID productVariantId, Long locationId);
+    Optional<ProductStock> findByProductVariantIdAndLocationId(UUID productVariantId, UUID locationId);
 }

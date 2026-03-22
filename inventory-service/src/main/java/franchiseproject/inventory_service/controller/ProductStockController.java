@@ -22,7 +22,7 @@ public class ProductStockController {
 
     @GetMapping
     public ApiResponse<PageResponse<ProductStockResponse>> getStocks(
-            @RequestParam(required = false) Long locationId,
+            @RequestParam(required = false) UUID locationId,
             @RequestParam(defaultValue = "false") boolean lowStock,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {

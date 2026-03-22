@@ -19,4 +19,5 @@ public class StockRequestItemResponse {
     String productName;
     String size;
     String color;
+    Integer currentQuantity;
 }

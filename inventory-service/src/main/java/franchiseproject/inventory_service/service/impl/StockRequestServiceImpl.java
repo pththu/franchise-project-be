@@ -10,8 +10,11 @@ import franchiseproject.inventory_service.exception.AppException;
 import franchiseproject.inventory_service.exception.ErrorCode;
 import franchiseproject.inventory_service.mapper.StockRequestMapper;
 import franchiseproject.inventory_service.repository.StockRequestRepository;
+import franchiseproject.inventory_service.repository.StockTransferRepository;
+import franchiseproject.inventory_service.repository.ProductStockRepository;
 import franchiseproject.inventory_service.service.StockRequestService;
 import franchiseproject.inventory_service.client.ProductClient;
+import franchiseproject.inventory_service.service.StockTransferService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -34,6 +37,9 @@ public class StockRequestServiceImpl implements StockRequestService {
     StockRequestMapper stockRequestMapper;
     SimpMessagingTemplate messagingTemplate;
     ProductClient productClient;
+    StockTransferService stockTransferService;
+    StockTransferRepository stockTransferRepository;
+    ProductStockRepository productStockRepository;
 
     @Override
     @Transactional
@@ -75,6 +81,14 @@ public class StockRequestServiceImpl implements StockRequestService {
     }
 
     private void enrichRequestItems(StockRequestResponse response) {
+        UUID sourceId = null;
+        var transferOpt = stockTransferRepository.findByReferenceRequestId(response.getId());
+        if (transferOpt.isPresent()) {
+            sourceId = transferOpt.get().getFromLocationId();
+            response.setSourceLocationId(sourceId);
+        }
+        final UUID finalSourceId = sourceId;
+
         if (response.getItems() != null) {
             response.getItems().forEach(item -> {
                 try {
@@ -84,6 +98,10 @@ public class StockRequestServiceImpl implements StockRequestService {
                         item.setProductName(detail.getProductName());
                         item.setSize(detail.getSize() != null ? detail.getSize() : "N/A");
                         item.setColor(detail.getColor() != null ? detail.getColor() : "N/A");
+                    }
+                    if (finalSourceId != null) {
+                        var stockOpt = productStockRepository.findByProductVariantIdAndLocationId(item.getProductVariantId(), finalSourceId);
+                        item.setCurrentQuantity(stockOpt.map(f -> f.getQuantity()).orElse(0));
                     }
                 } catch (Exception e) {
                     System.err.println("Feign error StockRequestItem: " + e.getMessage());
@@ -106,6 +124,138 @@ public class StockRequestServiceImpl implements StockRequestService {
     public StockRequestResponse getRequestById(UUID id) {
         StockRequest stockRequest = stockRequestRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-        return stockRequestMapper.toResponse(stockRequest);
+        StockRequestResponse response = stockRequestMapper.toResponse(stockRequest);
+        enrichRequestItems(response);
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public StockRequestResponse approveRequest(UUID id, UUID sourceLocationId, UUID approvedBy) {
+        StockRequest req = stockRequestRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (req.getStatus() != StockRequestStatus.PENDING) {
+            throw new AppException(ErrorCode.BAD_REQUEST);
+        }
+
+        UUID nullUuid = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+        var transferReq = franchiseproject.inventory_service.dto.request.CreateStockTransferRequest.builder()
+                .fromLocationId(sourceLocationId)
+                .toLocationId(req.getFranchiseId())
+                .type(sourceLocationId.equals(nullUuid) ? "WAREHOUSE_TO_FRANCHISE" : "FRANCHISE_TO_FRANCHISE")
+                .referenceRequestId(req.getId())
+                .notes("Duyệt tự động từ " + req.getRequestCode())
+                .createdBy(req.getCreatedBy())
+                .items(req.getItems().stream().map(i -> franchiseproject.inventory_service.dto.request.StockTransferItemRequest.builder()
+                        .productVariantId(i.getProductVariantId())
+                        .quantity(i.getQuantity())
+                        .build()).collect(java.util.stream.Collectors.toList()))
+                .build();
+
+        stockTransferService.createTransfer(transferReq);
+
+        req.setStatus(StockRequestStatus.APPROVED);
+        req.setApprovedBy(approvedBy);
+        StockRequest saved = stockRequestRepository.save(req);
+        
+        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.builder()
+                .type("STOCK_REQUEST_APPROVED")
+                .message("Yêu cầu duyệt " + req.getRequestCode())
+                .build());
+
+        return stockRequestMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public StockRequestResponse shipRequest(UUID id) {
+        StockRequest req = stockRequestRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (req.getStatus() != StockRequestStatus.APPROVED) {
+            throw new AppException(ErrorCode.BAD_REQUEST);
+        }
+
+        franchiseproject.inventory_service.entity.StockTransfer transfer = stockTransferRepository.findByReferenceRequestId(req.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        stockTransferService.shipTransfer(transfer.getId());
+
+        req.setStatus(StockRequestStatus.SHIPPED);
+        StockRequest saved = stockRequestRepository.save(req);
+
+        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.builder()
+                .type("STOCK_REQUEST_SHIPPED")
+                .message("Yêu cầu nhập hàng " + req.getRequestCode() + " đã xuất hàng")
+                .build());
+
+        return stockRequestMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public StockRequestResponse receiveRequest(UUID id) {
+        StockRequest req = stockRequestRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (req.getStatus() != StockRequestStatus.SHIPPED) {
+            throw new AppException(ErrorCode.BAD_REQUEST);
+        }
+
+        franchiseproject.inventory_service.entity.StockTransfer transfer = stockTransferRepository.findByReferenceRequestId(req.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        stockTransferService.receiveTransfer(transfer.getId());
+
+        req.setStatus(StockRequestStatus.RECEIVED);
+        StockRequest saved = stockRequestRepository.save(req);
+
+        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.builder()
+                .type("STOCK_REQUEST_RECEIVED")
+                .message("Yêu cầu nhập hàng " + req.getRequestCode() + " đã nhận được")
+                .build());
+
+        return stockRequestMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public StockRequestResponse rejectRequest(UUID id, String reason) {
+        StockRequest req = stockRequestRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (req.getStatus() != StockRequestStatus.PENDING && req.getStatus() != StockRequestStatus.APPROVED) {
+            throw new AppException(ErrorCode.BAD_REQUEST);
+        }
+
+        if (req.getStatus() == StockRequestStatus.APPROVED) {
+            var transferOpt = stockTransferRepository.findByReferenceRequestId(req.getId());
+            if (transferOpt.isPresent()) {
+                var transfer = transferOpt.get();
+                transfer.setStatus(franchiseproject.inventory_service.enums.TransferStatus.CANCELLED);
+                stockTransferRepository.save(transfer);
+            }
+        }
+
+        req.setStatus(StockRequestStatus.REJECTED);
+        if (reason != null && !reason.isBlank()) {
+            req.setNotes(req.getNotes() != null ? req.getNotes() + " | Lý do từ chối: " + reason : "Lý do từ chối: " + reason);
+        }
+        StockRequest saved = stockRequestRepository.save(req);
+        
+        messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.builder()
+                .type("STOCK_REQUEST_REJECTED")
+                .message("Yêu cầu từ chối " + req.getRequestCode())
+                .build());
+
+        return stockRequestMapper.toResponse(saved);
+    }
+
+    @Override
+    public List<StockRequestResponse> getRequestsByFranchiseId(UUID franchiseId) {
+        List<StockRequestResponse> responses = stockRequestRepository.findByFranchiseId(franchiseId).stream()
+                .map(stockRequestMapper::toResponse)
+                .collect(Collectors.toList());
+
+        responses.forEach(this::enrichRequestItems);
+        return responses;
     }
 }

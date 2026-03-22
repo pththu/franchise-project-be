@@ -28,7 +28,7 @@ public class ProductStock {
     UUID productVariantId;
 
     @Column(name = "location_id", nullable = false)
-    Long locationId; // TODO: Chuyển lại thành UUID sau khi team Franchise sửa đổi
+    UUID locationId;
 
     @Column(name = "location_type", nullable = false, length = 20)
     @Builder.Default

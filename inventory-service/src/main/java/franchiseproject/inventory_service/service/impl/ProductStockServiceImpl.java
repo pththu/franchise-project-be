@@ -37,10 +37,10 @@ public class ProductStockServiceImpl implements ProductStockService {
     ProductStockMapper productStockMapper;
     ProductClient productClient;
 
-    private static final Long SYSTEM_WAREHOUSE_ID = 0L; // TODO: Chuyển lại thành UUID cho Kho Tổng
+    private static final java.util.UUID SYSTEM_WAREHOUSE_ID = java.util.UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     @Override
-    public PageResponse<ProductStockResponse> getStocks(Long locationId, boolean lowStock, int page, int size) {
+    public PageResponse<ProductStockResponse> getStocks(java.util.UUID locationId, boolean lowStock, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<ProductStock> productStockPage;
 
@@ -100,7 +100,7 @@ public class ProductStockServiceImpl implements ProductStockService {
     @Override
     @Transactional
     public void addInitialStock(InitialStockRequest request) {
-        Long targetLocationId = request.getLocationId() != null ? request.getLocationId() : SYSTEM_WAREHOUSE_ID;
+        java.util.UUID targetLocationId = request.getLocationId() != null ? request.getLocationId() : SYSTEM_WAREHOUSE_ID;
         String locationType = request.getLocationId() != null ? "FRANCHISE" : "WAREHOUSE";
 
         Optional<ProductStock> existingStockOpt = productStockRepository.findByProductVariantIdAndLocationId(
