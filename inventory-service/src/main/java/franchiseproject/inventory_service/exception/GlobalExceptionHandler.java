@@ -1,68 +1,55 @@
 package franchiseproject.inventory_service.exception;
 
-import org.springframework.http.HttpStatus;
+
+import franchiseproject.inventory_service.dto.ApiResponse;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-
-import java.time.Instant;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    // 404 - Resource not found
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex) {
-        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleJsonError(
+            HttpMessageNotReadableException ex
+    ) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", ex.getMostSpecificCause().getMessage()));
     }
 
-    // 400 - Bad request custom
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Map<String, Object>> handleBadRequest(BadRequestException ex) {
-        return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    // Business exception
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAppException(AppException ex) {
+        ErrorCode ec = ex.getErrorCode();
+        ApiResponse<Void> body = ApiResponse.<Void>builder()
+                .statusCode(ec.getCode())
+                .message(ec.getMessage())
+                .build();
+        return ResponseEntity.status(ec.getHttpStatus()).body(body);
     }
 
-    // 400 - UUID format error
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-
-        if (ex.getRequiredType() == UUID.class) {
-            return build(HttpStatus.BAD_REQUEST, "Invalid UUID format");
-        }
-
-        return build(HttpStatus.BAD_REQUEST, "Invalid request parameter");
-    }
-
-    // 400 - Validation error (@NotBlank, @NotNull...)
+//    // Bean Validation (@Valid) trên @RequestBody
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, List<String>> errors = ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.groupingBy(
+                        FieldError::getField,
+                        LinkedHashMap::new, // giữ thứ tự field
+                        Collectors.mapping(DefaultMessageSourceResolvable::getDefaultMessage, Collectors.toList())));
 
-        String message = ex.getBindingResult()
-                .getFieldError()
-                .getDefaultMessage();
+        ApiResponse<Void> body = ApiResponse.<Void>builder()
+                .statusCode(ErrorCode.VALIDATION_FAILED.getCode())
+                .message(ErrorCode.VALIDATION_FAILED.getMessage())
+                .errors(errors)
+                .build();
 
-        return build(HttpStatus.BAD_REQUEST, message);
-    }
-
-    // 500 - Other errors
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleOtherExceptions(Exception ex) {
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
-    }
-
-    // Common response builder
-    private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message) {
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", Instant.now());
-        response.put("status", status.value());
-        response.put("message", message);
-
-        return new ResponseEntity<>(response, status);
+        return ResponseEntity.badRequest().body(body);
     }
 }
