@@ -5,62 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="">
-<<<<<<< HEAD
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/entity/CustomerFranchise.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/entity/CustomerFranchise.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/mapper/CustomerMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/mapper/CustomerMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customer-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity-access-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/src/main/resources/application.yml" afterDir="false" />
-=======
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/InventoryServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/InventoryServiceApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/config/WebSocketConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/config/WebSocketConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/controller/ProductStockController.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/controller/ProductStockController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/dto/request/CreateStockRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/dto/request/CreateStockRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/dto/response/ProductStockResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/dto/response/ProductStockResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/dto/response/StockRequestItemResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/dto/response/StockRequestItemResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/dto/response/StockRequestResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/dto/response/StockRequestResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/entity/ProductStock.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/entity/ProductStock.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/entity/StockRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/entity/StockRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/entity/StockTransfer.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/entity/StockTransfer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/exception/ErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/exception/ErrorCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/repository/ProductStockRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/repository/ProductStockRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/repository/StockRequestRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/repository/StockRequestRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/ProductStockService.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/ProductStockService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/impl/ProductStockServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/impl/ProductStockServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/impl/StockRequestServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/impl/StockRequestServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/controller/ProductController.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/controller/ProductController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/ProductService.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/ProductService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/impl/ProductServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/impl/ProductServiceImpl.java" afterDir="false" />
->>>>>>> f9a8f91bf3f6dcacedd5e146629487b55d6e6461
+      <change beforePath="$PROJECT_DIR$/api-gateway/.run/ApiGatewayApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/.run/ApiGatewayApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/.run/InventoryServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/.run/InventoryServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/controller/ReportController.java" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/controller/ReportController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Enum" />
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
-  &quot;isMigrated&quot;: true
-}</component>
+        &quot;isMigrated&quot;: true
+        }</component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -69,12 +33,9 @@
     </option>
   </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 8
-}</component>
+        &quot;associatedIndex&quot;: 8
+        }</component>
   <component name="ProjectId" id="3B7SlqmILMqJqKSZXt33KBCxHrV" />
-  <component name="ProjectLevelVcsManager">
-    <ConfirmationsSetting value="1" id="Add" />
-  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -108,10 +69,10 @@
     "Spring Boot.PromotionServiceApplication.executor": "Run",
     "Spring Boot.ReportServiceApplication.executor": "Run",
     "Spring Boot.ShiftServiceApplication.executor": "Run",
-    "git-widget-placeholder": "sprint04__team02__rebuildCustomer__thu",
+    "git-widget-placeholder": "sprint04__team02__updateUserCustomerManager__thu",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/mockproject/inventory-service/src/main/java/franchiseproject/inventory_service",
+    "last_opened_file_path": "D:/mock/be",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -129,10 +90,6 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\mockproject\inventory-service\src\main\java\franchiseproject\inventory_service" />
-    </key>
-    <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="com.franchiseproject.customerservice.dto.response" />
-      <recent name="com.franchiseproject.customerservice.dto.request" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -184,7 +141,7 @@
               <entry key="CustomerServiceApplication" value="STOPPED" />
               <entry key="FranchiseServiceApplication" value="STOPPED" />
               <entry key="IdentityAccessServiceApplication" value="STOPPED" />
-              <entry key="InventoryServiceApplication" value="STOPPED" />
+              <entry key="InventoryServiceApplication" value="FAILED" />
               <entry key="LoyaltyServiceApplication" value="STOPPED" />
               <entry key="OrderServiceApplication" value="STOPPED" />
               <entry key="PaymentServiceApplication" value="STOPPED" />
@@ -206,11 +163,7 @@
       </set>
     </option>
   </component>
-<<<<<<< HEAD
-  <component name="RunManager" selected="Spring Boot.CustomerServiceApplication">
-=======
-  <component name="RunManager" selected="Spring Boot.InventoryServiceApplication">
->>>>>>> f9a8f91bf3f6dcacedd5e146629487b55d6e6461
+  <component name="RunManager" selected="Spring Boot.ReportServiceApplication">
     <configuration default="true" type="JetRunConfigurationType">
       <method v="2">
         <option name="Make" enabled="true" />
@@ -220,13 +173,6 @@
       <module name="franchiseproject" />
       <option name="filePath" />
       <method v="2" />
-    </configuration>
-    <configuration name="ApiGatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="api-gateway" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.apigateway.ApiGatewayApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
     </configuration>
     <configuration name="DeliveryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="delivery-service" />
@@ -260,19 +206,6 @@
       </method>
     </configuration>
     <list>
-<<<<<<< HEAD
-      <item itemvalue="Spring Boot.DeliveryServiceApplication" />
-      <item itemvalue="Spring Boot.FranchiseServiceApplication" />
-      <item itemvalue="Spring Boot.InventoryServiceApplication" />
-      <item itemvalue="Spring Boot.PaymentServiceApplication" />
-      <item itemvalue="Spring Boot.PromotionServiceApplication" />
-      <item itemvalue="Spring Boot.CustomerServiceApplication" />
-      <item itemvalue="Spring Boot.IdentityAccessServiceApplication" />
-      <item itemvalue="Spring Boot.LoyaltyServiceApplication" />
-      <item itemvalue="Spring Boot.OrderServiceApplication" />
-      <item itemvalue="Spring Boot.ProductServiceApplication" />
-      <item itemvalue="Spring Boot.ApiGatewayApplication" />
-=======
       <item itemvalue="Spring Boot.ApiGatewayApplication" />
       <item itemvalue="Spring Boot.InventoryServiceApplication" />
       <item itemvalue="Spring Boot.CustomerServiceApplication" />
@@ -284,7 +217,6 @@
       <item itemvalue="Spring Boot.PaymentServiceApplication" />
       <item itemvalue="Spring Boot.ProductServiceApplication" />
       <item itemvalue="Spring Boot.PromotionServiceApplication" />
->>>>>>> f9a8f91bf3f6dcacedd5e146629487b55d6e6461
       <item itemvalue="Spring Boot.ReportServiceApplication" />
       <item itemvalue="Spring Boot.ShiftServiceApplication" />
     </list>
@@ -314,7 +246,9 @@
       <workItem from="1774092758953" duration="8074000" />
       <workItem from="1774136755939" duration="1558000" />
       <workItem from="1774143323990" duration="767000" />
-      <workItem from="1774144105708" duration="1156000" />
+      <workItem from="1774144105708" duration="1506000" />
+      <workItem from="1774148201988" duration="16000" />
+      <workItem from="1774148227923" duration="1984000" />
     </task>
     <servers />
   </component>
