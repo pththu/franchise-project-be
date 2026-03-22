@@ -1,6 +1,9 @@
 package franchiseproject.product_service.service;
 
+import franchiseproject.product_service.dto.request.CreateProductRequest;
 import franchiseproject.product_service.dto.request.SearchProductRequest;
+import franchiseproject.product_service.dto.request.UpdateProductRequest;
+import franchiseproject.product_service.dto.response.ProductResponse;
 import franchiseproject.product_service.entity.Product;
 import franchiseproject.product_service.entity.ProductVariant;
 import org.springframework.data.domain.Page;
@@ -20,7 +23,10 @@ public interface ProductService {
     boolean deleteVariant(ProductVariant variant);
 
 //    Product create(Product product, UUID categoryId);
+ProductResponse createProduct(CreateProductRequest request);
+
 //    Product update(UUID id, Product product, UUID categoryId);
+ProductResponse updateProduct(UUID id, UpdateProductRequest request);
 //    Product uploadImage(UUID id, MultipartFile file);
 //    Product updateImage(UUID id, MultipartFile file);
 }
