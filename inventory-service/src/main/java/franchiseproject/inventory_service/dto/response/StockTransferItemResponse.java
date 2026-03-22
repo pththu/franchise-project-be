@@ -10,13 +10,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class StockRequestItemResponse {
+public class StockTransferItemResponse {
     UUID id;
     UUID productVariantId;
+    String productVariantName;
     Integer quantity;
-    
-    // Detailed Product Information (Enriched via Feign)
-    String productName;
-    String size;
-    String color;
 }

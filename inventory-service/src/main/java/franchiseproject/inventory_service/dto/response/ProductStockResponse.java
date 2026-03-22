@@ -14,11 +14,16 @@ import java.util.UUID;
 public class ProductStockResponse {
     UUID id;
     UUID productVariantId;
-    UUID locationId;
+    Long locationId;
     String locationType;
     Integer quantity;
     Integer reservedQuantity;
     Integer minStock;
+    
+    // Detailed Product Information (Enriched via Feign)
+    String productName;
+    String size;
+    String color;
     Instant createdAt;
     Instant updatedAt;
 }
