@@ -21,17 +21,14 @@ public abstract class StoreRequestMapper {
 
     @Mapping(target = "franchiseId", source = "franchise.id")
     @Mapping(target = "franchiseName", source = "franchise.name")
+    @Mapping(target = "createdBy", source = "createdBy")
     @Mapping(target = "requestData", source = "requestData", qualifiedByName = "mapToRequestData")
     @Mapping(target = "items", source = "requestData", qualifiedByName = "extractItems")
     @Mapping(target = "notes", source = "requestData", qualifiedByName = "extractNotes")
     @Mapping(target = "totalAmount", source = "requestData", qualifiedByName = "extractTotalAmount")
-    @Mapping(target = "customerName", source = "requestData", qualifiedByName = "extractCustomerName")
-    // Các field còn lại MapStruct sẽ tự động map (id, requestCode, status, adminNotes, reviewedBy, reviewedAt, createdAt, updatedAt)
+    @Mapping(target = "createdByName", source = "requestData", qualifiedByName = "extractManagerName")
     public abstract StoreRequestDTO toDTO(StoreRequest storeRequest);
 
-    /**
-     * Map JSON string sang Map<String, Object>
-     */
     @Named("mapToRequestData")
     protected Map<String, Object> mapToRequestData(String requestData) {
         if (requestData == null || requestData.isEmpty()) {
@@ -90,14 +87,14 @@ public abstract class StoreRequestMapper {
         return null;
     }
 
-    @Named("extractCustomerName")
-    protected String extractCustomerName(String requestData) {
+    @Named("extractManagerName")
+    protected String extractManagerName(String requestData) {
         if (requestData == null) return null;
         try {
             Map<String, Object> data = objectMapper.readValue(requestData, new TypeReference<Map<String, Object>>() {});
-            Map<String, Object> customerInfo = (Map<String, Object>) data.get("customer_info");
-            if (customerInfo != null) {
-                return (String) customerInfo.get("full_name");
+            Map<String, Object> managerInfo = (Map<String, Object>) data.get("manager_info");
+            if (managerInfo != null) {
+                return (String) managerInfo.get("manager_name");
             }
         } catch (JsonProcessingException e) {
             return null;

@@ -4,17 +4,15 @@ import com.franchiseproject.franchiseservice.dto.FranchiseDTO;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface FranchiseService {
-    // CRUD operations
     List<FranchiseDTO> getAllFranchises();
-    FranchiseDTO getFranchiseById(Long id);
+    FranchiseDTO getFranchiseById(UUID id);  // Đã sửa
     FranchiseDTO createFranchise(FranchiseDTO franchiseDTO);
-    FranchiseDTO updateFranchise(Long id, FranchiseDTO franchiseDTO);
-    void deleteFranchise(Long id);
-
-    // Additional operations
+    FranchiseDTO updateFranchise(UUID id, FranchiseDTO franchiseDTO);  // Đã sửa
+    void deleteFranchise(UUID id);  // Đã sửa
     List<FranchiseDTO> getFranchisesByStatus(FranchiseStatus status);
     List<FranchiseDTO> getFranchisesByManagerId(Integer managerId);
-    FranchiseDTO updateFranchiseStatus(Long id, FranchiseStatus status);
+    FranchiseDTO updateFranchiseStatus(UUID id, FranchiseStatus status);  // Đã sửa
 }

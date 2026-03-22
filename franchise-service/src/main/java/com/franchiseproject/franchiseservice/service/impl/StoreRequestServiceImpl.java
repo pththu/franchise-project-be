@@ -1,7 +1,5 @@
 package com.franchiseproject.franchiseservice.service.impl;
 
-import com.franchiseproject.franchiseservice.client.CustomerServiceClient;
-import com.franchiseproject.franchiseservice.dto.CustomerInfoDTO;
 import com.franchiseproject.franchiseservice.dto.StoreRequestDTO;
 import com.franchiseproject.franchiseservice.enums.RequestStatus;
 import com.franchiseproject.franchiseservice.exception.BadRequestException;
@@ -21,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +33,6 @@ public class StoreRequestServiceImpl implements StoreRequestService {
     private final StoreRequestRepository storeRequestRepository;
     private final FranchiseRepository franchiseRepository;
     private final StoreRequestMapper storeRequestMapper;
-    private final CustomerServiceClient customerServiceClient;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -46,7 +44,7 @@ public class StoreRequestServiceImpl implements StoreRequestService {
     }
 
     @Override
-    public StoreRequestDTO getRequestById(Long id) {
+    public StoreRequestDTO getRequestById(UUID id) {
         StoreRequest request = storeRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found with id: " + id));
         return storeRequestMapper.toDTO(request);
@@ -60,7 +58,7 @@ public class StoreRequestServiceImpl implements StoreRequestService {
     }
 
     @Override
-    public List<StoreRequestDTO> getRequestsByFranchise(Long franchiseId) {
+    public List<StoreRequestDTO> getRequestsByFranchise(UUID franchiseId) {
         Franchise franchise = franchiseRepository.findById(franchiseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + franchiseId));
 
@@ -80,11 +78,10 @@ public class StoreRequestServiceImpl implements StoreRequestService {
 
     @Override
     @Transactional
-    public StoreRequestDTO reviewRequest(Long id, RequestStatus status, String adminNotes, Integer reviewedBy) {
+    public StoreRequestDTO reviewRequest(UUID id, RequestStatus status, String adminNotes, Integer reviewedBy) {
         StoreRequest request = storeRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found with id: " + id));
 
-        // Validate status transition
         if (request.getStatus() != RequestStatus.PENDING) {
             throw new BadRequestException("Only pending requests can be reviewed");
         }
@@ -94,6 +91,11 @@ public class StoreRequestServiceImpl implements StoreRequestService {
         request.setReviewedBy(reviewedBy);
         request.setReviewedAt(LocalDateTime.now());
 
+        // If status is APPROVED or REJECTED, we might want to set completedAt
+        if (status == RequestStatus.APPROVED || status == RequestStatus.REJECTED) {
+            request.setCompletedAt(LocalDateTime.now());
+        }
+
         StoreRequest updatedRequest = storeRequestRepository.save(request);
         log.info("Request {} reviewed by admin {} with status {}", request.getRequestCode(), reviewedBy, status);
 
@@ -102,34 +104,49 @@ public class StoreRequestServiceImpl implements StoreRequestService {
 
     @Override
     @Transactional
+    public StoreRequestDTO completeRequest(UUID id) {
+        StoreRequest request = storeRequestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Request not found with id: " + id));
+
+        if (request.getStatus() != RequestStatus.APPROVED) {
+            throw new BadRequestException("Only approved requests can be completed");
+        }
+
+        request.setStatus(RequestStatus.COMPLETED);
+        request.setCompletedAt(LocalDateTime.now());
+
+        StoreRequest updatedRequest = storeRequestRepository.save(request);
+        log.info("Request {} completed", request.getRequestCode());
+
+        return storeRequestMapper.toDTO(updatedRequest);
+    }
+
+    @Override
+    @Transactional
     public StoreRequestDTO createRequest(StoreRequestDTO requestDTO) {
-        // Validate franchise
+        // Validate franchise exists
         Franchise franchise = franchiseRepository.findById(requestDTO.getFranchiseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + requestDTO.getFranchiseId()));
 
-        // Validate customer từ customer-service
         try {
-            CustomerInfoDTO customerInfo = customerServiceClient.getCustomerById(requestDTO.getCustomerId());
-            if (customerInfo == null) {
-                throw new BadRequestException("Invalid customer id: " + requestDTO.getCustomerId());
-            }
+            log.info("Creating request for store manager: {}", requestDTO.getCreatedBy());
 
-            // Tạo request code
             String requestCode = generateRequestCode();
+            Map<String, Object> requestData = buildRequestData(requestDTO);
 
-            // Build request data JSON với customer info snapshot
-            Map<String, Object> requestData = buildRequestData(requestDTO, customerInfo);
+            String requestDataJson = objectMapper.writeValueAsString(requestData);
+            log.debug("Request data JSON: {}", requestDataJson);
 
             StoreRequest storeRequest = new StoreRequest();
             storeRequest.setRequestCode(requestCode);
             storeRequest.setFranchise(franchise);
-            storeRequest.setCustomerId(requestDTO.getCustomerId());
+            storeRequest.setCreatedBy(requestDTO.getCreatedBy());
             storeRequest.setRequestDate(LocalDate.now());
-            storeRequest.setRequestData(objectMapper.writeValueAsString(requestData));
+            storeRequest.setRequestData(requestDataJson);
             storeRequest.setStatus(RequestStatus.PENDING);
 
             StoreRequest savedRequest = storeRequestRepository.save(storeRequest);
-            log.info("New request created: {} by customer {}", requestCode, requestDTO.getCustomerId());
+            log.info("New request created: {} by store manager {}", requestCode, requestDTO.getCreatedBy());
 
             return storeRequestMapper.toDTO(savedRequest);
 
@@ -143,16 +160,16 @@ public class StoreRequestServiceImpl implements StoreRequestService {
     }
 
     @Override
-    public List<StoreRequestDTO> getRequestsByCustomer(Integer customerId) {
-        return storeRequestRepository.findByCustomerId(customerId)
+    public List<StoreRequestDTO> getRequestsByCreator(UUID createdBy) {
+        return storeRequestRepository.findByCreatedBy(createdBy)
                 .stream()
                 .map(storeRequestMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<StoreRequestDTO> getRequestsByCustomerAndStatus(Integer customerId, RequestStatus status) {
-        return storeRequestRepository.findByCustomerIdAndStatus(customerId, status)
+    public List<StoreRequestDTO> getRequestsByCreatorAndStatus(UUID createdBy, RequestStatus status) {
+        return storeRequestRepository.findByCreatedByAndStatus(createdBy, status)
                 .stream()
                 .map(storeRequestMapper::toDTO)
                 .collect(Collectors.toList());
@@ -167,25 +184,20 @@ public class StoreRequestServiceImpl implements StoreRequestService {
         return code;
     }
 
-    private Map<String, Object> buildRequestData(StoreRequestDTO dto, CustomerInfoDTO customerInfo) {
-        Map<String, Object> data = new java.util.HashMap<>();
+    private Map<String, Object> buildRequestData(StoreRequestDTO dto) {
+        Map<String, Object> data = new HashMap<>();
 
-        // Customer info snapshot
-        Map<String, Object> customerSnapshot = new java.util.HashMap<>();
-        customerSnapshot.put("customer_id", customerInfo.getId());
-        customerSnapshot.put("full_name", customerInfo.getFullName());
-        customerSnapshot.put("email", customerInfo.getEmail());
-        customerSnapshot.put("phone", customerInfo.getPhone());
-        data.put("customer_info", customerSnapshot);
+        // Store manager information (optional)
+        Map<String, Object> managerInfo = new HashMap<>();
+        managerInfo.put("manager_id", dto.getCreatedBy());
+        managerInfo.put("manager_name", dto.getCreatedByName());
+        data.put("manager_info", managerInfo);
 
-        // Items
+        // Request items and details
         data.put("items", dto.getItems());
-
-        // Notes
         data.put("notes", dto.getNotes());
-
-        // Total amount
         data.put("total_amount", dto.getTotalAmount());
+        data.put("created_at", LocalDateTime.now().toString());
 
         return data;
     }
