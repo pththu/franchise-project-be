@@ -1,8 +1,11 @@
 package franchiseproject.product_service.controller;
 
 import franchiseproject.product_service.dto.ApiResponse;
+import franchiseproject.product_service.dto.request.CreateProductRequest;
 import franchiseproject.product_service.dto.request.SearchProductRequest;
+import franchiseproject.product_service.dto.request.UpdateProductRequest;
 import franchiseproject.product_service.dto.response.ProductResponse;
+import franchiseproject.product_service.dto.response.ProductVariantDetailResponse;
 import franchiseproject.product_service.entity.Product;
 import franchiseproject.product_service.entity.ProductVariant;
 import franchiseproject.product_service.enums.ProductStatus;
@@ -49,6 +52,56 @@ public class ProductController {
                 .data(productMapper.toProductResponse(productService.getById(id)))
                 .build();
     }
+
+    @GetMapping("/variant/{id}")
+    public ApiResponse<ProductVariantDetailResponse> getProductVariant(@PathVariable UUID id) {
+        ProductVariant variant = productService.getProductVariantById(id);
+        Product parentProduct = variant.getProduct();
+
+        ProductVariantDetailResponse response = ProductVariantDetailResponse.builder()
+                .id(variant.getId())
+                .size(variant.getSize())
+                .color(variant.getColor())
+                .price(variant.getPrice())
+                .imageUrl(variant.getImageUrl())
+                .productId(parentProduct.getId())
+                .productName(parentProduct.getName())
+                .brand(parentProduct.getBrand())
+                .productType(parentProduct.getProductType())
+                .build();
+
+        return ApiResponse.<ProductVariantDetailResponse>builder()
+                .statusCode(200)
+                .message("Get product variant detail by id")
+                .data(response)
+                .build();
+    }
+
+    @PostMapping("/variants/bulk")
+    public ApiResponse<java.util.List<ProductVariantDetailResponse>> getProductVariants(@RequestBody java.util.List<java.util.UUID> ids) {
+        java.util.List<ProductVariant> variants = productService.getProductVariantsByIds(ids);
+        java.util.List<ProductVariantDetailResponse> responses = variants.stream().map(v -> {
+            var parentProduct = v.getProduct();
+            return ProductVariantDetailResponse.builder()
+                    .id(v.getId())
+                    .size(v.getSize())
+                    .color(v.getColor())
+                    .price(v.getPrice())
+                    .imageUrl(v.getImageUrl())
+                    .productId(parentProduct.getId())
+                    .productName(parentProduct.getName())
+                    .brand(parentProduct.getBrand())
+                    .productType(parentProduct.getProductType())
+                    .build();
+        }).collect(java.util.stream.Collectors.toList());
+
+        return ApiResponse.<java.util.List<ProductVariantDetailResponse>>builder()
+                .statusCode(200)
+                .message("Get variants bulk success")
+                .data(responses)
+                .build();
+    }
+
 
     @GetMapping("/search-dashboard")
     public ApiResponse<Page<ProductResponse>> search(@Valid @ModelAttribute SearchProductRequest request) {
@@ -102,6 +155,35 @@ public class ProductController {
                 .statusCode(200)
                 .message("Delete variant")
                 .data(productService.deleteVariant(variant))
+                .build();
+    }
+
+    @PostMapping
+    public ApiResponse<ProductResponse> createProduct(
+            @RequestBody @Valid CreateProductRequest request) {
+
+        return ApiResponse.<ProductResponse>builder()
+                .statusCode(200)
+                .message("Create product success")
+                .data(productService.createProduct(request)) // ✅ FIX Ở ĐÂY
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<ProductResponse> updateProduct(
+            @PathVariable("id") UUID id,
+            @RequestBody @Valid UpdateProductRequest request
+    ) {
+
+        // optional validate nhẹ (giữ consistent style với project)
+        if (request == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
+        }
+
+        return ApiResponse.<ProductResponse>builder()
+                .statusCode(200)
+                .message("Update product success")
+                .data(productService.updateProduct(id, request))
                 .build();
     }
 
