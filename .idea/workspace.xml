@@ -5,6 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="">
+<<<<<<< HEAD
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/entity/CustomerFranchise.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/entity/CustomerFranchise.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/mapper/CustomerMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/mapper/CustomerMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customer-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identity-access-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/src/main/resources/application.yml" afterDir="false" />
+=======
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
@@ -32,11 +39,20 @@
       <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/controller/ProductController.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/controller/ProductController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/ProductService.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/ProductService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/impl/ProductServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/impl/ProductServiceImpl.java" afterDir="false" />
+>>>>>>> f9a8f91bf3f6dcacedd5e146629487b55d6e6461
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Enum" />
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -56,6 +72,9 @@
   &quot;associatedIndex&quot;: 8
 }</component>
   <component name="ProjectId" id="3B7SlqmILMqJqKSZXt33KBCxHrV" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -89,7 +108,7 @@
     "Spring Boot.PromotionServiceApplication.executor": "Run",
     "Spring Boot.ReportServiceApplication.executor": "Run",
     "Spring Boot.ShiftServiceApplication.executor": "Run",
-    "git-widget-placeholder": "sprint04",
+    "git-widget-placeholder": "sprint04__team02__rebuildCustomer__thu",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/mockproject/inventory-service/src/main/java/franchiseproject/inventory_service",
@@ -111,6 +130,10 @@
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\mockproject\inventory-service\src\main\java\franchiseproject\inventory_service" />
     </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.franchiseproject.customerservice.dto.response" />
+      <recent name="com.franchiseproject.customerservice.dto.request" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="configurationTypes">
@@ -123,17 +146,7 @@
     </option>
     <option name="hiddenConfigurations">
       <map>
-        <entry key="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory">
-          <value>
-            <set />
-          </value>
-        </entry>
         <entry key="HttpClient.HttpRequestRunConfigurationType">
-          <value>
-            <set />
-          </value>
-        </entry>
-        <entry key="JBossConfiguration">
           <value>
             <set />
           </value>
@@ -158,11 +171,6 @@
             <set>
               <option value="DeliveryServiceApplication" />
             </set>
-          </value>
-        </entry>
-        <entry key="TomeeConfiguration">
-          <value>
-            <set />
           </value>
         </entry>
       </map>
@@ -191,17 +199,18 @@
     </option>
     <option name="excludedNewTypes">
       <set>
-        <option value="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" />
         <option value="HttpClient.HttpRequestRunConfigurationType" />
-        <option value="JBossConfiguration" />
         <option value="KtorApplicationConfigurationType" />
         <option value="MicronautRunConfigurationType" />
         <option value="QuarkusRunConfigurationType" />
-        <option value="TomeeConfiguration" />
       </set>
     </option>
   </component>
+<<<<<<< HEAD
+  <component name="RunManager" selected="Spring Boot.CustomerServiceApplication">
+=======
   <component name="RunManager" selected="Spring Boot.InventoryServiceApplication">
+>>>>>>> f9a8f91bf3f6dcacedd5e146629487b55d6e6461
     <configuration default="true" type="JetRunConfigurationType">
       <method v="2">
         <option name="Make" enabled="true" />
@@ -251,6 +260,19 @@
       </method>
     </configuration>
     <list>
+<<<<<<< HEAD
+      <item itemvalue="Spring Boot.DeliveryServiceApplication" />
+      <item itemvalue="Spring Boot.FranchiseServiceApplication" />
+      <item itemvalue="Spring Boot.InventoryServiceApplication" />
+      <item itemvalue="Spring Boot.PaymentServiceApplication" />
+      <item itemvalue="Spring Boot.PromotionServiceApplication" />
+      <item itemvalue="Spring Boot.CustomerServiceApplication" />
+      <item itemvalue="Spring Boot.IdentityAccessServiceApplication" />
+      <item itemvalue="Spring Boot.LoyaltyServiceApplication" />
+      <item itemvalue="Spring Boot.OrderServiceApplication" />
+      <item itemvalue="Spring Boot.ProductServiceApplication" />
+      <item itemvalue="Spring Boot.ApiGatewayApplication" />
+=======
       <item itemvalue="Spring Boot.ApiGatewayApplication" />
       <item itemvalue="Spring Boot.InventoryServiceApplication" />
       <item itemvalue="Spring Boot.CustomerServiceApplication" />
@@ -262,6 +284,7 @@
       <item itemvalue="Spring Boot.PaymentServiceApplication" />
       <item itemvalue="Spring Boot.ProductServiceApplication" />
       <item itemvalue="Spring Boot.PromotionServiceApplication" />
+>>>>>>> f9a8f91bf3f6dcacedd5e146629487b55d6e6461
       <item itemvalue="Spring Boot.ReportServiceApplication" />
       <item itemvalue="Spring Boot.ShiftServiceApplication" />
     </list>

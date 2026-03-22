@@ -32,7 +32,7 @@ public class UserResponse {
     String avatarUrl;
     UUID franchiseId;
     UserStatus status;
-    Role role;
+    RoleResponse role;
     Instant lastLogin;
     Instant createdAt;
 }
