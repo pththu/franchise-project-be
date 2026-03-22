@@ -48,6 +48,8 @@ public class SecurityConfig {
             "/api/products/get-all",
             "/api/products/detail/**",
             "/api/products/categories/get-all",
+            "/api/products/franchise/**",
+            "/api/franchises",
     };
 
     @Bean

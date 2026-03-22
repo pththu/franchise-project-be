@@ -3,6 +3,9 @@ server:
 spring:
   application:
     name: inventory-service
+  cloud:
+    compatibility-verifier:
+      enabled: false
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}

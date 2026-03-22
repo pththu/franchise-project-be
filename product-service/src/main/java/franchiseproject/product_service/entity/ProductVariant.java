@@ -26,6 +26,7 @@ public class ProductVariant {
     @GeneratedValue
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     UUID id;
+    // ✅ THÊM NGAY ĐÂY
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     ProductSize size;

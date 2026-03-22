@@ -12,6 +12,7 @@ public interface CartService {
   void addOnlineItem(AddOnlineItemRequest request);
   List<PosCartItem> getCartPos(String terminalId);
   List<PosCartItem> getCartOnline(UUID customerId);
-  void removePosItem(String terminalId, UUID productId);
-  void removeOnlineItem(UUID customerId, UUID productId);
+  void updateOnlineItem(UUID customerId, UUID variantId, int newQuantity);
+  void removePosItem(String terminalId, UUID variantId);
+  void removeOnlineItem(UUID customerId, UUID variantId);
 }

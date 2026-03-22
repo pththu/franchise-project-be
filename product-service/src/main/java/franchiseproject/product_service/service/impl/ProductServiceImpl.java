@@ -1,5 +1,7 @@
 package franchiseproject.product_service.service.impl;
 
+import franchiseproject.product_service.client.InventoryClient;
+import franchiseproject.product_service.dto.request.CreateProductRequest;
 import franchiseproject.product_service.dto.request.SearchProductRequest;
 import franchiseproject.product_service.dto.response.*;
 import franchiseproject.product_service.entity.ProductVariant;
@@ -28,7 +30,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import franchiseproject.product_service.dto.request.UpdateProductRequest;
+import franchiseproject.product_service.dto.request.UpdateProductVariantRequest;
 
+import java.util.*;
+import java.util.stream.Collectors;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -45,6 +51,7 @@ public class ProductServiceImpl implements ProductService {
     ProductVariantRepository productVariantRepository;
     CategoryRepository categoryRepository;
     ProductMapper productMapper;
+    InventoryClient inventoryClient;
 
 
     @Override
@@ -69,6 +76,12 @@ public class ProductServiceImpl implements ProductService {
         return productVariantRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.VARTIANT_NOT_FOUND));
     }
+
+    @Override
+    public List<ProductVariant> getProductVariantsByIds(List<UUID> ids) {
+        return productVariantRepository.findAllById(ids);
+    }
+
 
     /**
      * xóa (inactive) product thì kéo theo xóa (inactive) variants của sản phẩm đó
@@ -158,7 +171,188 @@ public class ProductServiceImpl implements ProductService {
                 pageable
         );
     }
+    @Override
+    @Transactional
+    public ProductResponse createProduct(CreateProductRequest request) {
 
+        // 1. category
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGOTY_NOT_FOUND));
+
+        // 2. product
+        Product product = Product.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .category(category)
+                .status(ProductStatus.ACTIVE)
+                .productType("DEFAULT")
+                .unit("Cái")
+                .brand("No Brand")
+                .build();
+
+        Product savedProduct = productRepository.save(product);
+
+        List<ProductVariant> variants = request.getVariants().stream().map(v -> {
+
+            ProductColor color = ProductColor.valueOf(v.getColor().toUpperCase());
+            ProductSize size = ProductSize.valueOf(v.getSize().toUpperCase());
+
+            String imageUrl = (v.getImageUrls() != null && !v.getImageUrls().isEmpty())
+                    ? v.getImageUrls().get(0)
+                    : null;
+
+            return ProductVariant.builder()
+                    .product(savedProduct)
+                    // ✅ FIX
+                    .color(color)
+                    .size(size)
+                    .price(v.getPrice())
+                    .salePrice(v.getPrice())
+                    .quantity(v.getStock())
+                    .imageUrl(imageUrl)
+                    .status(ProductVariantStatus.ACTIVE)
+                    .build();
+        }).toList();
+
+        productVariantRepository.saveAll(variants);
+
+        savedProduct.setVariants(variants);
+
+        return productMapper.toProductResponse(savedProduct);
+    }
+    @Override
+    @Transactional
+    public ProductResponse updateProduct(UUID id, UpdateProductRequest request) {
+
+        // ===== 1. GET PRODUCT =====
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        // ===== 2. UPDATE PRODUCT INFO =====
+        if (request.getName() != null && !request.getName().isBlank()) {
+            product.setName(request.getName());
+        }
+
+        if (request.getDescription() != null && !request.getDescription().isBlank()) {
+            product.setDescription(request.getDescription());
+        }
+
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.CATEGOTY_NOT_FOUND));
+            product.setCategory(category);
+        }
+
+        if (request.getProductType() != null && !request.getProductType().isBlank()) {
+            product.setProductType(request.getProductType());
+        }
+
+        if (request.getUnit() != null && !request.getUnit().isBlank()) {
+            product.setUnit(request.getUnit());
+        }
+
+        if (request.getBrand() != null && !request.getBrand().isBlank()) {
+            product.setBrand(request.getBrand());
+        }
+
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            product.setStatus(ProductStatus.valueOf(request.getStatus().toUpperCase()));
+        }
+
+        // ===== 3. HANDLE VARIANTS =====
+        if (request.getVariants() != null) {
+
+            // map existing variants
+            List<ProductVariant> existingVariants = productVariantRepository.findAllByProductId(product.getId());
+
+            // convert to map for easy lookup
+            Map<UUID, ProductVariant> existingMap = existingVariants.stream()
+                    .collect(Collectors.toMap(ProductVariant::getId, v -> v));
+
+            // track request ids
+            Set<UUID> requestIds = new HashSet<>();
+
+            List<ProductVariant> newVariants = new ArrayList<>();
+
+            for (UpdateProductVariantRequest v : request.getVariants()) {
+
+                // ===== CASE 1: UPDATE EXISTING =====
+                if (v.getId() != null) {
+
+                    ProductVariant existing = existingMap.get(v.getId());
+
+                    if (existing == null) {
+                        throw new AppException(ErrorCode.VARTIANT_NOT_FOUND);
+                    }
+
+                    requestIds.add(existing.getId());
+
+                    if (v.getPrice() != null) {
+                        existing.setPrice(v.getPrice());
+                        existing.setSalePrice(v.getPrice());
+                    }
+
+                    if (v.getStock() != null) {
+                        existing.setQuantity(v.getStock());
+                    }
+
+                    if (v.getColor() != null) {
+                        existing.setColor(ProductColor.valueOf(v.getColor().toUpperCase()));
+                    }
+
+                    if (v.getSize() != null) {
+                        existing.setSize(ProductSize.valueOf(v.getSize().toUpperCase()));
+                    }
+
+                    if (v.getStatus() != null) {
+                        existing.setStatus(ProductVariantStatus.valueOf(v.getStatus().toUpperCase()));
+                    }
+
+                    if (v.getImageUrls() != null && !v.getImageUrls().isEmpty()) {
+                        existing.setImageUrl(v.getImageUrls().get(0));
+                    }
+
+                    newVariants.add(existing);
+
+                } else {
+                    // ===== CASE 2: CREATE NEW =====
+                    ProductVariant newVariant = ProductVariant.builder()
+                            .product(product)
+                            .price(v.getPrice())
+                            .salePrice(v.getPrice())
+                            .quantity(v.getStock())
+                            .color(v.getColor() != null ? ProductColor.valueOf(v.getColor().toUpperCase()) : null)
+                            .size(v.getSize() != null ? ProductSize.valueOf(v.getSize().toUpperCase()) : null)
+                            .imageUrl(
+                                    (v.getImageUrls() != null && !v.getImageUrls().isEmpty())
+                                            ? v.getImageUrls().get(0)
+                                            : null
+                            )
+                            .status(ProductVariantStatus.ACTIVE)
+                            .build();
+
+                    newVariants.add(newVariant);
+                }
+            }
+
+            // ===== CASE 3: SOFT DELETE =====
+            for (ProductVariant existing : existingVariants) {
+                if (!requestIds.contains(existing.getId())) {
+                    existing.setStatus(ProductVariantStatus.INACTIVE);
+                    newVariants.add(existing);
+                }
+            }
+
+            productVariantRepository.saveAll(newVariants);
+            product.setVariants(newVariants);
+        }
+
+        // ===== 4. SAVE PRODUCT =====
+        Product updatedProduct = productRepository.save(product);
+
+        // ===== 5. RETURN =====
+        return productMapper.toProductResponse(updatedProduct);
+    }
 //    @Override
 //    @Transactional
 //    public Product create(Product product, UUID categoryId) {
@@ -263,4 +457,46 @@ public class ProductServiceImpl implements ProductService {
 //            throw new RuntimeException("Update failed");
 //        }
 //    }
+//    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Product> searchByFranchise(UUID locationId, SearchProductRequest request) {
+        List<UUID> variantIds = inventoryClient.getInStockVariantIds(locationId);
+        if (variantIds == null || variantIds.isEmpty()) {
+            return Page.empty();
+        }
+
+        String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
+                ? request.getKeyword().trim() : null;
+
+        String categoryName = (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty())
+                ? request.getCategoryName().trim() : null;
+
+        ProductStatus status = ProductStatus.ACTIVE; // Optional for customers
+
+        ProductColor color = (request.getColor() != null && !request.getColor().trim().isEmpty())
+                ? ProductColor.valueOf(request.getColor().trim()) : null;
+
+        ProductSize size = (request.getSize() != null && !request.getSize().trim().isEmpty())
+                ? ProductSize.valueOf(request.getSize().trim()) : null;
+
+        Pageable pageable = PageRequest.of(
+                request.getPage().intValue(),
+                request.getSizePage().intValue(),
+                Sort.by(request.getSortBy()).ascending()
+        );
+
+        return productRepository.searchByFranchise(
+                keyword,
+                categoryName,
+                status,
+                color,
+                size,
+                request.getFromPrice(),
+                request.getToPrice(),
+                variantIds,
+                pageable
+        );
+    }
 }
