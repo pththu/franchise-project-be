@@ -1,6 +1,5 @@
 package franchiseproject.inventory_service.dto.response;
 
-import franchiseproject.inventory_service.enums.StockRequestStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,15 +12,19 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class StockRequestResponse {
+public class StockTransferResponse {
     UUID id;
-    String requestCode;
-    Long franchiseId;
-    StockRequestStatus status;
+    String transferCode;
+    Long fromLocationId;
+    String fromLocationName;
+    Long toLocationId;
+    String toLocationName;
+    String type;
+    String status;
+    UUID referenceRequestId;
     String notes;
     UUID createdBy;
-    UUID approvedBy;
     Instant createdAt;
     Instant updatedAt;
-    List<StockRequestItemResponse> items;
+    List<StockTransferItemResponse> items;
 }

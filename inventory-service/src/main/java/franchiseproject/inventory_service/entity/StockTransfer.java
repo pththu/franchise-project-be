@@ -33,10 +33,10 @@ public class StockTransfer {
     String transferCode;
 
     @Column(name = "from_location_id", nullable = false)
-    UUID fromLocationId;
+    Long fromLocationId; // TODO: Chuyển lại thành UUID
 
     @Column(name = "to_location_id", nullable = false)
-    UUID toLocationId;
+    Long toLocationId; // TODO: Chuyển lại thành UUID
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 30)

@@ -70,6 +70,12 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new AppException(ErrorCode.VARTIANT_NOT_FOUND));
     }
 
+    @Override
+    public List<ProductVariant> getProductVariantsByIds(List<UUID> ids) {
+        return productVariantRepository.findAllById(ids);
+    }
+
+
     /**
      * xóa (inactive) product thì kéo theo xóa (inactive) variants của sản phẩm đó
      * @param product

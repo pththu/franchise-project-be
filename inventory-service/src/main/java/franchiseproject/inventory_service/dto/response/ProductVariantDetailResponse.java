@@ -3,6 +3,7 @@ package franchiseproject.inventory_service.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -10,13 +11,15 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class StockRequestItemResponse {
+public class ProductVariantDetailResponse {
     UUID id;
-    UUID productVariantId;
-    Integer quantity;
-    
-    // Detailed Product Information (Enriched via Feign)
-    String productName;
     String size;
     String color;
+    BigDecimal price;
+    String imageUrl;
+    
+    UUID productId;
+    String productName;
+    String brand;
+    String productType;
 }
