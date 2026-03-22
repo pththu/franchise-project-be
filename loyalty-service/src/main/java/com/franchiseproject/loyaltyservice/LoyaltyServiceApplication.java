@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication
-@ConfigurationPropertiesScan("com.franchiseproject.loyaltyservice.config")
 public class LoyaltyServiceApplication {
 
     public static void main(String[] args) {

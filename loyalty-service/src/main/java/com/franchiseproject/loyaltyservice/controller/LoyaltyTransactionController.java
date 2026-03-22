@@ -1,12 +1,10 @@
 package com.franchiseproject.loyaltyservice.controller;
 
 import com.franchiseproject.loyaltyservice.dto.ApiResponse;
+import com.franchiseproject.loyaltyservice.dto.request.DeductPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.request.EarnPointsRequest;
-import com.franchiseproject.loyaltyservice.dto.request.RedeemPromotionRequest;
 import com.franchiseproject.loyaltyservice.dto.response.EarnPointsResponse;
-import com.franchiseproject.loyaltyservice.dto.response.RedeemPromotionResponse;
 import com.franchiseproject.loyaltyservice.dto.response.TransactionHistoryResponse;
-import com.franchiseproject.loyaltyservice.model.LoyaltyTransaction;
 import com.franchiseproject.loyaltyservice.service.LoyaltyTransactionService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -36,12 +34,12 @@ public class LoyaltyTransactionController {
                 .build();
     }
 
-    @PostMapping("/redeem")
-    public ApiResponse<RedeemPromotionResponse> redeemPromotion(@Valid @RequestBody RedeemPromotionRequest request) {
-        return ApiResponse.<RedeemPromotionResponse>builder()
+    @PostMapping("/deduct")
+    public ApiResponse<EarnPointsResponse> deductPoints(@Valid @RequestBody DeductPointsRequest request) {
+        return ApiResponse.<EarnPointsResponse>builder()
                 .statusCode(200)
-                .message("Redeem promotion successfully")
-                .data(loyaltyTransactionService.redeemPromotion(request))
+                .message("Deduct points successfully")
+                .data(loyaltyTransactionService.deductPoints(request))
                 .build();
     }
 

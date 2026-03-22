@@ -11,7 +11,12 @@ class Semantic_Search:
         self.model = SentenceTransformer(model_name)
         self._check_load(vector_path)
         self.store = VectorStore(vector_path)
+        self.w_core = 0.4
+        self.w_desc = 0.6
 
+    def _setweight(self, w_core, w_desc):
+        self.w_core = w_core
+        self.w_desc = w_desc
 
     def _check_load(self, path):
 
@@ -98,11 +103,11 @@ class Semantic_Search:
         """
 
         vector_search = self._embedding_query(query)
-        results = self._search(vector_search, self.store, top_k)
+        results = self._search(vector_search, self.store, top_k, w_core= self.w_core, w_desc= self.w_desc)
 
         return results
     
-    def update_vectors_store(self, db_url = "http://127.0.0.1:3001/product/getall"):
+    def update_vectors_store(self, db_url = "http://localhost:3000/api/products/getall"):
         """
             data: list(dict(products))
 
@@ -121,7 +126,7 @@ class Semantic_Search:
                 desc_txt = f"passage: {item['description']}"
                 core_txt = f"passage: {item['name']} được làm từ: {', '.join(item['categoryName'])}"
             except:
-                return "Lỗi: Không đủ các trường để tạo vector !!!"
+                return f"Lỗi: Không đủ các trường để tạo vector !!!"
             desc_vec = self.model.encode(desc_txt, normalize_embeddings=True)
             core_vec = self.model.encode(core_txt, normalize_embeddings=True)
 

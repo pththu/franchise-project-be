@@ -1,6 +1,6 @@
 package franchiseproject.product_service.specification;
 
-import franchiseproject.product_service.model.Product;
+import franchiseproject.product_service.entity.Product;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 

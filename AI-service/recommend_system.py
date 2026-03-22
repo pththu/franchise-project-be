@@ -51,8 +51,8 @@ class RecommendationSystem:
 
     def __init__(
         self,
-        product_api: str = "http://127.0.0.1:3001/product/getall",
-        order_api: str = "http://localhost:3007/api/orders",
+        product_api: str = "http://localhost:3000/api/products/getall",
+        order_api: str = "http://localhost:3000/api/orders/getall",
         als_factors: int = 64,
         als_iterations: int = 15,
         als_regularization: float = 0.1,
