@@ -6,9 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface FranchiseRepository extends JpaRepository<Franchise, Long> {
+public interface FranchiseRepository extends JpaRepository<Franchise, UUID> {  // Changed Long to UUID
     List<Franchise> findByStatus(FranchiseStatus status);
     boolean existsByName(String name);
 }

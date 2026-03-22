@@ -11,6 +11,7 @@ import franchiseproject.inventory_service.exception.ErrorCode;
 import franchiseproject.inventory_service.mapper.StockRequestMapper;
 import franchiseproject.inventory_service.repository.StockRequestRepository;
 import franchiseproject.inventory_service.service.StockRequestService;
+import franchiseproject.inventory_service.client.ProductClient;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -32,6 +33,7 @@ public class StockRequestServiceImpl implements StockRequestService {
     StockRequestRepository stockRequestRepository;
     StockRequestMapper stockRequestMapper;
     SimpMessagingTemplate messagingTemplate;
+    ProductClient productClient;
 
     @Override
     @Transactional
@@ -57,6 +59,9 @@ public class StockRequestServiceImpl implements StockRequestService {
         StockRequest savedRequest = stockRequestRepository.save(stockRequest);
         StockRequestResponse response = stockRequestMapper.toResponse(savedRequest);
 
+        // Enrich items details
+        enrichRequestItems(response);
+
         // Send real-time notification via WebSocket
         NotificationDTO<StockRequestResponse> notification = NotificationDTO.<StockRequestResponse>builder()
                 .type("NEW_STOCK_REQUEST")
@@ -69,11 +74,32 @@ public class StockRequestServiceImpl implements StockRequestService {
         return response;
     }
 
+    private void enrichRequestItems(StockRequestResponse response) {
+        if (response.getItems() != null) {
+            response.getItems().forEach(item -> {
+                try {
+                    var apiRes = productClient.getProductVariant(item.getProductVariantId());
+                    if (apiRes != null && apiRes.getData() != null) {
+                        var detail = apiRes.getData();
+                        item.setProductName(detail.getProductName());
+                        item.setSize(detail.getSize() != null ? detail.getSize() : "N/A");
+                        item.setColor(detail.getColor() != null ? detail.getColor() : "N/A");
+                    }
+                } catch (Exception e) {
+                    System.err.println("Feign error StockRequestItem: " + e.getMessage());
+                }
+            });
+        }
+    }
+
     @Override
     public List<StockRequestResponse> getAllRequests() {
-        return stockRequestRepository.findAll().stream()
+        List<StockRequestResponse> responses = stockRequestRepository.findAll().stream()
                 .map(stockRequestMapper::toResponse)
                 .collect(Collectors.toList());
+
+        responses.forEach(this::enrichRequestItems);
+        return responses;
     }
 
     @Override

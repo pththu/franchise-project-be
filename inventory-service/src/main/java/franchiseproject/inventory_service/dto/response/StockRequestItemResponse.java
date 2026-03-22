@@ -14,4 +14,9 @@ public class StockRequestItemResponse {
     UUID id;
     UUID productVariantId;
     Integer quantity;
+    
+    // Detailed Product Information (Enriched via Feign)
+    String productName;
+    String size;
+    String color;
 }

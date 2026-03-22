@@ -11,24 +11,25 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface StoreRequestRepository extends JpaRepository<StoreRequest, Long> {
+public interface StoreRequestRepository extends JpaRepository<StoreRequest, UUID> {  // Changed Long to UUID
 
     List<StoreRequest> findByFranchise(Franchise franchise);
 
     List<StoreRequest> findByStatus(RequestStatus status);
 
-    List<StoreRequest> findByCustomerId(Integer customerId);
+    List<StoreRequest> findByCreatedBy(UUID createdBy);  // Changed from String to UUID
 
     Optional<StoreRequest> findByRequestCode(String requestCode);
 
-    @Query("SELECT sr FROM StoreRequest sr WHERE sr.customerId = :customerId AND sr.status = :status")
-    List<StoreRequest> findByCustomerIdAndStatus(@Param("customerId") Integer customerId,
-                                                 @Param("status") RequestStatus status);
+    @Query("SELECT sr FROM StoreRequest sr WHERE sr.createdBy = :createdBy AND sr.status = :status")
+    List<StoreRequest> findByCreatedByAndStatus(@Param("createdBy") UUID createdBy,
+                                                @Param("status") RequestStatus status);
 
     @Query("SELECT sr FROM StoreRequest sr WHERE sr.franchise.id = :franchiseId AND sr.status = :status")
-    List<StoreRequest> findByFranchiseIdAndStatus(@Param("franchiseId") Long franchiseId,
+    List<StoreRequest> findByFranchiseIdAndStatus(@Param("franchiseId") UUID franchiseId,
                                                   @Param("status") RequestStatus status);
 
     @Query("SELECT sr FROM StoreRequest sr WHERE DATE(sr.createdAt) = :date")

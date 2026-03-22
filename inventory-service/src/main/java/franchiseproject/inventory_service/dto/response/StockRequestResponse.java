@@ -16,7 +16,7 @@ import java.util.UUID;
 public class StockRequestResponse {
     UUID id;
     String requestCode;
-    UUID franchiseId;
+    Long franchiseId;
     StockRequestStatus status;
     String notes;
     UUID createdBy;
