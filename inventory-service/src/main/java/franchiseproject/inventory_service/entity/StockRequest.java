@@ -32,7 +32,7 @@ public class StockRequest {
     String requestCode;
 
     @Column(name = "franchise_id", nullable = false)
-    UUID franchiseId;
+    Long franchiseId; // TODO: Chuyển lại thành UUID
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)

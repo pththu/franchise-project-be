@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +34,7 @@ public class FranchiseServiceImpl implements FranchiseService {
     }
 
     @Override
-    public FranchiseDTO getFranchiseById(Long id) {
+    public FranchiseDTO getFranchiseById(UUID id) {  // Đã sửa thành UUID
         Franchise franchise = franchiseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + id));
         return franchiseMapper.toDTO(franchise);
@@ -42,16 +43,14 @@ public class FranchiseServiceImpl implements FranchiseService {
     @Override
     @Transactional
     public FranchiseDTO createFranchise(FranchiseDTO franchiseDTO) {
-        // Kiểm tra tên franchise đã tồn tại chưa
         if (franchiseRepository.existsByName(franchiseDTO.getName())) {
             throw new BadRequestException("Franchise name already exists: " + franchiseDTO.getName());
         }
 
         Franchise franchise = franchiseMapper.toEntity(franchiseDTO);
 
-        // SỬA: Dùng NEW thay vì new_ (vì enum là NEW)
         if (franchiseDTO.getStatus() == null) {
-            franchise.setStatus(FranchiseStatus.NEW); // Mới tạo thì status = NEW
+            franchise.setStatus(FranchiseStatus.NEW);
         }
 
         Franchise savedFranchise = franchiseRepository.save(franchise);
@@ -62,11 +61,10 @@ public class FranchiseServiceImpl implements FranchiseService {
 
     @Override
     @Transactional
-    public FranchiseDTO updateFranchise(Long id, FranchiseDTO franchiseDTO) {
+    public FranchiseDTO updateFranchise(UUID id, FranchiseDTO franchiseDTO) {  // Đã sửa thành UUID
         Franchise existingFranchise = franchiseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + id));
 
-        // Kiểm tra nếu đổi tên mà tên mới đã tồn tại (trừ chính nó)
         if (!existingFranchise.getName().equals(franchiseDTO.getName())
                 && franchiseRepository.existsByName(franchiseDTO.getName())) {
             throw new BadRequestException("Franchise name already exists: " + franchiseDTO.getName());
@@ -81,7 +79,6 @@ public class FranchiseServiceImpl implements FranchiseService {
         existingFranchise.setClosed(franchiseDTO.getClosed());
         existingFranchise.setAt(franchiseDTO.getAt());
 
-        // Chỉ update status nếu có trong DTO
         if (franchiseDTO.getStatus() != null) {
             existingFranchise.setStatus(franchiseDTO.getStatus());
         }
@@ -94,7 +91,7 @@ public class FranchiseServiceImpl implements FranchiseService {
 
     @Override
     @Transactional
-    public void deleteFranchise(Long id) {
+    public void deleteFranchise(UUID id) {  // Đã sửa thành UUID
         if (!franchiseRepository.existsById(id)) {
             throw new ResourceNotFoundException("Franchise not found with id: " + id);
         }
@@ -121,7 +118,7 @@ public class FranchiseServiceImpl implements FranchiseService {
 
     @Override
     @Transactional
-    public FranchiseDTO updateFranchiseStatus(Long id, FranchiseStatus status) {
+    public FranchiseDTO updateFranchiseStatus(UUID id, FranchiseStatus status) {  // Đã sửa thành UUID
         Franchise franchise = franchiseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + id));
 

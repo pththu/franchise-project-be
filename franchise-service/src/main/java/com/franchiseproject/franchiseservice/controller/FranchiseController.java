@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/franchises")
@@ -29,7 +30,7 @@ public class FranchiseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<FranchiseDTO> getFranchiseById(@PathVariable("id") Long id) {
+    public ResponseEntity<FranchiseDTO> getFranchiseById(@PathVariable("id") UUID id) {  // Đã sửa
         return ResponseEntity.ok(franchiseService.getFranchiseById(id));
     }
 
@@ -40,20 +41,20 @@ public class FranchiseController {
 
     @PutMapping("/{id}")
     public ResponseEntity<FranchiseDTO> updateFranchise(
-            @PathVariable("id") Long id,
+            @PathVariable("id") UUID id,  // Đã sửa
             @Valid @RequestBody FranchiseDTO franchiseDTO) {
         return ResponseEntity.ok(franchiseService.updateFranchise(id, franchiseDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFranchise(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteFranchise(@PathVariable("id") UUID id) {  // Đã sửa
         franchiseService.deleteFranchise(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<FranchiseDTO> updateFranchiseStatus(
-            @PathVariable("id") Long id,
+            @PathVariable("id") UUID id,  // Đã sửa
             @RequestBody FranchiseStatus status) {
         return ResponseEntity.ok(franchiseService.updateFranchiseStatus(id, status));
     }

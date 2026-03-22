@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "franchises")
@@ -19,8 +20,9 @@ import java.time.LocalDateTime;
 public class Franchise {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "UUID", updatable = false, nullable = false)
+    private UUID id;  // Changed from Long to UUID
 
     @Column(nullable = false)
     private String name;
@@ -43,4 +45,10 @@ public class Franchise {
     @Convert(converter = FranchiseStatusConverter.class)
     @Column(length = 10)
     private FranchiseStatus status = FranchiseStatus.NEW;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

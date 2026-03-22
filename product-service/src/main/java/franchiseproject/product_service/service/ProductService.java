@@ -8,6 +8,7 @@ import franchiseproject.product_service.entity.Product;
 import franchiseproject.product_service.entity.ProductVariant;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ProductService {
@@ -15,6 +16,8 @@ public interface ProductService {
     Page<Product> getAll(int page);
     Product getById(UUID id);
     ProductVariant getProductVariantById (UUID id);
+    List<ProductVariant> getProductVariantsByIds(List<UUID> ids);
+
     Page<Product> search(SearchProductRequest request);
     boolean delete(Product product);
     boolean deleteVariant(ProductVariant variant);

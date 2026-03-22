@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/requests")
@@ -24,16 +25,16 @@ public class StoreRequestController {
         return new ResponseEntity<>(storeRequestService.createRequest(requestDTO), HttpStatus.CREATED);
     }
 
-    @GetMapping("/my-requests/{customerId}")
-    public ResponseEntity<List<StoreRequestDTO>> getMyRequests(@PathVariable("customerId") Integer customerId) {
-        return ResponseEntity.ok(storeRequestService.getRequestsByCustomer(customerId));
+    @GetMapping("/my-requests/{createdBy}")
+    public ResponseEntity<List<StoreRequestDTO>> getMyRequests(@PathVariable("createdBy") UUID createdBy) {
+        return ResponseEntity.ok(storeRequestService.getRequestsByCreator(createdBy));
     }
 
-    @GetMapping("/my-requests/{customerId}/status/{status}")
+    @GetMapping("/my-requests/{createdBy}/status/{status}")
     public ResponseEntity<List<StoreRequestDTO>> getMyRequestsByStatus(
-            @PathVariable("customerId") Integer customerId,
+            @PathVariable("createdBy") UUID createdBy,
             @PathVariable("status") RequestStatus status) {
-        return ResponseEntity.ok(storeRequestService.getRequestsByCustomerAndStatus(customerId, status));
+        return ResponseEntity.ok(storeRequestService.getRequestsByCreatorAndStatus(createdBy, status));
     }
 
     @GetMapping
@@ -42,7 +43,7 @@ public class StoreRequestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StoreRequestDTO> getRequestById(@PathVariable("id") Long id) {
+    public ResponseEntity<StoreRequestDTO> getRequestById(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(storeRequestService.getRequestById(id));
     }
 
@@ -52,7 +53,7 @@ public class StoreRequestController {
     }
 
     @GetMapping("/franchise/{franchiseId}")
-    public ResponseEntity<List<StoreRequestDTO>> getRequestsByFranchise(@PathVariable("franchiseId") Long franchiseId) {
+    public ResponseEntity<List<StoreRequestDTO>> getRequestsByFranchise(@PathVariable("franchiseId") UUID franchiseId) {
         return ResponseEntity.ok(storeRequestService.getRequestsByFranchise(franchiseId));
     }
 
@@ -68,7 +69,7 @@ public class StoreRequestController {
 
     @PatchMapping("/{id}/review")
     public ResponseEntity<StoreRequestDTO> reviewRequest(
-            @PathVariable("id") Long id,
+            @PathVariable("id") UUID id,
             @RequestBody Map<String, Object> reviewData) {
 
         RequestStatus status = RequestStatus.valueOf((String) reviewData.get("status"));
@@ -76,5 +77,10 @@ public class StoreRequestController {
         Integer reviewedBy = (Integer) reviewData.get("reviewedBy");
 
         return ResponseEntity.ok(storeRequestService.reviewRequest(id, status, adminNotes, reviewedBy));
+    }
+
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<StoreRequestDTO> completeRequest(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok(storeRequestService.completeRequest(id));
     }
 }
