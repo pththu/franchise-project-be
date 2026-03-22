@@ -5,10 +5,11 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 public class FranchiseDTO {
-    private Long id;
+    private UUID id;  // Changed from Long to UUID
     private String name;
     private String address;
     private String googleMapsUrl;
@@ -17,7 +18,7 @@ public class FranchiseDTO {
     private LocalDate opened;
     private LocalDate closed;
     private String at;
-    private FranchiseStatus status; // Dùng enum
+    private FranchiseStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

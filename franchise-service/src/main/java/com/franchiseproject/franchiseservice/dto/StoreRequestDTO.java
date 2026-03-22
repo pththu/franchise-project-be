@@ -12,12 +12,12 @@ import java.util.UUID;
 
 @Data
 public class StoreRequestDTO {
-    private Long id;
+    private UUID id;  // Changed from Long to UUID
     private String requestCode;
-    private Long franchiseId;
+    private UUID franchiseId;
     private String franchiseName;
-    private String customerId;  // GIỮ NGUYÊN String
-    private String customerName;
+    private UUID createdBy;  // Changed from customerId (String) to UUID
+    private String createdByName;  // Optional: name of the creator
     private LocalDate requestDate;
     private Map<String, Object> requestData;
     private List<RequestItemDTO> items;
@@ -27,6 +27,7 @@ public class StoreRequestDTO {
     private String adminNotes;
     private Integer reviewedBy;
     private LocalDateTime reviewedAt;
+    private LocalDateTime completedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
