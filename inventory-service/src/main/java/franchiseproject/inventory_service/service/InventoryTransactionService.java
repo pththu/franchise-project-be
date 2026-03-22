@@ -1,9 +1,10 @@
 package franchiseproject.inventory_service.service;
 
-import franchiseproject.inventory_service.entity.InventoryTransaction;
+import franchiseproject.inventory_service.dto.response.PageResponse;
+import franchiseproject.inventory_service.dto.response.InventoryTransactionResponse;
 
-import java.util.List;
+import java.time.Instant;
 
 public interface InventoryTransactionService {
-    List<InventoryTransaction> getAll();
+    PageResponse<InventoryTransactionResponse> getTransactions(Instant from, Instant to, int page, int size);
 }

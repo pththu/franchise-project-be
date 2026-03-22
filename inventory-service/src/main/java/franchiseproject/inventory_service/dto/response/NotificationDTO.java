@@ -1,4 +1,4 @@
-package franchiseproject.inventory_service.dto;
+package franchiseproject.inventory_service.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,9 +8,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ApiResponse<T> {
-    int statusCode;
+public class NotificationDTO<T> {
+    String type;
     String message;
-    T data;
-    java.util.Map<String, java.util.List<String>> errors;
+    T payload;
 }
