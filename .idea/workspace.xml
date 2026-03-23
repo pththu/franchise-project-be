@@ -6,6 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/.run/InventoryServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/.run/InventoryServiceApplication.run.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,6 +81,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "Spring Boot.ApiGatewayApplication.executor": "Run",
     "Spring Boot.CustomerServiceApplication.executor": "Run",
+    "Spring Boot.DeliveryServiceApplication.executor": "Run",
     "Spring Boot.FranchiseServiceApplication.executor": "Run",
     "Spring Boot.IdentityAccessServiceApplication.executor": "Run",
     "Spring Boot.InventoryServiceApplication.executor": "Run",
@@ -90,7 +93,7 @@
     "Spring Boot.ReportServiceApplication.executor": "Run",
     "Spring Boot.ShiftServiceApplication.executor": "Run",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "sprint04__team05__promotionsManagenment__haunv",
+    "git-widget-placeholder": "sprint04",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/OJT/sprint04/be",
@@ -132,11 +135,6 @@
             </set>
           </value>
         </entry>
-        <entry key="TomeeConfiguration">
-          <value>
-            <set />
-          </value>
-        </entry>
       </map>
     </option>
     <option name="configurationStatuses">
@@ -144,10 +142,16 @@
         <entry key="SpringBootApplicationConfigurationType">
           <value>
             <map>
-              <entry key="ApiGatewayApplication" value="STOPPED" />
+              <entry key="ApiGatewayApplication" value="FAILED" />
+              <entry key="CustomerServiceApplication" value="STOPPED" />
+              <entry key="DeliveryServiceApplication" value="FAILED" />
               <entry key="FranchiseServiceApplication" value="STOPPED" />
               <entry key="IdentityAccessServiceApplication" value="STOPPED" />
-              <entry key="InventoryServiceApplication" value="FAILED" />
+              <entry key="InventoryServiceApplication" value="STOPPED" />
+              <entry key="LoyaltyServiceApplication" value="STOPPED" />
+              <entry key="OrderServiceApplication" value="STOPPED" />
+              <entry key="PaymentServiceApplication" value="STOPPED" />
+              <entry key="ProductServiceApplication" value="STOPPED" />
               <entry key="PromotionServiceApplication" value="STOPPED" />
               <entry key="ReportServiceApplication" value="STOPPED" />
               <entry key="ShiftServiceApplication" value="STOPPED" />
