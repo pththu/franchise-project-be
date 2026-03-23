@@ -84,16 +84,21 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                         .build();
             case "VNPAY":
             case "COD":
-                if(orderResponse.getTypeOrder().equals("POS")){
-                    orderClient.updateOrderStatus(orderResponse.getId(), "COMPLETED");
+                if (orderResponse.getTypeOrder().equals("POS")) {
                     PaymentTransaction p = PaymentTransaction.builder()
                             .amount(orderResponse.getTotalDue())
                             .orderId(orderResponse.getId())
                             .status(StatusTransaction.SUCCESS)
                             .paymentMethod(paymentMethod)
-                            .paymentMethod(paymentMethod)
                             .build();
-                    paymentTransactionService.createPaymentTransaction(p);
+                    PaymentTransaction savedTx = paymentTransactionService.createPaymentTransaction(p);
+                    orderClient.sendPaymentResult(com.franchiseproject.paymentservice.dto.request.PaymentResultRequest.builder()
+                            .orderId(orderResponse.getId())
+                            .paymentTransactionId(savedTx.getId())
+                            .amount(orderResponse.getTotalDue())
+                            .paymentMethod("COD")
+                            .status(StatusTransaction.SUCCESS)
+                            .build());
                 }
                 return null;
             default:

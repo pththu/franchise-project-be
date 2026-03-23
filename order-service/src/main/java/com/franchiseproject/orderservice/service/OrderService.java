@@ -35,8 +35,6 @@ public interface OrderService {
 
     String getAddressOnlineOrder(UUID customerId);
 
-    OrderResponse updateOrder(UUID orderId, UpdateOrderRequest request);
-
     Page<OrderResponse> getOrdersByFranchiseAndStatus(
             UUID franchiseId,
             OrderStatus status,
@@ -53,6 +51,6 @@ public interface OrderService {
     Page<OrderResponse> getOrdersByCustomerIdAndStatus(UUID customerId, OrderStatus status, int page, int size);
 
     OrderResponse getOrderById(UUID orderId);
-    PaymentResponse getOrder(UUID orderId);
 
+    void updatePaymentResult(com.franchiseproject.orderservice.dto.request.PaymentResultRequest request);
 }

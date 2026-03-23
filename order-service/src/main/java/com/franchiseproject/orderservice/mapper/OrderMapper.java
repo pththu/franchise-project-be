@@ -8,5 +8,4 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring", uses = {OrderDetailMapper.class})
 public interface OrderMapper {
     OrderResponse toOrderResponse(Order o);
-    PaymentResponse toPaymentResponse(Order o);
 }
