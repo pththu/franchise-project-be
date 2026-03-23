@@ -16,7 +16,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateStockRequest {
     @NotNull(message = "Franchise ID is required")
-    Long franchiseId;
+    UUID franchiseId;
     
     String notes;
     UUID createdBy;

@@ -11,12 +11,15 @@ import java.util.UUID;
 public class InventoryTransactionResponse {
     UUID id;
     UUID productVariantId;
-    Long locationId;
+    UUID locationId;
     Integer changeQuantity;
     Integer beforeQuantity;
     Integer afterQuantity;
     String type;
     UUID referenceId;
     String referenceType;
+    String productName;
+    String size;
+    String color;
     Instant createdAt;
 }
