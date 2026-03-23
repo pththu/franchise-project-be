@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -63,13 +64,13 @@ public class OrderServiceImpl implements OrderService {
             orders = orderRepository.searchOrdersByCustomerIdsWithoutFranchise(keyword, customerIds);
         }
 
-        java.util.List<UUID> activeCustomerIds = orders.stream()
+        List<UUID> activeCustomerIds = orders.stream()
                 .map(Order::getCustomerId)
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
 
-        java.util.Map<UUID, com.franchiseproject.orderservice.dto.response.CustomerResponse> customerMap = customerClient.getCustomersByIds(activeCustomerIds);
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(activeCustomerIds);
 
         return orders.stream()
                 .map(order -> {
@@ -103,8 +104,6 @@ public class OrderServiceImpl implements OrderService {
     public void cancelOrder(UUID orderId, UUID customerId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-        OrderStatus oldStatus = order.getOrderStatus();
-        String status = oldStatus.name();
         if (!order.getCustomerId().equals(customerId)) {
             throw new AppException(ErrorCode.WRONG_CUSTOMER_ID);
         }
@@ -158,27 +157,7 @@ public class OrderServiceImpl implements OrderService {
         return o.stream().map(this::mapToOrderResponseWithCustomer).toList();
     }
 
-    @Override
-    public Page<OrderResponse> getOrdersByFranchiseAndStatus(
-            UUID franchiseId,
-            OrderStatus status,
-            int page,
-            int size
-    ) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "createAt")
-        );
-        Page<Order> orders;
-        if (status != null) {
-            orders = orderRepository.findByFranchiseIdAndOrderStatus(franchiseId, status, pageable);
-        } else {
-            orders = orderRepository.findByFranchiseId(franchiseId, pageable);
-        }
 
-        return orders.map(this::mapToOrderResponseWithCustomer);
-    }
 
     @Override
     public Page<OrderResponse> getOrdersByFranchiseAndFilters(
@@ -191,13 +170,13 @@ public class OrderServiceImpl implements OrderService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
         Page<Order> orders = orderRepository.findByFranchiseIdAndFilters(franchiseId, status, typeOrder, pageable);
 
-        java.util.List<UUID> customerIds = orders.getContent().stream()
+        List<UUID> customerIds = orders.getContent().stream()
                 .map(Order::getCustomerId)
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
 
-        java.util.Map<UUID, com.franchiseproject.orderservice.dto.response.CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
 
         return orders.map(order -> {
             OrderResponse res = orderMapper.toOrderResponse(order);
@@ -236,8 +215,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-//        order.setIsSpecial(true);
-
         orderRepository.save(order);
     }
 
@@ -261,13 +238,13 @@ public class OrderServiceImpl implements OrderService {
             orders = orderRepository.searchOrdersByCustomerIds(franchiseId, keyword, customerIds);
         }
 
-        java.util.List<UUID> activeCustomerIds = orders.stream()
+        List<UUID> activeCustomerIds = orders.stream()
                 .map(Order::getCustomerId)
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
 
-        java.util.Map<UUID, com.franchiseproject.orderservice.dto.response.CustomerResponse> customerMap = customerClient.getCustomersByIds(activeCustomerIds);
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(activeCustomerIds);
 
         return orders.stream()
                 .map(order -> {
@@ -279,39 +256,6 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    @Override
-    public Page<OrderResponse> getOrdersByStatus(
-            OrderStatus status,
-            int page,
-            int size
-    ) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "createAt")
-        );
-        Page<Order> orders;
-        if (status == null) {
-            orders = orderRepository.findAll(pageable);
-        } else {
-            orders = orderRepository.findByOrderStatus(status, pageable);
-        }
-
-        java.util.List<UUID> customerIds = orders.getContent().stream()
-                .map(Order::getCustomerId)
-                .filter(java.util.Objects::nonNull)
-                .distinct()
-                .toList();
-
-        java.util.Map<UUID, com.franchiseproject.orderservice.dto.response.CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
-
-        return orders.map(order -> {
-            OrderResponse res = orderMapper.toOrderResponse(order);
-            var customer = customerMap.get(order.getCustomerId());
-            res.setCustomerName(customer != null ? customer.getFullName() : "Guest");
-            return res;
-        });
-    }
 
     @Override
     public Page<OrderResponse> getOrdersByFilters(
@@ -323,13 +267,13 @@ public class OrderServiceImpl implements OrderService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
         Page<Order> orders = orderRepository.findByFilters(status, typeOrder, pageable);
 
-        java.util.List<UUID> customerIds = orders.getContent().stream()
+        List<UUID> customerIds = orders.getContent().stream()
                 .map(Order::getCustomerId)
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
 
-        java.util.Map<UUID, com.franchiseproject.orderservice.dto.response.CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
 
         return orders.map(order -> {
             OrderResponse res = orderMapper.toOrderResponse(order);

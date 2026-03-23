@@ -2,6 +2,7 @@ package com.franchiseproject.orderservice.client;
 
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.response.CustomerResponse;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,9 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -23,7 +27,7 @@ public class CustomerClient {
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             String token = null;
-            jakarta.servlet.http.Cookie[] cookies = null;
+            Cookie[] cookies = null;
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
                 token = request.getHeader("Authorization");
@@ -57,10 +61,10 @@ public class CustomerClient {
         }
     }
 
-    public java.util.List<UUID> searchCustomerIdsByKeyword(String keyword) {
+    public List<UUID> searchCustomerIdsByKeyword(String keyword) {
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            jakarta.servlet.http.Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
+            Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
 
             var spec = RestClient.builder().baseUrl("http://localhost:3004").build()
                     .get()
@@ -78,11 +82,11 @@ public class CustomerClient {
                 spec.header("Cookie", cookieBuilder.toString());
             }
 
-            var res = spec.retrieve().body(new ParameterizedTypeReference<ApiResponse<java.util.Map<String, Object>>>() {});
+            var res = spec.retrieve().body(new ParameterizedTypeReference<ApiResponse<Map<String, Object>>>() {});
             if (res != null && res.getData() != null) {
                 Object content = res.getData().get("content");
-                if (content instanceof java.util.List) {
-                    java.util.List<java.util.Map<String, Object>> list = (java.util.List<java.util.Map<String, Object>>) content;
+                if (content instanceof List) {
+                    List<Map<String, Object>> list = (List<Map<String, Object>>) content;
                     log.info("CustomerClient: search API found {} matching customer accounts", list.size());
                     return list.stream()
                             .map(m -> m.get("id"))
@@ -97,11 +101,11 @@ public class CustomerClient {
         return java.util.Collections.emptyList();
     }
 
-    public java.util.Map<UUID, CustomerResponse> getCustomersByIds(java.util.List<UUID> ids) {
-        if (ids == null || ids.isEmpty()) return java.util.Collections.emptyMap();
+    public Map<UUID, CustomerResponse> getCustomersByIds(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) return Collections.emptyMap();
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            jakarta.servlet.http.Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
+            Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
 
             var spec = RestClient.builder().baseUrl("http://localhost:3004").build()
                     .post()

@@ -36,12 +36,6 @@ public interface OrderService {
 
     String getAddressOnlineOrder(UUID customerId);
 
-    Page<OrderResponse> getOrdersByFranchiseAndStatus(
-            UUID franchiseId,
-            OrderStatus status,
-            int page,
-            int size
-    );
 
     Page<OrderResponse> getOrdersByFranchiseAndFilters(
             UUID franchiseId,
@@ -51,7 +45,6 @@ public interface OrderService {
             int size
     );
 
-    Page<OrderResponse> getOrdersByStatus(OrderStatus status, int page, int size);
     Page<OrderResponse> getOrdersByFilters(OrderStatus status, TypeOrder typeOrder, int page, int size);
 
     List<OrderResponse> searchOrderById(String keyword);
