@@ -14,7 +14,7 @@ import java.util.UUID;
 public class ProductStockResponse {
     UUID id;
     UUID productVariantId;
-    Long locationId;
+    UUID locationId;
     String locationType;
     Integer quantity;
     Integer reservedQuantity;

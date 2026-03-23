@@ -70,12 +70,26 @@ public class CartController {
                 .build();
     }
 
+    // Cập nhật số lượng sản phẩm trong giỏ hàng (Online)
+    @PutMapping("/online/{customerId}/update/{variantId}")
+    public ApiResponse<Void> updateOnlineItem(
+            @PathVariable UUID customerId,
+            @PathVariable UUID variantId,
+            @RequestParam int quantity) {
+        cartService.updateOnlineItem(customerId, variantId, quantity);
+        return ApiResponse.<Void>builder()
+                .message("Cập nhật số lượng Online thành công")
+                .statusCode(200)
+                .data(null)
+                .build();
+    }
+
     // Xóa 1 sản phẩm trong giỏ hàng (POS)
-    @DeleteMapping("/pos/{terminalId}/remove/{productId}")
+    @DeleteMapping("/pos/{terminalId}/remove/{variantId}")
     public ApiResponse<Void> removePosItem(
             @PathVariable String terminalId,
-            @PathVariable UUID productId) {
-        cartService.removePosItem(terminalId, productId);
+            @PathVariable UUID variantId) {
+        cartService.removePosItem(terminalId, variantId);
         return ApiResponse.<Void>builder()
                 .message("Xóa sản phẩm khỏi giỏ POS thành công")
                 .statusCode(200)
@@ -85,11 +99,11 @@ public class CartController {
     }
 
     //Xóa 1 sản phẩm trong giỏ hàng (Online)
-    @DeleteMapping("/online/{customerId}/remove/{productId}")
+    @DeleteMapping("/online/{customerId}/remove/{variantId}")
     public ApiResponse<Void> removeOnlineItem(
             @PathVariable UUID customerId,
-            @PathVariable UUID productId) {
-        cartService.removeOnlineItem(customerId, productId);
+            @PathVariable UUID variantId) {
+        cartService.removeOnlineItem(customerId, variantId);
         return ApiResponse.<Void>builder()
                 .message("Xóa sản phẩm khỏi giỏ Online thành công")
                 .statusCode(200)

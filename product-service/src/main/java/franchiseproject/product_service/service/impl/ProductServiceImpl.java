@@ -1,5 +1,6 @@
 package franchiseproject.product_service.service.impl;
 
+import franchiseproject.product_service.client.InventoryClient;
 import franchiseproject.product_service.dto.request.CreateProductRequest;
 import franchiseproject.product_service.dto.request.SearchProductRequest;
 import franchiseproject.product_service.dto.response.*;
@@ -51,6 +52,7 @@ public class ProductServiceImpl implements ProductService {
     ProductVariantRepository productVariantRepository;
     CategoryRepository categoryRepository;
     ProductMapper productMapper;
+    InventoryClient inventoryClient;
 
     private String convertListToJson(List<String> urls) {
         try {
@@ -462,4 +464,46 @@ public class ProductServiceImpl implements ProductService {
 //            throw new RuntimeException("Update failed");
 //        }
 //    }
+//    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Product> searchByFranchise(UUID locationId, SearchProductRequest request) {
+        List<UUID> variantIds = inventoryClient.getInStockVariantIds(locationId);
+        if (variantIds == null || variantIds.isEmpty()) {
+            return Page.empty();
+        }
+
+        String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
+                ? request.getKeyword().trim() : null;
+
+        String categoryName = (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty())
+                ? request.getCategoryName().trim() : null;
+
+        ProductStatus status = ProductStatus.ACTIVE; // Optional for customers
+
+        ProductColor color = (request.getColor() != null && !request.getColor().trim().isEmpty())
+                ? ProductColor.valueOf(request.getColor().trim()) : null;
+
+        ProductSize size = (request.getSize() != null && !request.getSize().trim().isEmpty())
+                ? ProductSize.valueOf(request.getSize().trim()) : null;
+
+        Pageable pageable = PageRequest.of(
+                request.getPage().intValue(),
+                request.getSizePage().intValue(),
+                Sort.by(request.getSortBy()).ascending()
+        );
+
+        return productRepository.searchByFranchise(
+                keyword,
+                categoryName,
+                status,
+                color,
+                size,
+                request.getFromPrice(),
+                request.getToPrice(),
+                variantIds,
+                pageable
+        );
+    }
 }
