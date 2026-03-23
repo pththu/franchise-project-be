@@ -17,6 +17,4 @@ public interface OrderDetailService {
     BigDecimal calculateTotal(List<OrderDetail> details);
 
     Map<UUID, ProductResponse> fetchProducts(List<CreateOrderItemRequest> request);
-    
-    Map<UUID, ProductResponse> fetchProductsForUpdate(List<UpdateOrderItemRequest> request);
 }

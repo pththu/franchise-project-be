@@ -130,22 +130,6 @@ public class OrderController {
         return ResponseEntity.ok("Estimate delivery time success");
     }
 
-
-    @PutMapping("/{orderId}")
-    public ApiResponse<OrderResponse> updateOrder(
-            @PathVariable UUID orderId,
-            @RequestBody @Valid UpdateOrderRequest request
-    ) {
-        OrderResponse response = orderService.updateOrder(orderId, request);
-
-        return ApiResponse.<OrderResponse>builder()
-                .message("Cập nhật đơn hàng thành công")
-                .data(response)
-                .statusCode(200)
-                .errors(null)
-                .build();
-    }
-
     // Thêm địa chỉ cho đơn hàng Online
     @PostMapping("/online/address")
     public ApiResponse<Void> addAddressOnlineOrder(
@@ -175,7 +159,7 @@ public class OrderController {
     public ResponseEntity<String> receivePaymentResult(@RequestBody PaymentResultRequest request) {
 
         System.out.println("Received payment result: " + request);
-        //call api delivery-service để cập nhật trạng thái giao hàng nếu cần thiết
+        orderService.updatePaymentResult(request);
         return ResponseEntity.ok("Payment result received");
     }
 
