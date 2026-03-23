@@ -90,6 +90,7 @@
     "Maven.identity-access-service [clean].executor": "Run",
     "Maven.inventory-service [clean].executor": "Run",
     "Maven.inventory-service [install].executor": "Run",
+    "Maven.product-service [clean].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RequestMappingsPanelOrder0": "0",
     "RequestMappingsPanelOrder1": "1",
@@ -152,14 +153,14 @@
         <entry key="SpringBootApplicationConfigurationType">
           <value>
             <map>
-              <entry key="ApiGatewayApplication" value="FAILED" />
+              <entry key="ApiGatewayApplication" value="STOPPED" />
               <entry key="CustomerServiceApplication" value="STOPPED" />
               <entry key="IdentityAccessServiceApplication" value="STOPPED" />
               <entry key="InventoryServiceApplication" value="STOPPED" />
               <entry key="LoyaltyServiceApplication" value="STOPPED" />
-              <entry key="OrderServiceApplication" value="STOPPED" />
+              <entry key="OrderServiceApplication" value="FAILED" />
               <entry key="PaymentServiceApplication" value="STOPPED" />
-              <entry key="ProductServiceApplication" value="STOPPED" />
+              <entry key="ProductServiceApplication" value="FAILED" />
               <entry key="PromotionServiceApplication" value="STOPPED" />
             </map>
           </value>
@@ -227,7 +228,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.30387.90" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
+        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-IU-252.23892.409" />
       </set>
     </attachedChunks>
   </component>
@@ -252,6 +254,8 @@
       <workItem from="1774148201988" duration="16000" />
       <workItem from="1774148227923" duration="1984000" />
       <workItem from="1774194288171" duration="2450000" />
+      <workItem from="1774233447985" duration="746000" />
+      <workItem from="1774236813320" duration="10534000" />
     </task>
     <servers />
   </component>
