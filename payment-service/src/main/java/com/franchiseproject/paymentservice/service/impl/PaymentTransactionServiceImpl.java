@@ -155,8 +155,8 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     }
 
     @Override
-    public void createPaymentTransaction(PaymentTransaction paymentTransaction) {
-        paymentTransactionRepository.save(paymentTransaction);
+    public PaymentTransaction createPaymentTransaction(PaymentTransaction paymentTransaction) {
+        return paymentTransactionRepository.save(paymentTransaction);
     }
 
     @Transactional
