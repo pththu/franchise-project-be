@@ -53,6 +53,15 @@ public class ProductController {
                 .build();
     }
 
+    @PostMapping("/search-by-ids")
+    public ApiResponse<java.util.List<ProductResponse>> getProductsByIds(@RequestBody java.util.List<java.util.UUID> ids) {
+        return ApiResponse.<java.util.List<ProductResponse>>builder()
+                .statusCode(200)
+                .message("Get products by ids")
+                .data(productService.getProductsByIds(ids))
+                .build();
+    }
+
     @GetMapping("/variant/{id}")
     public ApiResponse<ProductVariantDetailResponse> getProductVariant(@PathVariable UUID id) {
         ProductVariant variant = productService.getProductVariantById(id);
