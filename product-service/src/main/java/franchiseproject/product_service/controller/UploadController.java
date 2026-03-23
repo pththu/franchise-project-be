@@ -10,18 +10,22 @@ import java.util.Arrays;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/upload")
+@RequestMapping("/api/uploads")
 @RequiredArgsConstructor
 public class UploadController {
 
     private final CloudinaryService cloudinaryService;
 
     @PostMapping
-    public ApiResponse<List<String>> upload(@RequestParam("file") MultipartFile[] files) {
+    public ApiResponse<List<String>> upload(
+            @RequestParam("files") MultipartFile[] files
+    ) {
 
-        List<String> urls = Arrays.stream(files)
-                .map(cloudinaryService::uploadFile)
-                .toList();
+        if (files == null || files.length == 0) {
+            throw new RuntimeException("Files must not be empty");
+        }
+
+        List<String> urls = cloudinaryService.uploadFiles(Arrays.asList(files));
 
         return ApiResponse.<List<String>>builder()
                 .statusCode(200)

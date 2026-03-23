@@ -21,4 +21,6 @@ public interface LoyaltyTransactionRepository extends JpaRepository<LoyaltyTrans
 
     @Query("SELECT COUNT(lt) FROM LoyaltyTransaction lt WHERE lt.type = :type")
     Long countTransactionsByType(@Param("type") LoyaltyTransactionType type);
+
+    boolean existsByCustomerIdAndPromotionIdAndType(UUID customerId, UUID promotionId, LoyaltyTransactionType type);
 }
