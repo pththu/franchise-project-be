@@ -25,7 +25,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public void addPosItem(AddPosItemRequest request) {
         String key = "pos:cart:" + request.getTerminalId();
-        String productField = request.getProductId().toString();
+        String productField = request.getVariantId().toString();
 
         Object existingItem = redisTemplate
                 .opsForHash()
@@ -44,6 +44,7 @@ public class CartServiceImpl implements CartService {
         }
         PosCartItem newItem = PosCartItem.builder()
                 .productId(request.getProductId())
+                .variantId(request.getVariantId())
                 .quantity(request.getQuantity())
                 .build();
         redisTemplate.opsForHash()
@@ -54,7 +55,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public void addOnlineItem(AddOnlineItemRequest request) {
         String key = "online:cart:" + request.getCustomerId();
-        String productField = request.getProductId().toString();
+        String productField = request.getVariantId().toString();
 
         Object existingItem = redisTemplate
                 .opsForHash()
@@ -73,6 +74,7 @@ public class CartServiceImpl implements CartService {
         }
         PosCartItem newItem = PosCartItem.builder()
                 .productId(request.getProductId())
+                .variantId(request.getVariantId())
                 .quantity(request.getQuantity())
                 .build();
         redisTemplate.opsForHash()
@@ -100,9 +102,25 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void removePosItem(String terminalId, UUID productId) {
+    public void updateOnlineItem(UUID customerId, UUID variantId, int newQuantity) {
+        if (newQuantity <= 0) {
+            removeOnlineItem(customerId, variantId);
+            return;
+        }
+        String key = "online:cart:" + customerId;
+        String productField = variantId.toString();
+        Object existingItem = redisTemplate.opsForHash().get(key, productField);
+        if (existingItem != null) {
+            PosCartItem cartItem = objectMapper.convertValue(existingItem, PosCartItem.class);
+            cartItem.setQuantity(newQuantity);
+            redisTemplate.opsForHash().put(key, productField, cartItem);
+        }
+    }
+
+    @Override
+    public void removePosItem(String terminalId, UUID variantId) {
         String key = "pos:cart:" + terminalId;
-        String productField = productId.toString();
+        String productField = variantId.toString();
         redisTemplate.opsForHash().delete(key, productField);
         Long size = redisTemplate.opsForHash().size(key);
         if (size != null && size == 0) {
@@ -111,9 +129,9 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void removeOnlineItem(UUID customerId, UUID productId) {
+    public void removeOnlineItem(UUID customerId, UUID variantId) {
         String key = "online:cart:" + customerId;
-        String productField = productId.toString();
+        String productField = variantId.toString();
         redisTemplate.opsForHash().delete(key, productField);
         Long size = redisTemplate.opsForHash().size(key);
         if (size != null && size == 0) {

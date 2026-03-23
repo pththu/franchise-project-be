@@ -1,22 +1,29 @@
 package com.franchiseproject.customerservice.dto.response;
 
-import com.franchiseproject.customerservice.enums.CustomerStatus;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerResponse {
     UUID id;
+    String username;
     String fullName;
     String email;
+    boolean verifyEmail;
     String phone;
-    CustomerStatus status;
+    boolean gender;
+    String avatarUrl;
+    UUID franchiseId;
+    String status;
+    Instant lastLogin;
     Instant createdAt;
 }

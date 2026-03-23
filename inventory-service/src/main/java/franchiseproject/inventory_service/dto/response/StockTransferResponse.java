@@ -15,9 +15,9 @@ import java.util.UUID;
 public class StockTransferResponse {
     UUID id;
     String transferCode;
-    Long fromLocationId;
+    UUID fromLocationId;
     String fromLocationName;
-    Long toLocationId;
+    UUID toLocationId;
     String toLocationName;
     String type;
     String status;

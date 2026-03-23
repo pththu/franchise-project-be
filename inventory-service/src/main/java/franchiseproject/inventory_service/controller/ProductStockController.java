@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -22,7 +23,7 @@ public class ProductStockController {
 
     @GetMapping
     public ApiResponse<PageResponse<ProductStockResponse>> getStocks(
-            @RequestParam(required = false) Long locationId,
+            @RequestParam(required = false) UUID locationId,
             @RequestParam(defaultValue = "false") boolean lowStock,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -45,6 +46,15 @@ public class ProductStockController {
         return ApiResponse.<Void>builder()
                 .statusCode(200)
                 .message("Nhập kho ban đầu thành công")
+                .build();
+    }
+
+    @GetMapping("/variants/in-stock")
+    public ApiResponse<List<UUID>> getInStockVariantIds(@RequestParam UUID locationId) {
+        return ApiResponse.<List<UUID>>builder()
+                .statusCode(200)
+                .message("Lấy danh sách mã biến thể còn hàng thành công")
+                .data(productStockService.getInStockVariantIds(locationId))
                 .build();
     }
 }
