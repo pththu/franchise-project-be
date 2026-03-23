@@ -79,6 +79,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getProductsByIds(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Product> products = productRepository.findAllById(ids);
+        return products.stream()
+                .map(productMapper::toProductResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public ProductVariant getProductVariantById(UUID id) {
         return productVariantRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.VARTIANT_NOT_FOUND));

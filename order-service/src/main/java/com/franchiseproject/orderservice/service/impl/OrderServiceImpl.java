@@ -4,7 +4,10 @@ import com.franchiseproject.orderservice.dto.*;
 import com.franchiseproject.orderservice.dto.request.*;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
+import com.franchiseproject.orderservice.enums.TypeOrder;
 import com.franchiseproject.orderservice.client.ProductClient;
+import com.franchiseproject.orderservice.client.CustomerClient;
+import com.franchiseproject.orderservice.dto.response.CustomerResponse;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import com.franchiseproject.orderservice.mapper.OrderMapper;
@@ -26,6 +29,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -40,12 +44,41 @@ public class OrderServiceImpl implements OrderService {
     OrderMapper orderMapper;
     RedisTemplate<String, Object> redisTemplate;
     ProductClient productClient;
+    CustomerClient customerClient;
 
     @Override
     public List<OrderResponse> getAll() {
         return orderRepository.findAll()
                 .stream()
-                .map(orderMapper::toOrderResponse)
+                .map(this::mapToOrderResponseWithCustomer)
+                .toList();
+    }
+
+    @Override
+    public List<OrderResponse> searchOrderById(String keyword) {
+        List<UUID> customerIds = customerClient.searchCustomerIdsByKeyword(keyword);
+        List<Order> orders;
+        if (customerIds.isEmpty()) {
+            orders = orderRepository.searchOrderByIdLike(keyword);
+        } else {
+            orders = orderRepository.searchOrdersByCustomerIdsWithoutFranchise(keyword, customerIds);
+        }
+
+        List<UUID> activeCustomerIds = orders.stream()
+                .map(Order::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(activeCustomerIds);
+
+        return orders.stream()
+                .map(order -> {
+                    OrderResponse res = orderMapper.toOrderResponse(order);
+                    var customer = customerMap.get(order.getCustomerId());
+                    res.setCustomerName(customer != null ? customer.getFullName() : "Guest");
+                    return res;
+                })
                 .toList();
     }
 
@@ -71,8 +104,6 @@ public class OrderServiceImpl implements OrderService {
     public void cancelOrder(UUID orderId, UUID customerId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-        OrderStatus oldStatus = order.getOrderStatus();
-        String status = oldStatus.name();
         if (!order.getCustomerId().equals(customerId)) {
             throw new AppException(ErrorCode.WRONG_CUSTOMER_ID);
         }
@@ -123,29 +154,36 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponse> getOrderByCustomerId(UUID customerId) {
         List<Order> o = orderRepository.findAllByCustomerId(customerId);
-        return o.stream().map(orderMapper::toOrderResponse).toList();
+        return o.stream().map(this::mapToOrderResponseWithCustomer).toList();
     }
 
+
+
     @Override
-    public Page<OrderResponse> getOrdersByFranchiseAndStatus(
+    public Page<OrderResponse> getOrdersByFranchiseAndFilters(
             UUID franchiseId,
             OrderStatus status,
+            TypeOrder typeOrder,
             int page,
             int size
     ) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "createAt")
-        );
-        Page<Order> orders;
-        if (status != null) {
-            orders = orderRepository.findByFranchiseIdAndOrderStatus(franchiseId, status, pageable);
-        } else {
-            orders = orderRepository.findByFranchiseId(franchiseId, pageable);
-        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
+        Page<Order> orders = orderRepository.findByFranchiseIdAndFilters(franchiseId, status, typeOrder, pageable);
 
-        return orders.map(orderMapper::toOrderResponse);
+        List<UUID> customerIds = orders.getContent().stream()
+                .map(Order::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
+
+        return orders.map(order -> {
+            OrderResponse res = orderMapper.toOrderResponse(order);
+            var customer = customerMap.get(order.getCustomerId());
+            res.setCustomerName(customer != null ? customer.getFullName() : "Guest");
+            return res;
+        });
     }
 
 
@@ -177,8 +215,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-//        order.setIsSpecial(true);
-
         orderRepository.save(order);
     }
 
@@ -194,41 +230,59 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> searchOrders(UUID franchiseId, String keyword) {
-        List<Order> orders = orderRepository.searchOrders(franchiseId, keyword);
+        List<UUID> customerIds = customerClient.searchCustomerIdsByKeyword(keyword);
+        List<Order> orders;
+        if (customerIds.isEmpty()) {
+            orders = orderRepository.searchOrders(franchiseId, keyword);
+        } else {
+            orders = orderRepository.searchOrdersByCustomerIds(franchiseId, keyword, customerIds);
+        }
+
+        List<UUID> activeCustomerIds = orders.stream()
+                .map(Order::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(activeCustomerIds);
+
         return orders.stream()
-                .map(orderMapper::toOrderResponse)
+                .map(order -> {
+                    OrderResponse res = orderMapper.toOrderResponse(order);
+                    var customer = customerMap.get(order.getCustomerId());
+                    res.setCustomerName(customer != null ? customer.getFullName() : "Guest");
+                    return res;
+                })
                 .toList();
     }
 
+
     @Override
-    public Page<OrderResponse> getOrdersByStatus(
+    public Page<OrderResponse> getOrdersByFilters(
             OrderStatus status,
+            TypeOrder typeOrder,
             int page,
             int size
     ) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "createAt")
-        );
-        Page<Order> orders;
-        if (status == null) {
-            orders = orderRepository.findAll(pageable);
-        } else {
-            orders = orderRepository.findByOrderStatus(status, pageable);
-        }
-        return orders.map(orderMapper::toOrderResponse);
-    }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
+        Page<Order> orders = orderRepository.findByFilters(status, typeOrder, pageable);
 
-    @Override
-    public List<OrderResponse> searchOrderById(String keyword) {
-
-        List<Order> orders = orderRepository.searchOrderByIdLike(keyword);
-
-        return orders.stream()
-                .map(orderMapper::toOrderResponse)
+        List<UUID> customerIds = orders.getContent().stream()
+                .map(Order::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
                 .toList();
+
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
+
+        return orders.map(order -> {
+            OrderResponse res = orderMapper.toOrderResponse(order);
+            var customer = customerMap.get(order.getCustomerId());
+            res.setCustomerName(customer != null ? customer.getFullName() : "Guest");
+            return res;
+        });
     }
+
 
     @Override
     public Page<OrderResponse> getOrdersByCustomerIdAndStatus(
@@ -255,14 +309,14 @@ public class OrderServiceImpl implements OrderService {
                     pageable
             );
         }
-        return orders.map(orderMapper::toOrderResponse);
+        return orders.map(this::mapToOrderResponseWithCustomer);
     }
 
     @Override
     public OrderResponse getOrderById(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-        return orderMapper.toOrderResponse(order);
+        return mapToOrderResponseWithCustomer(order);
     }
 
     @Override
@@ -281,6 +335,17 @@ public class OrderServiceImpl implements OrderService {
         }
         
         orderRepository.save(order);
+    }
+
+    private OrderResponse mapToOrderResponseWithCustomer(Order order) {
+        OrderResponse res = orderMapper.toOrderResponse(order);
+        if (order.getCustomerId() != null) {
+            CustomerResponse c = customerClient.getCustomerById(order.getCustomerId());
+            if (c != null) {
+                res.setCustomerName(c.getFullName());
+            }
+        }
+        return res;
     }
 }
 

@@ -55,6 +55,9 @@ class Semantic_Search:
 
         scores = w_core * score_core + w_desc * score_desc
 
+        if top_k == -1:
+            top_k = len(scores)
+
         idx = np.argpartition(-scores, top_k)[:top_k]
         idx = idx[np.argsort(-scores[idx])]
 
