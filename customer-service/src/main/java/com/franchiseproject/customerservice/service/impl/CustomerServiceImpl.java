@@ -1,8 +1,8 @@
 package com.franchiseproject.customerservice.service.impl;
 
-import com.franchiseproject.customerservice.dto.response.CustomerFranchiseResponse;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
+import com.franchiseproject.customerservice.enums.CustomerType;
 import com.franchiseproject.customerservice.exception.AppException;
 import com.franchiseproject.customerservice.exception.ErrorCode;
 import com.franchiseproject.customerservice.mapper.CustomerMapper;
@@ -14,15 +14,10 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import com.franchiseproject.customerservice.dto.request.CreateCustomerRequest;
-import com.franchiseproject.customerservice.dto.request.SyncCustomerRequest;
-import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
 import com.franchiseproject.customerservice.enums.LoyaltyTier;
 import com.franchiseproject.customerservice.entity.CustomerFranchise;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -164,4 +159,89 @@ public class CustomerServiceImpl implements CustomerService {
 //                .totalItems(pageResult.getTotalElements())
 //                .build();
 //    }
+
+    @Override
+    public PageResponse<CustomerFranchise> getCustomersForAdmin(CustomerStatus status, Pageable pageable) {
+        Page<CustomerFranchise> page = (status == null)
+                ? customerRepository.findAll(pageable)
+                : customerRepository.findByStatus(status, pageable);
+        return buildPageResponse(page);
+    }
+
+    @Override
+    public PageResponse<CustomerFranchise> getCustomersForManager(UUID franchiseId, CustomerStatus status, Pageable pageable) {
+        Page<CustomerFranchise> page = (status == null)
+                ? customerRepository.findByFranchiseId(franchiseId, pageable)
+                : customerRepository.findByFranchiseIdAndStatus(franchiseId, status, pageable);
+        return buildPageResponse(page);
+    }
+
+    @Override
+    public CustomerFranchise getCustomerById(UUID id) {
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+    }
+
+    @Override
+    @Transactional
+    public CustomerFranchise createCustomerAtFranchise(UUID customerId, UUID franchiseId, CustomerType type) {
+        // customerId này phải được Identity Service trả về (Client tạo account bên Identity xong bắn id qua)
+        if (customerRepository.existsByCustomerIdAndFranchiseId(customerId, franchiseId)) {
+            throw new AppException(ErrorCode.CUSTOMER_ALREADY_EXISTS);
+        }
+
+        CustomerFranchise cf = CustomerFranchise.builder()
+                .customerId(customerId)
+                .franchiseId(franchiseId)
+                .type(type != null ? type : CustomerType.WALK_IN) // Phân biệt loại account
+                .status(CustomerStatus.ACTIVE)
+                .loyaltyTier(LoyaltyTier.BRONZE)
+                .loyaltyCurrentPoint(0)
+                .loyaltyTotalPoint(0)
+                .build();
+
+        return customerRepository.save(cf);
+    }
+
+    @Override
+    @Transactional
+    public void syncCustomerFromIdentity(UUID customerId, CustomerType type) {
+        // User tự đăng ký App -> Không thuộc franchise cụ thể nào ban đầu (franchiseId = null)
+        CustomerFranchise cf = CustomerFranchise.builder()
+                .customerId(customerId)
+                .franchiseId(null)
+                .type(type != null ? type : CustomerType.REGISTERED)
+                .status(CustomerStatus.ACTIVE)
+                .loyaltyTier(LoyaltyTier.BRONZE)
+                .loyaltyCurrentPoint(0)
+                .loyaltyTotalPoint(0)
+                .build();
+        customerRepository.save(cf);
+    }
+
+    @Override
+    @Transactional
+    public CustomerFranchise updateCustomerStatus(UUID id, CustomerStatus status) {
+        CustomerFranchise customer = getCustomerById(id);
+        customer.setStatus(status);
+        return customerRepository.save(customer);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCustomer(UUID id) {
+        // Soft Delete
+        CustomerFranchise customer = getCustomerById(id);
+        customer.setStatus(CustomerStatus.INACTIVE);
+        customerRepository.save(customer);
+    }
+
+    private PageResponse<CustomerFranchise> buildPageResponse(Page<CustomerFranchise> pageResult) {
+        return PageResponse.<CustomerFranchise>builder()
+                .items(pageResult.getContent())
+                .currentPage(pageResult.getNumber())
+                .totalPages(pageResult.getTotalPages())
+                .totalItems(pageResult.getTotalElements())
+                .build();
+    }
 }
