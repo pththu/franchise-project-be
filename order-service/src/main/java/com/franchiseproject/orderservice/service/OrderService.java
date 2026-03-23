@@ -64,7 +64,4 @@ public interface OrderService {
     Page<OrderResponse> getOrdersByCustomerIdAndStatus(UUID customerId, OrderStatus status, int page, int size);
 
     OrderResponse getOrderById(UUID orderId);
-
-    PaymentResponse getOrder(UUID orderId);
-
 }

@@ -15,6 +15,7 @@ public interface ProductService {
 
     Page<Product> getAll(int page);
     Product getById(UUID id);
+    List<ProductResponse> getProductsByIds(List<UUID> ids);
     ProductVariant getProductVariantById (UUID id);
     List<ProductVariant> getProductVariantsByIds(List<UUID> ids);
 

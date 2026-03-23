@@ -6,6 +6,8 @@ import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
 import com.franchiseproject.customerservice.dto.response.CustomerFranchiseResponse;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.entity.CustomerFranchise;
+import com.franchiseproject.customerservice.enums.CustomerStatus;
+import com.franchiseproject.customerservice.enums.CustomerType;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -34,4 +36,21 @@ public interface CustomerService {
 //    List<CustomerFranchise> getAll();
 //
 //    List<CustomerFranchise> getLoyaltyInfoByCustomerId(UUID customerId);
+
+    // READ
+    PageResponse<CustomerFranchise> getCustomersForAdmin(CustomerStatus status, Pageable pageable);
+
+    PageResponse<CustomerFranchise> getCustomersForManager(UUID franchiseId, CustomerStatus status, Pageable pageable);
+
+    CustomerFranchise getCustomerById(UUID id);
+
+    // CREATE
+    CustomerFranchise createCustomerAtFranchise(UUID customerId, UUID franchiseId, CustomerType type);
+
+    void syncCustomerFromIdentity(UUID customerId, CustomerType type);
+
+    // UPDATE & DELETE
+    CustomerFranchise updateCustomerStatus(UUID id, CustomerStatus status);
+
+    void deleteCustomer(UUID id);
 }

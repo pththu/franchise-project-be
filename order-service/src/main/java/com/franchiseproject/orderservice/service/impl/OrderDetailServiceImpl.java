@@ -73,14 +73,4 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .collect(Collectors.toList());
         return productClient.getProductsByIds(productIds);
     }
-
-    @Override
-    @Transactional
-    public Map<UUID, ProductResponse> fetchProductsForUpdate(List<UpdateOrderItemRequest> items) {
-        List<UUID> productIds = items.stream()
-                .map(UpdateOrderItemRequest::getProductId)
-                .distinct()
-                .toList();
-        return productClient.getProductsByIds(productIds);
-    }
 }

@@ -175,7 +175,7 @@ public class OrderController {
     @PostMapping("/payment-result")
     public ResponseEntity<String> receivePaymentResult(@RequestBody PaymentResultRequest request) {
         orderService.handlePaymentResult(request);
-        return ResponseEntity.ok("Payment result received");
+        return ResponseEntity.ok("Payment result received" + request.toString());
     }
 
 

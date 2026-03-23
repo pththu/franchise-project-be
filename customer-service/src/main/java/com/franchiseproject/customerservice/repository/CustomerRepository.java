@@ -1,6 +1,7 @@
 package com.franchiseproject.customerservice.repository;
 
 import com.franchiseproject.customerservice.entity.CustomerFranchise;
+import com.franchiseproject.customerservice.enums.CustomerStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -57,4 +58,14 @@ public interface CustomerRepository extends JpaRepository<CustomerFranchise, UUI
 //    List<CustomerFranchise> findByCustomerId(UUID customerId);
 //
 //    boolean existsByCustomerIdAndFranchiseId(UUID customerId, UUID franchiseId);
+
+    Page<CustomerFranchise> findByFranchiseIdAndStatus(UUID franchiseId, CustomerStatus status, Pageable pageable);
+
+    Page<CustomerFranchise> findByFranchiseId(UUID franchiseId, Pageable pageable);
+
+    Page<CustomerFranchise> findByStatus(CustomerStatus status, Pageable pageable);
+
+    boolean existsByCustomerIdAndFranchiseId(UUID customerId, UUID franchiseId);
+
+    Optional<CustomerFranchise> findByCustomerIdAndFranchiseId(UUID customerId, UUID franchiseId);
 }
