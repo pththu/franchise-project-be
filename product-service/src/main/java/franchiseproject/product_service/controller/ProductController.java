@@ -1,7 +1,9 @@
 package franchiseproject.product_service.controller;
 
 import franchiseproject.product_service.dto.ApiResponse;
+import franchiseproject.product_service.dto.request.CreateProductRequest;
 import franchiseproject.product_service.dto.request.SearchProductRequest;
+import franchiseproject.product_service.dto.request.UpdateProductRequest;
 import franchiseproject.product_service.dto.response.ProductResponse;
 import franchiseproject.product_service.dto.response.ProductVariantDetailResponse;
 import franchiseproject.product_service.entity.Product;
@@ -118,6 +120,18 @@ public class ProductController {
                 .build();
     }
 
+    @GetMapping("/franchise/{locationId}")
+    public ApiResponse<Page<ProductResponse>> getByFranchise(
+            @PathVariable UUID locationId,
+            @Valid @ModelAttribute SearchProductRequest request) {
+        
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .statusCode(200)
+                .message("Get products by franchise success")
+                .data(productService.searchByFranchise(locationId, request).map(productMapper::toProductResponse))
+                .build();
+    }
+
     @DeleteMapping("/inactive/{productId}")
     public ApiResponse<Boolean> deleteProduct(@PathVariable("productId") UUID productId) {
         Product product = productService.getById(productId);
@@ -153,6 +167,35 @@ public class ProductController {
                 .statusCode(200)
                 .message("Delete variant")
                 .data(productService.deleteVariant(variant))
+                .build();
+    }
+
+    @PostMapping
+    public ApiResponse<ProductResponse> createProduct(
+            @RequestBody @Valid CreateProductRequest request) {
+
+        return ApiResponse.<ProductResponse>builder()
+                .statusCode(200)
+                .message("Create product success")
+                .data(productService.createProduct(request)) // ✅ FIX Ở ĐÂY
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<ProductResponse> updateProduct(
+            @PathVariable("id") UUID id,
+            @RequestBody @Valid UpdateProductRequest request
+    ) {
+
+        // optional validate nhẹ (giữ consistent style với project)
+        if (request == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
+        }
+
+        return ApiResponse.<ProductResponse>builder()
+                .statusCode(200)
+                .message("Update product success")
+                .data(productService.updateProduct(id, request))
                 .build();
     }
 

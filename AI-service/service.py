@@ -43,7 +43,26 @@ def save_config(cfg: dict):
         json.dump(cfg, f, indent=2, ensure_ascii=False)
     logger.info(f"Config saved: {cfg}")
 
+API_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "api.txt")
+
+def load_api_config() -> dict:
+    """Load API endpoints from config/api.txt"""
+    api_config = {}
+    try:
+        if os.path.exists(API_CONFIG_PATH):
+            with open(API_CONFIG_PATH, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        if "=" in line:
+                            key, val = line.split("=", 1)
+                            api_config[key.strip()] = val.strip()
+    except Exception as e:
+        logger.warning(f"Error loading {API_CONFIG_PATH}: {e}")
+    return api_config
+
 ai_config = load_config()
+api_endpoints = load_api_config()
 
 app = FastAPI()
 
@@ -79,8 +98,8 @@ class ConfigUpdate(BaseModel):
 
 semantic_search = Semantic_Search(model_name = "intfloat/multilingual-e5-base", vector_path = "Vector/vectors.txt")
 recommend_system = RecommendationSystem(
-    product_api="http://localhost:3000/api/products/get-all",
-    order_api="http://localhost:3000/api/orders",
+    product_api=api_endpoints.get("PRODUCT_API"),
+    order_api=api_endpoints.get("ORDER_API"),
 )
 
 semantic_search._setweight(ai_config["w_core"], ai_config["w_desc"])
@@ -217,7 +236,7 @@ def search_api(q: QuerySearch):
 @app.post("/api/ai/update")
 def update_api():
     logger.info("Updating Vector Store...")
-    result = semantic_search.update_vectors_store(db_url = "http://localhost:3000/api/products/getall")
+    result = semantic_search.update_vectors_store(db_url = api_endpoints.get("PRODUCT_API"))
     logger.info(f"Vector Store update result: {result}")
     return {"message": result, "statusCode": 200}
 
