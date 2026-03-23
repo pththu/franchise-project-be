@@ -1,14 +1,12 @@
 package com.franchiseproject.orderservice.service.impl;
 
 import com.franchiseproject.orderservice.dto.request.CreateOrderItemRequest;
-import com.franchiseproject.orderservice.dto.request.UpdateOrderItemRequest;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import com.franchiseproject.orderservice.client.ProductClient;
 import com.franchiseproject.orderservice.entity.Order;
 import com.franchiseproject.orderservice.entity.OrderDetail;
-import com.franchiseproject.orderservice.repository.OrderDetailRepository;
 import com.franchiseproject.orderservice.service.OrderDetailService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -27,7 +25,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderDetailServiceImpl implements OrderDetailService {
-    OrderDetailRepository orderDetailRepository;
     ProductClient productClient;
 
     @Override
