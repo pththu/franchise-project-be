@@ -6,12 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api-gateway/.run/ApiGatewayApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/.run/ApiGatewayApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/.run/InventoryServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/.run/InventoryServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/controller/ReportController.java" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/controller/ReportController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/controller/UploadController.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/controller/UploadController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/dto/response/ProductVariantResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/dto/response/ProductVariantResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/mapper/ProductMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/mapper/ProductMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/CloudinaryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/CloudinaryService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,10 +21,26 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitLabMergeRequestFiltersHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPENED&quot;,
+    &quot;assignee&quot;: {
+      &quot;type&quot;: &quot;org.jetbrains.plugins.gitlab.mergerequest.ui.filters.GitLabMergeRequestsFiltersValue.MergeRequestsMemberFilterValue.MergeRequestsAssigneeFilterValue&quot;,
+      &quot;username&quot;: &quot;fsa_PhongND&quot;,
+      &quot;fullname&quot;: &quot;Nguyễn Duy Phong&quot;
+    }
+  }
+}</component>
+  <component name="GitLabMergeRequestsSettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;first&quot;: &quot;https://git.fsoft-academy.edu.vn/hcm26_cpl_java_03/mockproject/projectteam2/be.git&quot;,
+    &quot;second&quot;: &quot;d7fb563a-102c-4236-9e1e-9af40a816b7b&quot;
+  }
+}</component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
-        &quot;isMigrated&quot;: true
-        }</component>
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -57,6 +73,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;Spring Boot.ApiGatewayApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.CustomerServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.FranchiseServiceApplication.executor&quot;: &quot;Run&quot;,
@@ -69,7 +86,7 @@
     &quot;Spring Boot.PromotionServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.ReportServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.ShiftServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;sprint04__team02__updateUserCustomerManager__thu&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;sprint04__team05__upload__image__PhongSE&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;D:/mock/be&quot;,
@@ -78,7 +95,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.65747124&quot;,
     &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
@@ -137,16 +154,10 @@
         <entry key="SpringBootApplicationConfigurationType">
           <value>
             <map>
-              <entry key="ApiGatewayApplication" value="FAILED" />
-              <entry key="CustomerServiceApplication" value="STOPPED" />
+              <entry key="ApiGatewayApplication" value="STOPPED" />
               <entry key="FranchiseServiceApplication" value="STOPPED" />
               <entry key="IdentityAccessServiceApplication" value="STOPPED" />
-              <entry key="InventoryServiceApplication" value="FAILED" />
-              <entry key="LoyaltyServiceApplication" value="STOPPED" />
-              <entry key="OrderServiceApplication" value="STOPPED" />
-              <entry key="PaymentServiceApplication" value="STOPPED" />
               <entry key="ProductServiceApplication" value="STOPPED" />
-              <entry key="PromotionServiceApplication" value="STOPPED" />
               <entry key="ReportServiceApplication" value="STOPPED" />
               <entry key="ShiftServiceApplication" value="STOPPED" />
             </map>
@@ -224,8 +235,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
-        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-IU-252.23892.409" />
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.32098.37" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.32098.37" />
       </set>
     </attachedChunks>
   </component>
@@ -249,6 +260,7 @@
       <workItem from="1774144105708" duration="1506000" />
       <workItem from="1774148201988" duration="16000" />
       <workItem from="1774148227923" duration="1984000" />
+      <workItem from="1774194797793" duration="11809000" />
     </task>
     <servers />
   </component>
