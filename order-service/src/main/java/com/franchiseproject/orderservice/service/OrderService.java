@@ -7,6 +7,7 @@ import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
 //import com.franchiseproject.orderservice.dto.response.OrderResponse;
 import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
+import com.franchiseproject.orderservice.enums.TypeOrder;
 import org.springframework.data.domain.Page;
 
 import java.time.Instant;
@@ -42,7 +43,16 @@ public interface OrderService {
             int size
     );
 
+    Page<OrderResponse> getOrdersByFranchiseAndFilters(
+            UUID franchiseId,
+            OrderStatus status,
+            TypeOrder typeOrder,
+            int page,
+            int size
+    );
+
     Page<OrderResponse> getOrdersByStatus(OrderStatus status, int page, int size);
+    Page<OrderResponse> getOrdersByFilters(OrderStatus status, TypeOrder typeOrder, int page, int size);
 
     List<OrderResponse> searchOrderById(String keyword);
 

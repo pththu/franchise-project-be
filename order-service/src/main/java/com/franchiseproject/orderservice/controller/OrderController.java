@@ -8,6 +8,7 @@ import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
 import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
+import com.franchiseproject.orderservice.enums.TypeOrder;
 import com.franchiseproject.orderservice.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -168,12 +169,13 @@ public class OrderController {
     public ApiResponse<Page<OrderResponse>> getOrdersByFranchise(
             @PathVariable UUID franchiseId,
             @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) TypeOrder typeOrder,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         return ApiResponse.<Page<OrderResponse>>builder()
                 .message("Lấy danh sách đơn hàng theo franchise thành công")
-                .data(orderService.getOrdersByFranchiseAndStatus(franchiseId, status, page, size))
+                .data(orderService.getOrdersByFranchiseAndFilters(franchiseId, status, typeOrder, page, size))
                 .statusCode(200)
                 .errors(null)
                 .build();
@@ -182,11 +184,12 @@ public class OrderController {
     @GetMapping("/status")
     public ApiResponse<Page<OrderResponse>> getOrdersByStatus(
             @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) TypeOrder typeOrder,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
 
-        Page<OrderResponse> orders = orderService.getOrdersByStatus(status, page, size);
+        Page<OrderResponse> orders = orderService.getOrdersByFilters(status, typeOrder, page, size);
 
         return ApiResponse.<Page<OrderResponse>>builder()
                 .message("Lấy danh sách đơn hàng thành công")
