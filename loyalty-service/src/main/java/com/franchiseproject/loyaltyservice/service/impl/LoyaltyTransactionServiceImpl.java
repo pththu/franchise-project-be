@@ -2,6 +2,7 @@ package com.franchiseproject.loyaltyservice.service.impl;
 
 import com.franchiseproject.loyaltyservice.dto.request.DeductPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.request.EarnPointsRequest;
+import com.franchiseproject.loyaltyservice.dto.request.RefundPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.response.EarnPointsResponse;
 import com.franchiseproject.loyaltyservice.dto.response.TransactionHistoryResponse;
 import com.franchiseproject.loyaltyservice.enums.CustomerLoyaltyTier;
@@ -144,5 +145,44 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
         return tierBenefitRepository.findById(tierName)
                 .map(LoyaltyTier::getRequiredPoints)
                 .orElse(defaultPoints);
+    }
+
+    @Override
+    @Transactional
+    public EarnPointsResponse refundPoints(RefundPointsRequest request) {
+        boolean alreadyRefunded = loyaltyTransactionRepository.existsByCustomerIdAndPromotionIdAndType(
+                request.getCustomerId(),
+                UUID.fromString(request.getOrderId()),
+                LoyaltyTransactionType.REFUND
+        );
+
+        if (alreadyRefunded) {
+                throw new AppException(ErrorCode.ORDER_ALREADY_REFUNDED);
+        }
+
+        CustomerFranchise cf = customerFranchiseRepository
+                .findByCustomerIdAndFranchiseId(request.getCustomerId(), request.getFranchiseId())
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_PROFILE_NOT_FOUND));
+
+        int balanceBefore = cf.getLoyaltyCurrentPoint();
+        int balanceAfter = balanceBefore + request.getPointsToRefund();
+        cf.setLoyaltyCurrentPoint(balanceAfter);
+
+        customerFranchiseRepository.save(cf);
+
+        LoyaltyTransaction transaction = LoyaltyTransaction.builder()
+                .customerId(request.getCustomerId())
+                .franchiseId(request.getFranchiseId())
+                .promotionId(UUID.fromString(request.getOrderId()))
+                .points(request.getPointsToRefund())
+                .balanceBefore(balanceBefore)
+                .balanceAfter(balanceAfter)
+                .type(LoyaltyTransactionType.REFUND)
+                .createdAt(Instant.now())
+                .build();
+
+        transaction = loyaltyTransactionRepository.save(transaction);
+
+        return loyaltyMapper.toEarnPointsResponse(transaction, cf.getCustomerLoyaltyTier().name());
     }
 }

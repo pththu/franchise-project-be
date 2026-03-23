@@ -24,7 +24,9 @@ public enum ErrorCode {
     ORDER_AMOUNT_TOO_SMALL(4004, "Order amount is too small to earn points"),
     ORDER_AMOUNT_IS_REQUIRED(4005, "Order amount is required"),
 
-    // --- MANUAL ADJUSTMENT ---
+    // --- REFUND POINTS ---
+    ORDER_ALREADY_REFUNDED(4014, "Order points have already been refunded"),
+
     POINTS_IS_REQUIRED(4009, "Points amount is required"),
     POINTS_CANNOT_BE_ZERO(4010, "Adjustment points cannot be zero"),
 
