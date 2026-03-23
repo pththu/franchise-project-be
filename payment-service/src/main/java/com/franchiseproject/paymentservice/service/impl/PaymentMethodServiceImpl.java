@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -144,36 +145,51 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                 if (parts.length < 2) return null;
                 
                 String orderIdStr = parts[0];
-                com.franchiseproject.paymentservice.dto.response.order.OrderResponse order = orderClient.getOrderInfoByOrderId(java.util.UUID.fromString(orderIdStr));
+                com.franchiseproject.paymentservice.dto.response.order.OrderResponse order = orderClient.getOrderInfoByOrderId(UUID.fromString(orderIdStr));
                 String typeOrder = order.getTypeOrder();
                 String responseCode = params.get("vnp_ResponseCode");
 
                 if ("00".equals(responseCode)) {
-                    java.math.BigDecimal amount = new java.math.BigDecimal(params.get("vnp_Amount")).divide(new java.math.BigDecimal(100));
+                    BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(new BigDecimal(100));
 
                     PaymentMethod method = paymentMethodRepository.findByMethodName("VNPAY")
                             .orElseThrow(() -> new RuntimeException("Payment method VNPAY not found"));
 
                     PaymentTransaction p = PaymentTransaction.builder()
                             .amount(amount)
-                            .orderId(java.util.UUID.fromString(orderIdStr))
+                            .orderId(UUID.fromString(orderIdStr))
                             .status(StatusTransaction.SUCCESS)
                             .paymentMethod(method)
                             .build();
                     PaymentTransaction savedTx = paymentTransactionService.createPaymentTransaction(p);
 
                     orderClient.sendPaymentResult(com.franchiseproject.paymentservice.dto.request.PaymentResultRequest.builder()
-                            .orderId(java.util.UUID.fromString(orderIdStr))
+                            .orderId(UUID.fromString(orderIdStr))
                             .paymentTransactionId(savedTx.getId())
                             .amount(amount)
                             .paymentMethod("VNPAY")
                             .status(StatusTransaction.SUCCESS)
                             .build());
                 } else {
+                    BigDecimal amount = params.get("vnp_Amount") != null 
+                        ? new BigDecimal(params.get("vnp_Amount")).divide(new BigDecimal(100))
+                        : BigDecimal.ZERO;
+
+                    PaymentMethod method = paymentMethodRepository.findByMethodName("VNPAY")
+                            .orElseThrow(() -> new RuntimeException("Payment method VNPAY not found"));
+
+                    PaymentTransaction p = PaymentTransaction.builder()
+                            .amount(amount)
+                            .orderId(UUID.fromString(orderIdStr))
+                            .status(StatusTransaction.FAILED)
+                            .paymentMethod(method)
+                            .build();
+                    PaymentTransaction savedTx = paymentTransactionService.createPaymentTransaction(p);
+
                     orderClient.sendPaymentResult(com.franchiseproject.paymentservice.dto.request.PaymentResultRequest.builder()
-                            .orderId(java.util.UUID.fromString(orderIdStr))
-                            .paymentTransactionId(null)
-                            .amount(java.math.BigDecimal.ZERO)
+                            .orderId(UUID.fromString(orderIdStr))
+                            .paymentTransactionId(savedTx.getId())
+                            .amount(amount)
                             .paymentMethod("VNPAY")
                             .status(StatusTransaction.FAILED)
                             .build());

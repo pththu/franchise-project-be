@@ -274,6 +274,10 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentTransactionId(request.getPaymentTransactionId());
         if ("COMPLETED".equalsIgnoreCase(request.getStatus()) || "SUCCESS".equalsIgnoreCase(request.getStatus())) {
             order.setOrderStatus(OrderStatus.COMPLETED);
+        } else if ("FAILED".equalsIgnoreCase(request.getStatus()) 
+                || "CANCELLED".equalsIgnoreCase(request.getStatus())
+                || "EXPIRED".equalsIgnoreCase(request.getStatus())) {
+            order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
         }
         
         orderRepository.save(order);
