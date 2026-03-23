@@ -51,8 +51,8 @@ class RecommendationSystem:
 
     def __init__(
         self,
-        product_api: str = "http://localhost:3000/api/products/getall",
-        order_api: str = "http://localhost:3000/api/orders/getall",
+        product_api: str,
+        order_api: str,
         als_factors: int = 64,
         als_iterations: int = 15,
         als_regularization: float = 0.1,
@@ -211,12 +211,66 @@ class RecommendationSystem:
 
     # Data Loading 
     def _load_products(self) -> pd.DataFrame:
-        resp = requests.get(self.product_api, timeout=10)
-        resp.raise_for_status()
-        data = resp.json()
-        df = pd.DataFrame(data)
+        all_products = []
+        page = 0
+        total_pages = 1
+
+        while page < total_pages:
+            paged_url = f"{self.product_api}?page={page}" if "?" not in self.product_api else f"{self.product_api}&page={page}"
+            resp = requests.get(paged_url, timeout=15)
+            resp.raise_for_status()
+            json_data = resp.json()
+            
+            data = json_data.get("data", {})
+            if isinstance(data, list):
+                content = data
+                total_pages = 1
+            else:
+                content = data.get("content", [])
+                total_pages = data.get("totalPages", 1)
+                
+            for p in content:
+                p_id = p.get("id")
+                p_name = p.get("name", "")
+                cat = p.get("category", {})
+                cat_id = cat.get("id", p.get("categoryId", ""))
+                cat_name = cat.get("name", p.get("categoryName", ""))
+                p_type = p.get("productType", "")
+                p_status = p.get("status", "ACTIVE")
+                
+                # Fetch price from variants if available
+                variants = p.get("variants", [])
+                active_prices = [v.get("price", 0) for v in variants if v.get("status") == "ACTIVE"]
+                price = min(active_prices) if active_prices else p.get("price", 0)
+                    
+                desc = cat.get("description", p.get("description", ""))
+                
+                all_products.append({
+                    "id": p_id,
+                    "name": p_name,
+                    "description": desc,
+                    "price": price,
+                    "productType": p_type,
+                    "categoryId": cat_id,
+                    "categoryName": cat_name,
+                    "status": p_status
+                })
+            
+            page += 1
+
+        df = pd.DataFrame(all_products)
+        if df.empty:
+            df = pd.DataFrame(columns=["id", "name", "description", "price", "productType", "categoryId", "categoryName"])
+            df.rename(columns={"id": "product_id", "productType": "product_type"}, inplace=True)
+            return df
+            
         df = df[df["status"] == "ACTIVE"].reset_index(drop=True)
-        df = df[["id", "name", "description", "price", "productType", "categoryId", "categoryName"]].copy()
+        # Handle cases where there are no active products
+        if df.empty:
+            df = pd.DataFrame(columns=["id", "name", "description", "price", "productType", "categoryId", "categoryName"])
+        else:
+            df = df[["id", "name", "description", "price", "productType", "categoryId", "categoryName"]].copy()
+            
         df.rename(columns={"id": "product_id", "productType": "product_type"}, inplace=True)
         return df
 
@@ -224,22 +278,41 @@ class RecommendationSystem:
         resp = requests.get(self.order_api, timeout=10)
         resp.raise_for_status()
         payload = resp.json()
-        orders = payload.get("data", payload) if isinstance(payload, dict) else payload
+        
+        data = payload.get("data", payload)
+        if isinstance(data, dict) and "content" in data:
+            orders = data.get("content", [])
+        elif isinstance(data, list):
+            orders = data
+        else:
+            orders = []
+            
         rows = []
         for order in orders:
+            # Drop cancelled or incomplete orders if needed, for instance focus on COMPLETED or PAID.
+            status = order.get("orderStatus", "")
+            if status not in ["COMPLETED", "PAID"]:
+                continue
+                
             customer_id = order.get("customerId")
             if not customer_id:
                 continue
+                
             created_at = order.get("createAt")
             for detail in order.get("orderDetails", []):
                 rows.append({
                     "customer_id": customer_id,
-                    "product_id": detail["productId"],
-                    "quantity": detail["quantity"],
-                    "cost": detail["cost"],
+                    "product_id": detail.get("productId"),
+                    "quantity": detail.get("quantity", 1),
+                    "cost": detail.get("cost", detail.get("priceSnapshot", 0)),
                     "created_at": created_at,
                 })
-        return pd.DataFrame(rows)
+                
+        df = pd.DataFrame(rows)
+        # Ensure correct column types and empty shape
+        if df.empty:
+            return pd.DataFrame(columns=["customer_id", "product_id", "quantity", "cost", "created_at"])
+        return df
 
     # Feature Engineering
     @staticmethod
@@ -250,12 +323,10 @@ class RecommendationSystem:
         days = (now - df["created_at"]).dt.total_seconds() / 86400.0
         decay_lambda = 0.01
         df["weighted_qty"] = df["quantity"] * np.exp(-decay_lambda * days)
-        return (
-            df
-            .groupby(["customer_id", "product_id"])
-            .agg(interaction=("weighted_qty", "sum"))
-            .reset_index()
-        )
+        
+        df = df.groupby(["customer_id", "product_id"]).agg(interaction_weight=("weighted_qty", "sum")).reset_index()
+        df["interaction"] = np.log1p(df["interaction_weight"])
+        return df
 
     @staticmethod
     def _build_user_features(orders_df: pd.DataFrame, products_df: pd.DataFrame) -> pd.DataFrame:
@@ -289,7 +360,7 @@ class RecommendationSystem:
         pop = (
             orders_df
             .groupby("product_id")
-            .agg(product_popularity=("quantity", "sum"))
+            .agg(product_popularity=("quantity", "count"))
             .reset_index()
         )
         pdf = products_df.merge(pop, on="product_id", how="left")
@@ -306,7 +377,7 @@ class RecommendationSystem:
         n_items = df["item_idx"].nunique()
 
         user_item_matrix = csr_matrix(
-            (np.log1p(df["interaction"]).astype(np.float32), (df["user_idx"], df["item_idx"])),
+            (df["interaction"].astype(np.float32), (df["user_idx"], df["item_idx"])),
             shape=(n_users, n_items),
         )
 
@@ -322,7 +393,7 @@ class RecommendationSystem:
     @staticmethod
     def _get_als_candidates(als_model, user_item_matrix, user_idx: int, k: int) -> list[int]:
         ids, scores = als_model.recommend(
-            user_idx, user_item_matrix[user_idx], N=k, filter_already_liked_items=False
+            user_idx, user_item_matrix[user_idx], N=k, filter_already_liked_items=True
         )
         return ids.tolist()
 
@@ -633,7 +704,7 @@ class RecommendationSystem:
     def recommend_similar(self, product_id: str, top_k: int = 10) -> list[dict]:
         snap = self._snapshot
         if snap is None:
-            raise RuntimeError("Model chưa được train. Gọi /api/ai/recommend/train trước.")
+            raise RuntimeError("Model chưa được train. Hãy train model trước.")
 
         if snap.faiss_index is None:
             return []

@@ -19,6 +19,7 @@ public interface ProductService {
     List<ProductVariant> getProductVariantsByIds(List<UUID> ids);
 
     Page<Product> search(SearchProductRequest request);
+    Page<Product> searchByFranchise(UUID locationId, SearchProductRequest request);
     boolean delete(Product product);
     boolean deleteVariant(ProductVariant variant);
 

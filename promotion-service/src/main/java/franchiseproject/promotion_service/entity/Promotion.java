@@ -1,81 +1,80 @@
 package franchiseproject.promotion_service.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import franchiseproject.promotion_service.enums.DiscountType;
+import franchiseproject.promotion_service.enums.LoyaltyTier;
 import franchiseproject.promotion_service.enums.PromotionStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "promotions")
+@Table(name = "promotion")
 @Getter
 @Setter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@Builder
 public class Promotion {
 
     @Id
-    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
+    @GeneratedValue
     @Column(name = "id", nullable = false, updatable = false)
-    UUID id;
+    private UUID id;
 
     @Column(name = "name", nullable = false)
-    String name;
-
-    @Column(name = "description")
-    String description;
+    private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "discount_type", nullable = false)
-    DiscountType discountType;
+    @Column(name = "discount_type", nullable = false, length = 50)
+    private DiscountType discountType;
 
-    @Column(name = "discount_value", nullable = false)
-    BigDecimal discountValue;
-
-    @Column(name = "start_time")
-    Instant startTime;
-
-    @Column(name = "end_time")
-    Instant endTime;
-
-//    @Column(name = "coupon_code", unique = true, nullable = false)
-//    String couponCode;
-//
-//    @Column(name = "coupon_usage_limit")
-//    Integer usageLimit;
-//
-//    @Column(name = "coupon_used_count")
-//    Integer usedCount;
+    @Column(name = "discount_value", nullable = false, precision = 10, scale = 2)
+    private BigDecimal discountValue;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    PromotionStatus status;
+    @Column(name = "required_rank", length = 50)
+    private LoyaltyTier requiredRank;
 
-    @CreationTimestamp
+    @Column(name = "usage_limit")
+    private Integer usageLimit;
+
+    @Column(name = "used_count")
+    private Integer usedCount;
+
+    @Column(name = "min_order_value", precision = 10, scale = 2)
+    private BigDecimal minOrderValue;
+
+    @Column(name = "max_discount_value", precision = 10, scale = 2)
+    private BigDecimal maxDiscountValue;
+
+    @Column(name = "expiry_date")
+    private LocalDateTime expiryDate;
+
     @Column(name = "created_at", updatable = false)
-    Instant createdAt;
+    private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     @Column(name = "updated_at")
-    Instant updatedAt;
+    private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    List<Coupon> coupons;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 50)
+    private PromotionStatus status;
 
-    @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    List<PromotionScope> scopes;
+    @Column(name = "per_user_limit")
+    private Integer perUserLimit;
 
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if (usedCount == null) usedCount = 0;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

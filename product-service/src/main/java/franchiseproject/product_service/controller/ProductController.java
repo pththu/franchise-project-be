@@ -120,6 +120,18 @@ public class ProductController {
                 .build();
     }
 
+    @GetMapping("/franchise/{locationId}")
+    public ApiResponse<Page<ProductResponse>> getByFranchise(
+            @PathVariable UUID locationId,
+            @Valid @ModelAttribute SearchProductRequest request) {
+        
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .statusCode(200)
+                .message("Get products by franchise success")
+                .data(productService.searchByFranchise(locationId, request).map(productMapper::toProductResponse))
+                .build();
+    }
+
     @DeleteMapping("/inactive/{productId}")
     public ApiResponse<Boolean> deleteProduct(@PathVariable("productId") UUID productId) {
         Product product = productService.getById(productId);
