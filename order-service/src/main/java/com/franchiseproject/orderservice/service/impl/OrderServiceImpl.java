@@ -1,8 +1,6 @@
 package com.franchiseproject.orderservice.service.impl;
 
-import com.franchiseproject.orderservice.client.LoyaltyClient;
-import com.franchiseproject.orderservice.client.PaymentClient;
-import com.franchiseproject.orderservice.client.PromotionClient;
+import com.franchiseproject.orderservice.client.*;
 import com.franchiseproject.orderservice.dto.*;
 import com.franchiseproject.orderservice.dto.request.*;
 import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
@@ -10,8 +8,6 @@ import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.dto.response.PromotionDiscountResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
-import com.franchiseproject.orderservice.client.ProductClient;
-import com.franchiseproject.orderservice.client.CustomerClient;
 import com.franchiseproject.orderservice.dto.response.CustomerResponse;
 import com.franchiseproject.orderservice.enums.StatusTransaction;
 import com.franchiseproject.orderservice.exception.AppException;
@@ -52,11 +48,11 @@ public class OrderServiceImpl implements OrderService {
     OrderDetailService orderDetailService;
     OrderMapper orderMapper;
     RedisTemplate<String, Object> redisTemplate;
-    ProductClient productClient;
     CustomerClient customerClient;
     PromotionClient promotionClient;
     LoyaltyClient loyaltyClient;
     PaymentClient paymentClient;
+    InventoryClient inventoryClient;
 
     @Override
     public List<OrderResponse> getAll() {
@@ -134,6 +130,9 @@ public class OrderServiceImpl implements OrderService {
             order.setTotalDue(finalTotal);
             order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
             orderRepository.save(order);// save lần 2 sau khi set giá cả các thứ.
+            if (request.getTypeOrder() != null && "Online".equalsIgnoreCase(request.getTypeOrder().name())) {
+                inventoryClient.notifyNewOrder(order.getFranchiseId());
+            }
             return handlePayment(order, request);
         } catch (AppException a) {
             log.error("Create order failed", a);
@@ -147,7 +146,18 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PaymentQRResponse handlePayment(Order order, CreateOrderRequest request) {
         try {
-            return paymentClient.createTransaction(order.getId(), request.getPaymentMethodId());
+            PaymentQRResponse res = paymentClient.createTransaction(order.getId(), request.getPaymentMethodId());
+            if (res != null) {
+                log.info("createTransaction returned paymentTransactionId: {}", res.getPaymentTransactionId());
+            }
+            if (res == null) {
+                res = PaymentQRResponse.builder().build();
+            } else if (res.getPaymentTransactionId() != null) {
+                order.setPaymentTransactionId(res.getPaymentTransactionId());
+                orderRepository.save(order);
+            }
+            res.setOrderId(order.getId());
+            return res;
         } catch (Exception e) {
             log.error("Payment init failed", e);
             order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
@@ -161,16 +171,17 @@ public class OrderServiceImpl implements OrderService {
     public void handlePaymentResult(PaymentResultRequest result) {
         Order order = orderRepository.findById(result.getOrderId())
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-        ;
         order.setPaymentTransactionId(result.getPaymentTransactionId());
         if (result.getStatus() == StatusTransaction.SUCCESS) {
             order.setOrderStatus(OrderStatus.PAID);
         } else if (result.getStatus() == StatusTransaction.FAILED
                 || result.getStatus() == StatusTransaction.CANCELLED
                 || result.getStatus() == StatusTransaction.EXPIRED) {
-            order.setOrderStatus(OrderStatus.FAILED_ORDER);
+            order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
         }
         orderRepository.save(order);
+        inventoryClient.notifyOrderStatus(order.getId(), order.getOrderStatus().name());
+        inventoryClient.notifyNewOrder(order.getFranchiseId());
     }
 
 
@@ -179,8 +190,6 @@ public class OrderServiceImpl implements OrderService {
     public void cancelOrder(UUID orderId, UUID customerId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-        OrderStatus oldStatus = order.getOrderStatus();
-        String status = oldStatus.name();
         if (!order.getCustomerId().equals(customerId)) {
             throw new AppException(ErrorCode.WRONG_CUSTOMER_ID);
         }
@@ -197,6 +206,7 @@ public class OrderServiceImpl implements OrderService {
             order.setOrderStatus(OrderStatus.CANCELLED);
         }
         orderRepository.save(order);
+        inventoryClient.notifyOrderStatus(order.getId(), order.getOrderStatus().name());
     }
 
 
@@ -223,8 +233,35 @@ public class OrderServiceImpl implements OrderService {
                 || order.getOrderStatus() == OrderStatus.REFUNDED) {
             throw new AppException(ErrorCode.ORDER_ALREADY_FINALIZED);
         }
+        if (newStatus == OrderStatus.PREPARING) {
+            List<InventoryReserveRequest.InventoryItemRequest> items = order.getOrderDetails().stream()
+                    .map(d -> InventoryReserveRequest.InventoryItemRequest.builder()
+                            .productVariantId(d.getProductId())
+                            .quantity(d.getQuantity())
+                            .build())
+                    .toList();
+            InventoryReserveRequest reserveReq = InventoryReserveRequest.builder()
+                    .locationId(order.getFranchiseId())
+                    .items(items)
+                    .build();
+            inventoryClient.reserveStock(reserveReq);
+        } else if (newStatus == OrderStatus.COMPLETED) {
+            List<InventoryReserveRequest.InventoryItemRequest> items = order.getOrderDetails().stream()
+                    .map(d -> InventoryReserveRequest.InventoryItemRequest.builder()
+                            .productVariantId(d.getProductId())
+                            .quantity(d.getQuantity())
+                            .build())
+                    .toList();
+            InventoryReserveRequest reserveReq = InventoryReserveRequest.builder()
+                    .locationId(order.getFranchiseId())
+                    .items(items)
+                    .build();
+            inventoryClient.commitStock(reserveReq);
+        }
+
         order.setOrderStatus(newStatus);
         orderRepository.save(order);
+        inventoryClient.notifyOrderStatus(orderId, newStatus.name());
     }
 
     @Override

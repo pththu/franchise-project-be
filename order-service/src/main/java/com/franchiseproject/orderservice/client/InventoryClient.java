@@ -20,8 +20,11 @@ public class InventoryClient {
     public void reserveStock(InventoryReserveRequest request) {
         try {
             inventoryRestClient.post()
-                    .uri("/api/inventory/stocks/reserve")
-                    .body(request)
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/inventory/stocks/reserve")
+                            .queryParam("locationId", request.getLocationId())
+                            .build())
+                    .body(request.getItems())
                     .retrieve()
                     .toBodilessEntity();
             log.info("Reserve stock success for location: {}", request.getLocationId());
@@ -34,20 +37,50 @@ public class InventoryClient {
         }
     }
 
-    public void subtractStock(InventorySubtractRequest request) {
+    public void commitStock(InventoryReserveRequest request) {
         try {
             inventoryRestClient.post()
-                    .uri("/api/inventory/stocks/subtract")
-                    .body(request)
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/inventory/stocks/commit")
+                            .queryParam("locationId", request.getLocationId())
+                            .build())
+                    .body(request.getItems())
                     .retrieve()
                     .toBodilessEntity();
-            log.info("Subtract stock success for location: {}", request.getLocationId());
+            log.info("Commit stock success for location: {}", request.getLocationId());
         } catch (HttpClientErrorException e) {
-            log.warn("Subtract stock 4xx error: {}", e.getResponseBodyAsString());
-            throw new RuntimeException("Trừ kho thất bại: " + e.getResponseBodyAsString());
+            log.warn("Commit stock 4xx error: {}", e.getResponseBodyAsString());
+            throw new RuntimeException("Khấu trừ kho thất bại: " + e.getResponseBodyAsString());
         } catch (HttpServerErrorException | ResourceAccessException e) {
-            log.error("Inventory service down", e);
+            log.error("Commit service down", e);
             throw new RuntimeException("Lỗi kết nối inventory-service");
+        }
+    }
+
+    public void notifyNewOrder(java.util.UUID franchiseId) {
+        try {
+            inventoryRestClient.post()
+                    .uri("/api/inventory/notify/new-order/" + franchiseId)
+                    .retrieve()
+                    .toBodilessEntity();
+            log.info("Notify new order success for franchise: {}", franchiseId);
+        } catch (Exception e) {
+            log.warn("Notify new order failed for franchise: {}", franchiseId, e);
+        }
+    }
+
+    public void notifyOrderStatus(java.util.UUID orderId, String status) {
+        try {
+            inventoryRestClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/inventory/notify/order-status/" + orderId)
+                            .queryParam("status", status)
+                            .build())
+                    .retrieve()
+                    .toBodilessEntity();
+            log.info("Notify order status update success for order: {}", orderId);
+        } catch (Exception e) {
+            log.warn("Notify order status update failed for order: {}", orderId, e);
         }
     }
 }
