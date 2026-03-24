@@ -51,4 +51,16 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(body);
     }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
+        // Log verbose details for troubleshooting any 500 errors
+        System.err.println("--- Global Exception Caught ---");
+        ex.printStackTrace();
+        
+        ApiResponse<Void> body = ApiResponse.<Void>builder()
+                .statusCode(500)
+                .message("Lỗi hệ thống bất ngờ: " + ex.getMessage())
+                .build();
+        return ResponseEntity.status(500).body(body);
+    }
 }

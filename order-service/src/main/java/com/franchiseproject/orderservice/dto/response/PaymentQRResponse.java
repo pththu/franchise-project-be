@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PaymentQRResponse {
+    UUID orderId;
     UUID paymentTransactionId;
     String paymentUrl;
     String qrCodeUrl;

@@ -40,14 +40,14 @@ public class CustomerClient {
                     .get()
                     .uri("/api/auth/users/" + id);
             if (token != null) {
-                spec.header("Authorization", token);
+                spec = spec.header("Authorization", token);
             }
             if (cookies != null) {
                 StringBuilder cookieBuilder = new StringBuilder();
                 for (var c : cookies) {
                     cookieBuilder.append(c.getName()).append("=").append(c.getValue()).append("; ");
                 }
-                spec.header("Cookie", cookieBuilder.toString());
+                spec = spec.header("Cookie", cookieBuilder.toString());
             }
 
             ApiResponse<CustomerResponse> response = spec.retrieve()
@@ -55,7 +55,7 @@ public class CustomerClient {
             
             return response != null ? response.getData() : null;
         } catch (Exception e) {
-            log.error("Error fetching customer for ID {}: {}", id, e.getMessage(), e);
+            log.warn("Could not fetch customer for ID {}: {}", id, e.getMessage());
             // Fallback cleanly if remote API fails or 403/404
             return null;
         }
