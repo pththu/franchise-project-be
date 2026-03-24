@@ -15,6 +15,8 @@ import java.util.UUID;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<CustomerFranchise, UUID> {
+
+    Page<CustomerFranchise> findAll(Pageable page);
 //    @Query("SELECT DISTINCT c FROM Customer c " +
 //            "LEFT JOIN c.customerFranchises cf " +
 //            "WHERE (:keyword IS NULL OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +

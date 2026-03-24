@@ -6,6 +6,7 @@ import com.franchiseproject.customerservice.dto.request.SyncCustomerRequest;
 import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
 import com.franchiseproject.customerservice.dto.response.CustomerDetailResponse;
 import com.franchiseproject.customerservice.dto.response.CustomerFranchiseResponse;
+import com.franchiseproject.customerservice.dto.response.CustomerResponse;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
 import com.franchiseproject.customerservice.enums.CustomerType;
@@ -13,9 +14,12 @@ import com.franchiseproject.customerservice.mapper.CustomerMapper;
 import com.franchiseproject.customerservice.entity.CustomerFranchise;
 import com.franchiseproject.customerservice.service.CustomerService;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -27,25 +31,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/customers")
-@CrossOrigin(origins = "http://localhost:5173")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class CustomerController {
     CustomerService customerService;
     CustomerMapper customerMapper;
 
-//    @GetMapping
-//    public ResponseEntity<Map<String, Object>> getAllCustomer() {
-//        Map<String, Object> response = new HashMap<>();
-//
-//        List<Customer> customers = customerService.getAll();
-//        response.put("message", "Get All Customer");
-//        response.put("data", customers);
-//
-//        return ResponseEntity.ok(response);
-//    }
+    @GetMapping("/get-all")
+    public ApiResponse<List<CustomerResponse>> getAllCustomer(@PathParam("page") int page) {
+        log.info("Start");
+        return ApiResponse.<List<CustomerResponse>>builder()
+                .statusCode(200)
+                .message("Get all customer")
+                .data(customerService.getAll(page))
+                .build();
+    }
 
     // Search and filter Customer
 //    @GetMapping("/search")

@@ -1,23 +1,35 @@
 package com.franchiseproject.identityaccessservice.controller;
 
+import com.franchiseproject.identityaccessservice.dto.ApiResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
+import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.mapper.UserMapper;
 import com.franchiseproject.identityaccessservice.repository.RoleRepository;
+import com.franchiseproject.identityaccessservice.service.UserService;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @Slf4j
 @RestController
-@RequestMapping("/api/auth/internal/permissions")
+@RequestMapping("/api/auth/internal")
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class InternalPermissionController {
 
-    private final RoleRepository roleRepository;
-    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
+    UserMapper userMapper;
+    UserService userService;
+    RoleRepository roleRepository;
+    AntPathMatcher antPathMatcher = new AntPathMatcher();
 
-    @GetMapping("/check")
+    @GetMapping("/permissions/check")
     public boolean checkPermission(
             @RequestParam String roleName,
             @RequestParam String path,
@@ -60,5 +72,16 @@ public class InternalPermissionController {
         }
 
         return false;
+    }
+
+    @GetMapping("/users/{id}")
+    public ApiResponse<UserResponse> getUserById(@PathVariable("id") UUID userId) {
+        User user = userService.getById(userId);
+        log.info("getUserById: userId={}, verifyEmail={}", userId, user.isVerifyEmail());
+        return ApiResponse.<UserResponse>builder()
+                .statusCode(200)
+                .message("Get One")
+                .data(userMapper.toUserResponse(user))
+                .build();
     }
 }

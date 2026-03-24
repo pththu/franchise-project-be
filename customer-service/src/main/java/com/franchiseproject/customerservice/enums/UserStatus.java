@@ -1,7 +1,7 @@
 package com.franchiseproject.customerservice.enums;
 
-public enum CustomerStatus {
+public enum UserStatus {
     ACTIVE, // dang hoat dong
     SUSPENDED, // tam khoa
-    DELETED
+    DELETED // xoa mem
 }
