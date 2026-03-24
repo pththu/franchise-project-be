@@ -32,5 +32,6 @@ public class OrderResponse {
     BigDecimal priceShip;
     Instant createAt;
     Instant updateAt;
+    String customerName;
     List<OrderItemResponse> orderDetails;
 }

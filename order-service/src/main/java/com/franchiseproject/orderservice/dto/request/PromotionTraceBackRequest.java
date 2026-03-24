@@ -1,7 +1,8 @@
 package com.franchiseproject.orderservice.dto.request;
 
+import com.franchiseproject.orderservice.enums.OrderStatus;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,9 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaymentTransactionRequest {
-    @NotNull(message = "orderId không được trống")
+public class PromotionTraceBackRequest {
     UUID orderId;
-    @NotNull(message = "paymentMethodId không được trống")
-    UUID paymentMethodId;
+    OrderStatus orderStatus;
 }

@@ -6,9 +6,12 @@
       <env name="DB_URL" value="jdbc:postgresql://dpg-d6ghni1drdic73c6u9l0-a.singapore-postgres.render.com:5432/group_03?sslmode=require" />
       <env name="DB_USERNAME" value="group_03_user" />
       <env name="END_POINT" value="https://test-payment.momo.vn/v2/gateway/api" />
+      <env name="HASH_SECRET" value="S5FRCTQDS9CXZSMM6RXYLXZLUSPNIUYP" />
       <env name="IPN_URL" value="https://nonpurifying-poetastric-kyrie.ngrok-free.dev/api/momo/ipn-handler" />
+      <env name="PAYMENT_URL" value="https://sandbox.vnpayment.vn/paymentv2/vpcpay.html" />
       <env name="RETURN_URL" value="http://localhost:5173/order-success" />
       <env name="SECRET_KEY" value="K951B6PE1waDMi640xX08PD3vg6EkVlz" />
+      <env name="TMN_CODE" value="9RU3NH5W" />
     </envs>
     <module name="payment-service" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.paymentservice.PaymentServiceApplication" />

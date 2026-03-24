@@ -1,7 +1,7 @@
 package com.franchiseproject.orderservice.dto.request;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,9 +15,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaymentTransactionRequest {
+public class PromotionReserveRequest {
+    @NotNull(message = "customerId không được trống")
+    UUID customerId;
+    @NotNull(message = "promotionId không được trống")
+    UUID promotionId;
     @NotNull(message = "orderId không được trống")
     UUID orderId;
-    @NotNull(message = "paymentMethodId không được trống")
-    UUID paymentMethodId;
+    @PositiveOrZero(message = "Tiền không được âm")
+    BigDecimal totalItems;
 }
