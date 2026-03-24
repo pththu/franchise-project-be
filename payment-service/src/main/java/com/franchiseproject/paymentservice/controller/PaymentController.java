@@ -16,6 +16,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
 
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -24,6 +25,10 @@ import java.util.UUID;
 public class PaymentController {
     PaymentMethodService paymentMethodService;
     PaymentTransactionService paymentTransactionService;
+
+    @org.springframework.beans.factory.annotation.Value("${momo.return_url}")
+    @lombok.experimental.NonFinal
+    String feReturnUrl;
 
     @GetMapping("/getAll")
     public List<PaymentMethod> getAll() {
@@ -36,7 +41,7 @@ public class PaymentController {
     }
 
     /// resolve request option payment method(COD, MOMO, VNPAY)
-    @PostMapping("/option")
+    @PostMapping("/init")
     public ApiResponse<PaymentQRResponse> optionPaymentMethod(@Valid @RequestBody OptionPaymentMethodRequest optionPaymentMethodRequest) {
         PaymentQRResponse paymentQRResponse = paymentMethodService.optionPaymentMethod(optionPaymentMethodRequest);
         return ApiResponse.<PaymentQRResponse>builder()
@@ -78,6 +83,25 @@ public class PaymentController {
                 .data(paymentTransactionService.getPaymentTransactionByOrderId(orderId).getStatus())
                 .statusCode(200)
                 .build();
+    }
+
+    /// Callback VNPAY
+    @GetMapping("/vnpay-return")
+    public void vnpayReturn(@RequestParam Map<String, String> params, jakarta.servlet.http.HttpServletResponse response) throws Exception {
+        String result = paymentMethodService.handleVnpayCallback(params);
+        if (result != null && !result.isEmpty()) {
+            String[] parts = result.split("\\|");
+            String orderId = parts[0];
+            String typeOrder = parts[1];
+            
+            String redirectUrl = "POS".equalsIgnoreCase(typeOrder) 
+                    ? feReturnUrl.replace("/order-success", "/staff/order-success") 
+                    : feReturnUrl;
+                    
+            response.sendRedirect(redirectUrl + "?orderId=" + orderId);
+        } else {
+            response.sendRedirect(feReturnUrl);
+        }
     }
 
 }
