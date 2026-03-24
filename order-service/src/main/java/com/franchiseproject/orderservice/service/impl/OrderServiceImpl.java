@@ -173,7 +173,12 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
         order.setPaymentTransactionId(result.getPaymentTransactionId());
         if (result.getStatus() == StatusTransaction.SUCCESS) {
-            order.setOrderStatus(OrderStatus.PAID);
+            order.setOrderStatus(order.getTypeOrder() == TypeOrder.POS ? OrderStatus.COMPLETED : OrderStatus.PAID);
+            
+            // Trigger inventory commit for POS immediately
+            if (order.getTypeOrder() == TypeOrder.POS) {
+                commitInventory(order);
+            }
         } else if (result.getStatus() == StatusTransaction.FAILED
                 || result.getStatus() == StatusTransaction.CANCELLED
                 || result.getStatus() == StatusTransaction.EXPIRED) {
@@ -205,8 +210,8 @@ public class OrderServiceImpl implements OrderService {
         } else {
             order.setOrderStatus(OrderStatus.CANCELLED);
         }
-        orderRepository.save(order);
         inventoryClient.notifyOrderStatus(order.getId(), order.getOrderStatus().name());
+        inventoryClient.notifyNewOrder(order.getFranchiseId());
     }
 
 
@@ -246,22 +251,13 @@ public class OrderServiceImpl implements OrderService {
                     .build();
             inventoryClient.reserveStock(reserveReq);
         } else if (newStatus == OrderStatus.COMPLETED) {
-            List<InventoryReserveRequest.InventoryItemRequest> items = order.getOrderDetails().stream()
-                    .map(d -> InventoryReserveRequest.InventoryItemRequest.builder()
-                            .productVariantId(d.getProductId())
-                            .quantity(d.getQuantity())
-                            .build())
-                    .toList();
-            InventoryReserveRequest reserveReq = InventoryReserveRequest.builder()
-                    .locationId(order.getFranchiseId())
-                    .items(items)
-                    .build();
-            inventoryClient.commitStock(reserveReq);
+            commitInventory(order);
         }
 
         order.setOrderStatus(newStatus);
         orderRepository.save(order);
         inventoryClient.notifyOrderStatus(orderId, newStatus.name());
+        inventoryClient.notifyNewOrder(order.getFranchiseId());
     }
 
     @Override
@@ -457,6 +453,30 @@ public class OrderServiceImpl implements OrderService {
             log.error("Loyalty rollback failed", e);
         }
 
+    }
+
+    private void commitInventory(Order order) {
+        List<InventoryReserveRequest.InventoryItemRequest> items = order.getOrderDetails().stream()
+                .map(d -> InventoryReserveRequest.InventoryItemRequest.builder()
+                        .productVariantId(d.getProductId())
+                        .quantity(d.getQuantity())
+                        .build())
+                .toList();
+                
+        InventoryReserveRequest reserveReq = InventoryReserveRequest.builder()
+                .locationId(order.getFranchiseId())
+                .items(items)
+                .build();
+
+        if (order.getTypeOrder() == TypeOrder.POS) {
+            try {
+                inventoryClient.reserveStock(reserveReq);
+            } catch (Exception e) {
+                log.error("Failed to reserve stock before commit for POS order", e);
+            }
+        }
+
+        inventoryClient.commitStock(reserveReq);
     }
 
     private OrderResponse mapToOrderResponseWithCustomer(Order order) {

@@ -4,38 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-<<<<<<< Updated upstream
     <list default="true" id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/dto/response/ProductResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/dto/response/ProductResponse.java" afterDir="false" />
-=======
-    <list default="true" id="7493badb-6083-4884-b127-d8b07975d47c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/franchiseproject/apigateway/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/franchiseproject/apigateway/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity-access-service/.run/IdentityAccessServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/.run/IdentityAccessServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/controller/ProductStockController.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/controller/ProductStockController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/dto/response/StockCheckResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/repository/ProductStockRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/repository/ProductStockRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/ProductStockService.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/ProductStockService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/impl/ProductStockServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/impl/ProductStockServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/.run/OrderServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/.run/OrderServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/CustomerClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/CustomerClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/InventoryClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/InventoryClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/PaymentClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/PaymentClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/response/PaymentQRResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/response/PaymentQRResponse.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/service/impl/OrderServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/service/impl/OrderServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/dto/response/PaymentQRResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/dto/response/PaymentQRResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/exception/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/impl/PaymentMethodServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/impl/PaymentMethodServiceImpl.java" afterDir="false" />
->>>>>>> Stashed changes
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-<<<<<<< Updated upstream
   <component name="EmbeddingIndexingInfo">
     <option name="cachedIndexableFilesCount" value="582" />
   </component>
@@ -55,31 +32,25 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitLabMergeRequestFiltersHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPENED&quot;,
-    &quot;assignee&quot;: {
-      &quot;type&quot;: &quot;org.jetbrains.plugins.gitlab.mergerequest.ui.filters.GitLabMergeRequestsFiltersValue.MergeRequestsMemberFilterValue.MergeRequestsAssigneeFilterValue&quot;,
-      &quot;username&quot;: &quot;Minhlh_205&quot;,
-      &quot;fullname&quot;: &quot;Lê Hoàng Minh&quot;
-    }
-  }
-}</component>
+        &quot;lastFilter&quot;: {
+        &quot;state&quot;: &quot;OPENED&quot;,
+        &quot;assignee&quot;: {
+        &quot;type&quot;: &quot;org.jetbrains.plugins.gitlab.mergerequest.ui.filters.GitLabMergeRequestsFiltersValue.MergeRequestsMemberFilterValue.MergeRequestsAssigneeFilterValue&quot;,
+        &quot;username&quot;: &quot;Minhlh_205&quot;,
+        &quot;fullname&quot;: &quot;Lê Hoàng Minh&quot;
+        }
+        }
+        }</component>
   <component name="GitLabMergeRequestsSettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;first&quot;: &quot;https://git.fsoft-academy.edu.vn/hcm26_cpl_java_03/mockproject/projectteam2/be.git&quot;,
-    &quot;second&quot;: &quot;d7fb563a-102c-4236-9e1e-9af40a816b7b&quot;
-  }
-}</component>
-=======
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
->>>>>>> Stashed changes
+        &quot;selectedUrlAndAccountId&quot;: {
+        &quot;first&quot;: &quot;https://git.fsoft-academy.edu.vn/hcm26_cpl_java_03/mockproject/projectteam2/be.git&quot;,
+        &quot;second&quot;: &quot;d7fb563a-102c-4236-9e1e-9af40a816b7b&quot;
+        }
+        }</component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
-  &quot;isMigrated&quot;: true
-}</component>
-<<<<<<< Updated upstream
+        &quot;isMigrated&quot;: true
+        }</component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -92,15 +63,9 @@
     <urls />
   </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 8
-}</component>
+        &quot;associatedIndex&quot;: 8
+        }</component>
   <component name="ProjectId" id="3B7SlqmILMqJqKSZXt33KBCxHrV" />
-=======
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 1
-}</component>
-  <component name="ProjectId" id="3BO99TOLNAAa1a5xdNHH5XpKMsH" />
->>>>>>> Stashed changes
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
   </component>
@@ -108,83 +73,62 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-<<<<<<< Updated upstream
-    &quot;Maven.api-gateway [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.api-gateway [install].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.customer-service [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.franchise-service [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.franchise-service [install].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.inventory-service [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.inventory-service [install].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-=======
-    &quot;Maven.identity-access-service [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.identity-access-service [install].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.product-service [clean].executor&quot;: &quot;Run&quot;,
->>>>>>> Stashed changes
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-<<<<<<< Updated upstream
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-=======
->>>>>>> Stashed changes
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.ApiGatewayApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.CustomerServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.DeliveryServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.FranchiseServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.IdentityAccessServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.InventoryServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.LoyaltyServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.OrderServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.PaymentServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.ProductServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.PromotionServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.ReportServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.ShiftServiceApplication.executor&quot;: &quot;Run&quot;,
-<<<<<<< Updated upstream
-    &quot;git-widget-placeholder&quot;: &quot;sprint04__team02__updateUserCustomerManager__thu&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;T:/study/iuh/internship/code/FranchiseProject/sprint04/be&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.65747124&quot;,
-    &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
-    &quot;service.view.auto.scroll.to.source&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-=======
-    &quot;git-widget-placeholder&quot;: &quot;sprint04__team03__order__KNguyen&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
->>>>>>> Stashed changes
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Maven.api-gateway [clean].executor": "Run",
+    "Maven.api-gateway [install].executor": "Run",
+    "Maven.customer-service [clean].executor": "Run",
+    "Maven.franchise-service [clean].executor": "Run",
+    "Maven.franchise-service [install].executor": "Run",
+    "Maven.identity-access-service [clean].executor": "Run",
+    "Maven.inventory-service [clean].executor": "Run",
+    "Maven.inventory-service [install].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.ApiGatewayApplication.executor": "Run",
+    "Spring Boot.CustomerServiceApplication.executor": "Run",
+    "Spring Boot.DeliveryServiceApplication.executor": "Run",
+    "Spring Boot.FranchiseServiceApplication.executor": "Run",
+    "Spring Boot.IdentityAccessServiceApplication.executor": "Run",
+    "Spring Boot.InventoryServiceApplication.executor": "Run",
+    "Spring Boot.LoyaltyServiceApplication.executor": "Run",
+    "Spring Boot.OrderServiceApplication.executor": "Run",
+    "Spring Boot.PaymentServiceApplication.executor": "Run",
+    "Spring Boot.ProductServiceApplication.executor": "Run",
+    "Spring Boot.PromotionServiceApplication.executor": "Run",
+    "Spring Boot.ReportServiceApplication.executor": "Run",
+    "Spring Boot.ShiftServiceApplication.executor": "Run",
+    "git-widget-placeholder": "sprint04__team03__order__KNguyen",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "T:/study/iuh/internship/code/FranchiseProject/sprint04/be",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.65747124",
+    "run.configurations.included.in.services": "true",
+    "service.view.auto.scroll.to.source": "true",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
-<<<<<<< Updated upstream
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\OJT\sprint04\be\promotion-service\src\main\java\franchiseproject\promotion_service" />
       <recent name="D:\mockproject\inventory-service\src\main\java\franchiseproject\inventory_service" />
     </key>
   </component>
-=======
->>>>>>> Stashed changes
   <component name="RunDashboard">
     <option name="configurationTypes">
       <set>
@@ -194,8 +138,6 @@
         <option value="SpringBootApplicationConfigurationType" />
       </set>
     </option>
-<<<<<<< Updated upstream
-=======
     <option name="hiddenConfigurations">
       <map>
         <entry key="SpringBootApplicationConfigurationType">
@@ -207,38 +149,28 @@
         </entry>
       </map>
     </option>
->>>>>>> Stashed changes
     <option name="configurationStatuses">
       <map>
         <entry key="SpringBootApplicationConfigurationType">
           <value>
             <map>
               <entry key="ApiGatewayApplication" value="STOPPED" />
-<<<<<<< Updated upstream
-=======
               <entry key="CustomerServiceApplication" value="STOPPED" />
->>>>>>> Stashed changes
+              <entry key="DeliveryServiceApplication" value="FAILED" />
               <entry key="FranchiseServiceApplication" value="STOPPED" />
               <entry key="IdentityAccessServiceApplication" value="STOPPED" />
               <entry key="InventoryServiceApplication" value="STOPPED" />
               <entry key="LoyaltyServiceApplication" value="STOPPED" />
-<<<<<<< Updated upstream
-              <entry key="ProductServiceApplication" value="STOPPED" />
-=======
               <entry key="OrderServiceApplication" value="STOPPED" />
               <entry key="PaymentServiceApplication" value="STOPPED" />
               <entry key="ProductServiceApplication" value="STOPPED" />
               <entry key="PromotionServiceApplication" value="STOPPED" />
-              <entry key="ReportServiceApplication" value="STOPPED" />
-              <entry key="ShiftServiceApplication" value="STOPPED" />
->>>>>>> Stashed changes
             </map>
           </value>
         </entry>
       </map>
     </option>
   </component>
-<<<<<<< Updated upstream
   <component name="RunManager" selected="Spring Boot.ProductServiceApplication">
     <configuration default="true" type="JetRunConfigurationType">
       <method v="2">
@@ -250,9 +182,6 @@
       <option name="filePath" />
       <method v="2" />
     </configuration>
-=======
-  <component name="RunManager" selected="Spring Boot.OrderServiceApplication">
->>>>>>> Stashed changes
     <configuration name="DeliveryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="delivery-service" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.deliveryservice.DeliveryServiceApplication" />
@@ -268,16 +197,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-<<<<<<< Updated upstream
-=======
-    <configuration name="OrderServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="order-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.orderservice.OrderServiceApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
->>>>>>> Stashed changes
     <configuration name="ReportServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="report-service" />
@@ -295,20 +214,11 @@
       </method>
     </configuration>
     <list>
-<<<<<<< Updated upstream
       <item itemvalue="Spring Boot.OrderServiceApplication" />
       <item itemvalue="Spring Boot.DeliveryServiceApplication" />
       <item itemvalue="Spring Boot.FranchiseServiceApplication" />
       <item itemvalue="Spring Boot.ReportServiceApplication" />
       <item itemvalue="Spring Boot.ShiftServiceApplication" />
-=======
-      <item itemvalue="Spring Boot.DeliveryServiceApplication" />
-      <item itemvalue="Spring Boot.FranchiseServiceApplication" />
-      <item itemvalue="Spring Boot.OrderServiceApplication" />
-      <item itemvalue="Spring Boot.ReportServiceApplication" />
-      <item itemvalue="Spring Boot.ShiftServiceApplication" />
-      <item itemvalue="Spring Boot.PaymentServiceApplication" />
->>>>>>> Stashed changes
       <item itemvalue="Spring Boot.ApiGatewayApplication" />
       <item itemvalue="Spring Boot.LoyaltyServiceApplication" />
       <item itemvalue="Spring Boot.InventoryServiceApplication" />
@@ -322,18 +232,12 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-<<<<<<< Updated upstream
         <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
-=======
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
-        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-IU-252.23892.409" />
->>>>>>> Stashed changes
       </set>
     </attachedChunks>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-<<<<<<< Updated upstream
       <changelist id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="" />
       <created>1773838770596</created>
       <option name="number" value="Default" />
@@ -355,22 +259,12 @@
       <workItem from="1774194288171" duration="2450000" />
       <workItem from="1774244568220" duration="6245000" />
       <workItem from="1774327229873" duration="9343000" />
-=======
-      <changelist id="7493badb-6083-4884-b127-d8b07975d47c" name="Changes" comment="" />
-      <created>1774349100342</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1774349100342</updated>
-      <workItem from="1774349102391" duration="1021000" />
-      <workItem from="1774350139982" duration="14436000" />
->>>>>>> Stashed changes
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
-<<<<<<< Updated upstream
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
@@ -386,6 +280,4 @@
       </breakpoints>
     </breakpoint-manager>
   </component>
-=======
->>>>>>> Stashed changes
 </project>
