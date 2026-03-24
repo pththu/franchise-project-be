@@ -1,5 +1,6 @@
 package com.franchiseproject.orderservice.dto.request;
 
+import com.franchiseproject.orderservice.enums.StatusTransaction;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -16,5 +17,5 @@ public class PaymentResultRequest {
     String transactionRef;
     BigDecimal amount;
     String paymentMethod;
-    String status;
+    StatusTransaction status;
 }

@@ -2,7 +2,6 @@ package com.franchiseproject.orderservice.dto.request;
 
 import com.franchiseproject.orderservice.enums.TypeOrder;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,12 +20,16 @@ import java.util.UUID;
 public class CreateOrderRequest {
     @NotNull(message = "Không để trống franchise")
     UUID franchiseId;
+    @NotNull(message = "Không để trống phương thức thanh toán")
+    UUID paymentMethodId;
+//    @NotNull(message = "Không để trống người mua")
     UUID customerId;
     UUID staffId;
-    UUID promotionId;
+    UUID promotionId;//promotion được đã nhập
+    Integer point; //điểm loyalty
     String address;
     @PositiveOrZero(message = "Chỉ được nhập >= 0")
-    BigDecimal priceShip;
+    Long distance;
     @NotNull(message = "Không để trống")
     TypeOrder typeOrder;
     @NotNull(message = "Order phải có sản phẩm")

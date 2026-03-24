@@ -11,7 +11,8 @@ public class RestClientConfig {
     @Bean
     public RestClient apiRestClient() {
         return RestClient.builder()
-                .baseUrl("http://localhost:3000")
+                .baseUrl("http://localhost:3011")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 }

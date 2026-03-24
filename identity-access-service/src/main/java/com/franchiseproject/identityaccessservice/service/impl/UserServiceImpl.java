@@ -352,4 +352,9 @@ public class UserServiceImpl implements UserService {
                 .userResponse(userMapper.toUserResponse(user))
                 .build();
     }
+
+    @Override
+    public List<User> getUsersByIds(List<UUID> ids) {
+        return userRepository.findAllById(ids);
+    }
 }
