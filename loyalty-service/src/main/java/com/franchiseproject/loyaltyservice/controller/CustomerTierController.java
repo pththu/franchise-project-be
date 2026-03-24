@@ -22,7 +22,7 @@ public class CustomerTierController {
     CustomerTierService customerTierService;
 
     @GetMapping("/customers/{customerId}/franchises/{franchiseId}/tier-info")
-    public ApiResponse<CustomerTierResponse> getMyBenefits(
+    public ApiResponse<CustomerTierResponse> getCustomerTierInfo(
             @PathVariable UUID customerId,
             @PathVariable UUID franchiseId) {
 
