@@ -1,6 +1,7 @@
 package com.franchiseproject.orderservice.dto.response;
 
-
+import com.franchiseproject.orderservice.enums.DiscountType;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -12,9 +13,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ProductResponse {
-    UUID id;
-    String name;
-    BigDecimal price;
-    String status;
+public class PromotionDiscountResponse {
+    UUID promotionUsageId;
+    BigDecimal discountValue;
+    DiscountType discountType;
 }
