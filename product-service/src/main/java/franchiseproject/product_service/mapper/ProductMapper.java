@@ -21,8 +21,7 @@ public interface ProductMapper {
     @Mapping(target = "price", source = "salePrice")
 
     // 🔥 FIX QUAN TRỌNG NHẤT (JSON → LIST)
-    @Mapping(target = "imageUrls",
-            expression = "java(parseJsonToList(productVariant.getImageUrl()))")
+    @Mapping(target = "imageUrls", expression = "java(parseJsonToList(productVariant.getImageUrl()))")
 
     ProductVariantResponse toProductVariantResponse(ProductVariant productVariant);
 
@@ -32,7 +31,8 @@ public interface ProductMapper {
     // ===== HELPER =====
     default List<String> parseJsonToList(String json) {
         try {
-            if (json == null || json.isEmpty()) return List.of();
+            if (json == null || json.isEmpty())
+                return List.of();
             return new com.fasterxml.jackson.databind.ObjectMapper()
                     .readValue(json, List.class);
         } catch (Exception e) {

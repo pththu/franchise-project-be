@@ -1,14 +1,12 @@
 package com.franchiseproject.orderservice.service.impl;
 
 import com.franchiseproject.orderservice.dto.request.CreateOrderItemRequest;
-import com.franchiseproject.orderservice.dto.request.UpdateOrderItemRequest;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import com.franchiseproject.orderservice.client.ProductClient;
 import com.franchiseproject.orderservice.entity.Order;
 import com.franchiseproject.orderservice.entity.OrderDetail;
-import com.franchiseproject.orderservice.repository.OrderDetailRepository;
 import com.franchiseproject.orderservice.service.OrderDetailService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -27,7 +25,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderDetailServiceImpl implements OrderDetailService {
-    OrderDetailRepository orderDetailRepository;
     ProductClient productClient;
 
     @Override
@@ -35,7 +32,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     public List<OrderDetail> buildOrderDetails(List<CreateOrderItemRequest> items, Map<UUID, ProductResponse> apiProducts, Order order) {
         return items.stream()
                 .map(item -> {
-                    ProductResponse product = apiProducts.get(item.getProductId());
+                    ProductResponse product = apiProducts.get(item.getVariantId());
                     if (product == null) {
                         throw new AppException(ErrorCode.MISSING_PRODUCTS);
                     }
@@ -67,10 +64,10 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Override
     @Transactional
     public Map<UUID, ProductResponse> fetchProducts(List<CreateOrderItemRequest> items) {
-        List<UUID> productIds = items.stream()
-                .map(CreateOrderItemRequest::getProductId)
+        List<UUID> variantIds = items.stream()
+                .map(CreateOrderItemRequest::getVariantId)
                 .distinct()
                 .collect(Collectors.toList());
-        return productClient.getProductsByIds(productIds);
+        return productClient.getProductsByIds(variantIds);
     }
 }
