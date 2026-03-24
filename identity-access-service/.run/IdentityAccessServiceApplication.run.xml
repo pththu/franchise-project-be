@@ -23,9 +23,9 @@
       <env name="ATTRIBUTE" value="username" />
       <env name="CLIENT_ID" value="2uss9kc6ivur5kdsknq994op0k" />
       <env name="CLIENT_SECRET" value="qeg5nbgmqhgh11fkbjif0d5enlb63fjequ639mqicoqa8u4hh12" />
-      <env name="DB_PASSWORD" value="XSBBYPBmgdLKwrapWYDE4C29ZYVOczBX" />
-      <env name="DB_URL" value="jdbc:postgresql://dpg-d6nd4iv5r7bs73cv57lg-a.singapore-postgres.render.com/auth_franchise_qyzo" />
-      <env name="DB_USERNAME" value="sa" />
+      <env name="DB_PASSWORD" value="sapassword" />
+      <env name="DB_URL" value="jdbc:postgresql://localhost:5432/franchise" />
+      <env name="DB_USERNAME" value="postgres" />
       <env name="issuerURI" value="https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_bXpfambW9" />
       <env name="REGION" value="ap-southeast-1" />
       <env name="SECRET_ACCESS_KEY" value="IlQ00gdT4IMVucqwNheWacq6mPhhQuwCFABhsj0b" />
