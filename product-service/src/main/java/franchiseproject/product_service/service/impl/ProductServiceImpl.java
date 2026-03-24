@@ -2,8 +2,7 @@ package franchiseproject.product_service.service.impl;
 
 import franchiseproject.product_service.client.InventoryClient;
 import franchiseproject.product_service.client.TranslateClient; // ✅ ADD
-import franchiseproject.product_service.dto.request.CreateProductRequest;
-import franchiseproject.product_service.dto.request.SearchProductRequest;
+import franchiseproject.product_service.dto.request.*;
 import franchiseproject.product_service.dto.response.*;
 import franchiseproject.product_service.entity.ProductVariant;
 import franchiseproject.product_service.enums.ProductColor;
@@ -12,33 +11,23 @@ import franchiseproject.product_service.enums.ProductStatus;
 import franchiseproject.product_service.enums.ProductVariantStatus;
 import franchiseproject.product_service.exception.AppException;
 import franchiseproject.product_service.exception.ErrorCode;
-import franchiseproject.product_service.exception.NotFoundException;
 import franchiseproject.product_service.entity.Category;
 import franchiseproject.product_service.entity.Product;
 import franchiseproject.product_service.mapper.ProductMapper;
 import franchiseproject.product_service.repository.CategoryRepository;
 import franchiseproject.product_service.repository.ProductRepository;
 import franchiseproject.product_service.repository.ProductVariantRepository;
-import franchiseproject.product_service.repository.spec.ProductSpecifications;
 import franchiseproject.product_service.service.ProductService;
-import franchiseproject.product_service.specification.ProductSpecification;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import franchiseproject.product_service.dto.request.UpdateProductRequest;
-import franchiseproject.product_service.dto.request.UpdateProductVariantRequest;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -145,6 +134,52 @@ public class ProductServiceImpl implements ProductService {
 
         return  pv == null ? false : true;
     }
+
+    @Override
+    public Page<Product> filterProductsByCustomer(FilterProductsByCustomerRequest request) {
+
+
+        if (request.getFranchiseId() != null) {
+            List<UUID> variantIds = inventoryClient.getInStockVariantIds(request.getFranchiseId());
+            if (variantIds == null || variantIds.isEmpty()) {
+                return Page.empty();
+            }
+        }
+
+
+        String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
+                ? request.getKeyword().trim() : null;
+
+        List<ProductColor> colors = request.getColors() != null ? request.getColors()
+                .stream()
+                .map(c -> (c != null && !c.trim().isEmpty())
+                        ? ProductColor.valueOf(c.trim()) : null)
+                .toList() : null;
+
+        List<ProductSize> sizes = request.getSizes() != null ? request.getSizes()
+                .stream()
+                .map(size ->  (size != null && !size.trim().isEmpty())
+                            ? ProductSize.valueOf(size.trim()) : null)
+                .toList() : null;
+
+        Pageable pageable = PageRequest.of(
+                request.getPage().intValue(),
+                request.getSizePage().intValue(),
+                Sort.by(request.getSortBy()).ascending()
+        );
+
+        return productRepository.filterProducts(
+                request.getCategories(),
+                request.getFromPrice(),
+                request.getToPrice(),
+                keyword,
+                colors,
+                sizes,
+                request.getProductIds(),
+                pageable
+        );
+    }
+
 
     @Override
     @Transactional(readOnly = true)
