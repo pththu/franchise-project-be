@@ -3,20 +3,31 @@ package com.franchiseproject.orderservice.service;
 import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
 import com.franchiseproject.orderservice.dto.request.CreateOrderRequest;
+import com.franchiseproject.orderservice.dto.request.PaymentResultRequest;
 import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
 //import com.franchiseproject.orderservice.dto.response.OrderResponse;
+import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
 import com.franchiseproject.orderservice.dto.response.PaymentResponse;
+import com.franchiseproject.orderservice.entity.Order;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
 import org.springframework.data.domain.Page;
 
+import javax.swing.text.html.Option;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface OrderService {
-    UUID createOrder(CreateOrderRequest request);
+    PaymentQRResponse createOrder(CreateOrderRequest request);
+
+    PaymentQRResponse handleReserve(Order order, CreateOrderRequest request, BigDecimal totalItems);
+
+    PaymentQRResponse handlePayment(Order order, CreateOrderRequest request);
+
+    void handlePaymentResult(PaymentResultRequest paymentResultRequest);
 
     void cancelOrder(UUID orderId, UUID customerId);
 
@@ -54,6 +65,4 @@ public interface OrderService {
     Page<OrderResponse> getOrdersByCustomerIdAndStatus(UUID customerId, OrderStatus status, int page, int size);
 
     OrderResponse getOrderById(UUID orderId);
-
-    void updatePaymentResult(com.franchiseproject.orderservice.dto.request.PaymentResultRequest request);
 }

@@ -6,6 +6,7 @@ import com.franchiseproject.paymentservice.dto.request.CreatePaymentRequest;
 import com.franchiseproject.paymentservice.dto.request.PaymentResultRequest;
 import com.franchiseproject.paymentservice.dto.response.CreatePaymentResponse;
 import com.franchiseproject.paymentservice.service.VnpayService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +36,7 @@ import java.util.UUID;
 import java.math.BigDecimal;
 
 @Service
+@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class PaymentMethodServiceImpl implements PaymentMethodService {
@@ -85,6 +87,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         switch (paymentMethod.getMethodName()) {
             case "MOMO":
                 CreateMomoResponse createMomoResponse = momoService.buildCreateMomoQR(orderResponse, paymentMethod);
+                log.info("Create Momo QR Response:" + createMomoResponse.getPayUrl());
                 return PaymentQRResponse.builder()
                         .paymentTransactionId(UUID.fromString(createMomoResponse.getRequestId()))
                         .method("MOMO")

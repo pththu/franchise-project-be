@@ -74,21 +74,21 @@ public class MomoController {
         String typeOrder = "ONLINE";
 
         try {
-            boolean validSignature = momoService.verifyIpnSignature(params);
-            if (validSignature) {
-                String resultCodeStr = params.get("resultCode");
-                String transIdStr = params.get("transId");
-                String requestIdStr = params.get("requestId");
-
-                if (resultCodeStr != null && transIdStr != null && requestIdStr != null) {
-                    Integer resultCode = Integer.valueOf(resultCodeStr);
-                    Long transId = Long.valueOf(transIdStr);
-                    java.util.UUID paymentTransactionId = java.util.UUID.fromString(requestIdStr);
-
-                    paymentTransactionService.handlePaymentTransaction(transId, paymentTransactionId, resultCode);
-                }
-            }
-            
+//            boolean validSignature = momoService.verifyIpnSignature(params);
+//            if (validSignature) {
+//                String resultCodeStr = params.get("resultCode");
+//                String transIdStr = params.get("transId");
+//                String requestIdStr = params.get("requestId");
+//
+//                if (resultCodeStr != null && transIdStr != null && requestIdStr != null) {
+//                    Integer resultCode = Integer.valueOf(resultCodeStr);
+//                    Long transId = Long.valueOf(transIdStr);
+//                    java.util.UUID paymentTransactionId = java.util.UUID.fromString(requestIdStr);
+//
+//                    paymentTransactionService.handlePaymentTransaction(transId, paymentTransactionId, resultCode);
+//                }
+//            }
+//
             if (orderIdStr != null) {
                 com.franchiseproject.paymentservice.dto.response.order.OrderResponse order = orderClient.getOrderInfoByOrderId(java.util.UUID.fromString(orderIdStr));
                 if (order != null) {

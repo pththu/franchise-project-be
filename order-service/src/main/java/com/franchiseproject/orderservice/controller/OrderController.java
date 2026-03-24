@@ -5,6 +5,9 @@ import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.request.PaymentResultRequest;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
+import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
+import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
+import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
 import com.franchiseproject.orderservice.service.OrderService;
@@ -42,13 +45,13 @@ public class OrderController {
 
     /// createOrder cho staff tại các POS
     @PostMapping("/create-order")
-    public ApiResponse<UUID> createOrder(
+    public ApiResponse<PaymentQRResponse> createOrder(
             @RequestBody @Valid CreateOrderRequest request
     ) {
-        UUID response = orderService.createOrder(request);
-        return ApiResponse.<UUID>builder()
+        PaymentQRResponse paymentQRResponse = orderService.createOrder(request);
+        return ApiResponse.<PaymentQRResponse>builder()
                 .message("Tạo thành công!")
-                .data(response)
+                .data(paymentQRResponse)
                 .statusCode(200)
                 .errors(null)
                 .build();
@@ -128,6 +131,22 @@ public class OrderController {
         return ResponseEntity.ok("Estimate delivery time success");
     }
 
+
+//    @PutMapping("/{orderId}")
+//    public ApiResponse<OrderResponse> updateOrder(
+//            @PathVariable UUID orderId,
+//            @RequestBody @Valid UpdateOrderRequest request
+//    ) {
+//        OrderResponse response = orderService.updateOrder(orderId, request);
+//
+//        return ApiResponse.<OrderResponse>builder()
+//                .message("Cập nhật đơn hàng thành công")
+//                .data(response)
+//                .statusCode(200)
+//                .errors(null)
+//                .build();
+//    }
+
     // Thêm địa chỉ cho đơn hàng Online
     @PostMapping("/online/address")
     public ApiResponse<Void> addAddressOnlineOrder(
@@ -155,10 +174,8 @@ public class OrderController {
 
     @PostMapping("/payment-result")
     public ResponseEntity<String> receivePaymentResult(@RequestBody PaymentResultRequest request) {
-
-        System.out.println("Received payment result: " + request);
-        orderService.updatePaymentResult(request);
-        return ResponseEntity.ok("Payment result received");
+        orderService.handlePaymentResult(request);
+        return ResponseEntity.ok("Payment result received" + request.toString());
     }
 
 
