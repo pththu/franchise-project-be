@@ -49,7 +49,8 @@ public class SecurityConfig {
                         "/api/products/categories/get-all",
                         "/api/products/franchise/**",
                         "/api/franchises",
-                        "/api/products/search-by-ids"
+                        "/api/products/search-by-ids",
+                        "/api/products/filter",
         };
 
         @Bean
