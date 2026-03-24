@@ -1,26 +1,32 @@
 package com.franchiseproject.orderservice.service.impl;
 
+import com.franchiseproject.orderservice.client.LoyaltyClient;
+import com.franchiseproject.orderservice.client.PaymentClient;
+import com.franchiseproject.orderservice.client.PromotionClient;
 import com.franchiseproject.orderservice.dto.*;
 import com.franchiseproject.orderservice.dto.request.*;
-import com.franchiseproject.orderservice.dto.response.PaymentResponse;
+import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
+import com.franchiseproject.orderservice.dto.response.PromotionDiscountResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
-import com.franchiseproject.orderservice.client.PaymentClient;
+import com.franchiseproject.orderservice.enums.TypeOrder;
 import com.franchiseproject.orderservice.client.ProductClient;
+import com.franchiseproject.orderservice.client.CustomerClient;
+import com.franchiseproject.orderservice.dto.response.CustomerResponse;
+import com.franchiseproject.orderservice.enums.StatusTransaction;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import com.franchiseproject.orderservice.mapper.OrderMapper;
 import com.franchiseproject.orderservice.entity.Order;
 import com.franchiseproject.orderservice.entity.OrderDetail;
-import com.franchiseproject.orderservice.entity.OrderStatusLog;
 import com.franchiseproject.orderservice.repository.OrderRepository;
-import com.franchiseproject.orderservice.repository.OrderStatusLogRepository;
 import com.franchiseproject.orderservice.service.OrderDetailService;
 import com.franchiseproject.orderservice.service.OrderService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,10 +34,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -39,40 +45,134 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderServiceImpl implements OrderService {
     OrderRepository orderRepository;
-    OrderStatusLogRepository orderStatusLogRepository;
     OrderDetailService orderDetailService;
     OrderMapper orderMapper;
     RedisTemplate<String, Object> redisTemplate;
     ProductClient productClient;
+    CustomerClient customerClient;
+    PromotionClient promotionClient;
+    LoyaltyClient loyaltyClient;
     PaymentClient paymentClient;
 
     @Override
     public List<OrderResponse> getAll() {
         return orderRepository.findAll()
                 .stream()
-                .map(orderMapper::toOrderResponse)
+                .map(this::mapToOrderResponseWithCustomer)
                 .toList();
     }
 
-    /// Client gửi request tạo order và trả lại orderId lên Client
+    @Override
+    public List<OrderResponse> searchOrderById(String keyword) {
+        List<UUID> customerIds = customerClient.searchCustomerIdsByKeyword(keyword);
+        List<Order> orders;
+        if (customerIds.isEmpty()) {
+            orders = orderRepository.searchOrderByIdLike(keyword);
+        } else {
+            orders = orderRepository.searchOrdersByCustomerIdsWithoutFranchise(keyword, customerIds);
+        }
+
+        List<UUID> activeCustomerIds = orders.stream()
+                .map(Order::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(activeCustomerIds);
+
+        return orders.stream()
+                .map(order -> {
+                    OrderResponse res = orderMapper.toOrderResponse(order);
+                    var customer = customerMap.get(order.getCustomerId());
+                    res.setCustomerName(customer != null ? customer.getFullName() : "Guest");
+                    return res;
+                })
+                .toList();
+    }
+
+    /// Client gửi request tạo order
+    @Override
+    public PaymentQRResponse createOrder(CreateOrderRequest request) {
+        Order order = buildOrder(request);
+        try {
+            Map<UUID, ProductResponse> apiProducts = orderDetailService.fetchProducts(request.getItems());
+            List<OrderDetail> details = orderDetailService.buildOrderDetails(request.getItems(), apiProducts, order);
+            order.setOrderDetails(details);
+            BigDecimal totalItems = orderDetailService.calculateTotal(details);
+            order.setTotalDue(totalItems);//tổng hóa đơn khi chưa trừ
+            orderRepository.save(order); // save lần một lấy orderId
+            return handleReserve(order, request, totalItems);
+        } catch (Exception e) {
+            log.error("Create order failed at initial step", e);
+            order.setOrderStatus(OrderStatus.FAILED_ORDER);
+            orderRepository.save(order);
+            throw new AppException(ErrorCode.SYSTEM_ERROR);
+        }
+    }
+
+    /// call promotion-service và loyalty-service để giữ chỗ
+    @Override
+    public PaymentQRResponse handleReserve(Order order, CreateOrderRequest request, BigDecimal totalItems) {
+        boolean usedLoyalty = false;
+        boolean usedPromotion = false;
+        try {
+            BigDecimal discount = BigDecimal.ZERO;
+            if (request.getPoint() != null) {
+                discount = loyaltyClient.apiLoyaltyReserve(request.getCustomerId(), request.getPoint());
+                usedLoyalty = discount.compareTo(BigDecimal.ZERO) > 0;
+            } else if (request.getPromotionId() != null) {
+                PromotionDiscountResponse promotion = promotionClient.apiPromotionReserve(request.getPromotionId(),
+                        request.getCustomerId(), order.getId(), totalItems);
+                discount = promotion.getDiscountValue();
+                usedPromotion = discount.compareTo(BigDecimal.ZERO) > 0;
+            }
+            BigDecimal finalTotal = calculateOrder(totalItems, request.getDistance(), discount);
+            order.setTotalDue(finalTotal);
+            order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
+            orderRepository.save(order);// save lần 2 sau khi set giá cả các thứ.
+            return handlePayment(order, request);
+        } catch (AppException a) {
+            log.error("Create order failed", a);
+            safeRollback(request.getCustomerId(), request.getFranchiseId(),
+                    order.getId(), request.getPoint(), usedPromotion, usedLoyalty);
+            order.setOrderStatus(OrderStatus.FAILED_ORDER);
+            throw a;
+        }
+    }
+
+    @Override
+    public PaymentQRResponse handlePayment(Order order, CreateOrderRequest request) {
+        try {
+            return paymentClient.createTransaction(order.getId(), request.getPaymentMethodId());
+        } catch (Exception e) {
+            log.error("Payment init failed", e);
+            order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
+            orderRepository.save(order);
+            throw new AppException(ErrorCode.PAYMENT_INIT_FAILED);
+        }
+    }
+
     @Override
     @Transactional
-    public UUID createOrder(CreateOrderRequest request) {
-        Order order = buildOrder(request);
-        Map<UUID, ProductResponse> apiProducts = orderDetailService.fetchProducts(request.getItems());
-        List<OrderDetail> details = orderDetailService.buildOrderDetails(request.getItems(), apiProducts, order);
-        BigDecimal totalItems = orderDetailService.calculateTotal(details);
-        BigDecimal discount = productClient.validateAndCalculate(request.getCustomerId(), request.getPromotionId(), totalItems);
-        BigDecimal finalTotal = totalItems.add(request.getPriceShip().subtract(discount));//cần ý kiến nghiệp vụ về priceShip
-        order.setTotalDue(finalTotal);
-        order.setOrderDetails(details);
-        order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
+    public void handlePaymentResult(PaymentResultRequest result) {
+        Order order = orderRepository.findById(result.getOrderId())
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        ;
+        order.setPaymentTransactionId(result.getPaymentTransactionId());
+        if (result.getStatus() == StatusTransaction.SUCCESS) {
+            order.setOrderStatus(OrderStatus.PAID);
+        } else if (result.getStatus() == StatusTransaction.FAILED
+                || result.getStatus() == StatusTransaction.CANCELLED
+                || result.getStatus() == StatusTransaction.EXPIRED) {
+            order.setOrderStatus(OrderStatus.FAILED_ORDER);
+        }
         orderRepository.save(order);
-        return order.getId();
     }
+
 
     @Override
     @Transactional
@@ -97,15 +197,6 @@ public class OrderServiceImpl implements OrderService {
             order.setOrderStatus(OrderStatus.CANCELLED);
         }
         orderRepository.save(order);
-        orderStatusLogRepository.save(
-                OrderStatusLog.builder()
-                        .statusId(UUID.randomUUID())
-                        .fromStatus(status)
-                        .toStatus("CANCELLED")
-                        .noteLog("Customer cancelled order")
-                        .order(order)
-                        .build()
-        );
     }
 
 
@@ -114,9 +205,8 @@ public class OrderServiceImpl implements OrderService {
                 .franchiseId(request.getFranchiseId())
                 .customerId(request.getCustomerId())
                 .staffId(request.getStaffId())
-                .promotionId(request.getPromotionId())
                 .address(request.getAddress())
-                .priceShip(request.getPriceShip())
+                .priceShip(BigDecimal.valueOf(request.getDistance()).multiply(BigDecimal.valueOf(20000))) //1km = 20000vnd
                 .typeOrder(request.getTypeOrder())
                 .orderStatus(OrderStatus.CREATED)
                 .build();
@@ -140,142 +230,36 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponse> getOrderByCustomerId(UUID customerId) {
         List<Order> o = orderRepository.findAllByCustomerId(customerId);
-        return o.stream().map(orderMapper::toOrderResponse).toList();
+        return o.stream().map(this::mapToOrderResponseWithCustomer).toList();
     }
 
-    @Override
-    @Transactional
-    public OrderResponse updateOrder(UUID orderId, UpdateOrderRequest request) {
 
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-
-        OrderStatus currentStatus = order.getOrderStatus();
-
-        //  Không cho update nếu đã finalized
-        if (currentStatus == OrderStatus.COMPLETED
-                || currentStatus == OrderStatus.CANCELLED
-                || currentStatus == OrderStatus.REFUNDED
-                || currentStatus == OrderStatus.FAILED_ORDER) {
-            throw new AppException(ErrorCode.ORDER_ALREADY_FINALIZED);
-        }
-
-        //  Validate items
-        if (request.getItems() == null || request.getItems().isEmpty()) {
-            throw new AppException(ErrorCode.ITEM_ORDER_NOT_NULL);
-        }
-
-        //  Validate shipping price
-        BigDecimal shipping = request.getPriceShip() != null
-                ? request.getPriceShip()
-                : BigDecimal.ZERO;
-
-        if (shipping.compareTo(BigDecimal.ZERO) < 0) {
-            throw new AppException(ErrorCode.INVALID_SHIPPING_PRICE);
-        }
-
-        //  Lấy product thật từ product-service
-        Map<UUID, ProductResponse> apiProducts =
-                orderDetailService.fetchProductsForUpdate(request.getItems());
-
-        //  Xóa detail cũ (đảm bảo có orphanRemoval = true)
-        order.getOrderDetails().clear();
-
-        List<OrderDetail> newDetails = new ArrayList<>();
-
-        for (UpdateOrderItemRequest item : request.getItems()) {
-
-            ProductResponse product = apiProducts.get(item.getProductId());
-
-            if (product == null) {
-                throw new AppException(ErrorCode.MISSING_PRODUCTS);
-            }
-
-            if (item.getQuantity() == null || item.getQuantity() <= 0) {
-                throw new AppException(ErrorCode.OUT_OF_STOCK);
-            }
-
-            OrderDetail detail = OrderDetail.builder()
-                    .productId(product.getId())
-                    .productNameSnapshot(product.getName())
-                    .priceSnapshot(product.getPrice()) // không tin client
-                    .quantity(item.getQuantity())
-                    .order(order)
-                    .build();
-
-            newDetails.add(detail);
-        }
-
-        //  Tính lại totalItems
-        BigDecimal totalItems = newDetails.stream()
-                .map(d -> d.getPriceSnapshot()
-                        .multiply(BigDecimal.valueOf(d.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        //  Tính lại discount
-        BigDecimal discount = productClient.validateAndCalculate(
-                order.getCustomerId(),
-                order.getPromotionId(),
-                totalItems
-        );
-
-        BigDecimal finalTotal = totalItems
-                .add(shipping)
-                .subtract(discount);
-
-        //  Update thông tin order
-        order.setPriceShip(shipping);
-        order.setTotalDue(finalTotal);
-        order.setOrderDetails(newDetails);
-
-        if (request.getStaffId() != null) {
-            order.setStaffId(request.getStaffId());
-        }
-
-        if (request.getAddress() != null) {
-            order.setAddress(request.getAddress());
-        }
-
-        if (request.getTypeOrder() != null) {
-            order.setTypeOrder(request.getTypeOrder());
-        }
-
-        Order updatedOrder = orderRepository.save(order);
-
-        //  Log update
-        orderStatusLogRepository.save(
-                OrderStatusLog.builder()
-                        .statusId(UUID.randomUUID())
-                        .fromStatus(currentStatus.name())
-                        .toStatus(currentStatus.name())
-                        .noteLog("Order updated. New total: " + finalTotal)
-                        .order(updatedOrder)
-                        .build()
-        );
-
-        return orderMapper.toOrderResponse(updatedOrder);
-    }
 
     @Override
-    public Page<OrderResponse> getOrdersByFranchiseAndStatus(
+    public Page<OrderResponse> getOrdersByFranchiseAndFilters(
             UUID franchiseId,
             OrderStatus status,
+            TypeOrder typeOrder,
             int page,
             int size
     ) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "createAt")
-        );
-        Page<Order> orders;
-        if (status != null) {
-            orders = orderRepository.findByFranchiseIdAndOrderStatus(franchiseId, status, pageable);
-        } else {
-            orders = orderRepository.findByFranchiseId(franchiseId, pageable);
-        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
+        Page<Order> orders = orderRepository.findByFranchiseIdAndFilters(franchiseId, status, typeOrder, pageable);
 
-        return orders.map(orderMapper::toOrderResponse);
+        List<UUID> customerIds = orders.getContent().stream()
+                .map(Order::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
+
+        return orders.map(order -> {
+            OrderResponse res = orderMapper.toOrderResponse(order);
+            var customer = customerMap.get(order.getCustomerId());
+            res.setCustomerName(customer != null ? customer.getFullName() : "Guest");
+            return res;
+        });
     }
 
 
@@ -307,8 +291,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-//        order.setIsSpecial(true);
-
         orderRepository.save(order);
     }
 
@@ -324,41 +306,59 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> searchOrders(UUID franchiseId, String keyword) {
-        List<Order> orders = orderRepository.searchOrders(franchiseId, keyword);
+        List<UUID> customerIds = customerClient.searchCustomerIdsByKeyword(keyword);
+        List<Order> orders;
+        if (customerIds.isEmpty()) {
+            orders = orderRepository.searchOrders(franchiseId, keyword);
+        } else {
+            orders = orderRepository.searchOrdersByCustomerIds(franchiseId, keyword, customerIds);
+        }
+
+        List<UUID> activeCustomerIds = orders.stream()
+                .map(Order::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(activeCustomerIds);
+
         return orders.stream()
-                .map(orderMapper::toOrderResponse)
+                .map(order -> {
+                    OrderResponse res = orderMapper.toOrderResponse(order);
+                    var customer = customerMap.get(order.getCustomerId());
+                    res.setCustomerName(customer != null ? customer.getFullName() : "Guest");
+                    return res;
+                })
                 .toList();
     }
 
+
     @Override
-    public Page<OrderResponse> getOrdersByStatus(
+    public Page<OrderResponse> getOrdersByFilters(
             OrderStatus status,
+            TypeOrder typeOrder,
             int page,
             int size
     ) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "createAt")
-        );
-        Page<Order> orders;
-        if (status == null) {
-            orders = orderRepository.findAll(pageable);
-        } else {
-            orders = orderRepository.findByOrderStatus(status, pageable);
-        }
-        return orders.map(orderMapper::toOrderResponse);
-    }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
+        Page<Order> orders = orderRepository.findByFilters(status, typeOrder, pageable);
 
-    @Override
-    public List<OrderResponse> searchOrderById(String keyword) {
-
-        List<Order> orders = orderRepository.searchOrderByIdLike(keyword);
-
-        return orders.stream()
-                .map(orderMapper::toOrderResponse)
+        List<UUID> customerIds = orders.getContent().stream()
+                .map(Order::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
                 .toList();
+
+        Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
+
+        return orders.map(order -> {
+            OrderResponse res = orderMapper.toOrderResponse(order);
+            var customer = customerMap.get(order.getCustomerId());
+            res.setCustomerName(customer != null ? customer.getFullName() : "Guest");
+            return res;
+        });
     }
+
 
     @Override
     public Page<OrderResponse> getOrdersByCustomerIdAndStatus(
@@ -385,22 +385,52 @@ public class OrderServiceImpl implements OrderService {
                     pageable
             );
         }
-        return orders.map(orderMapper::toOrderResponse);
+        return orders.map(this::mapToOrderResponseWithCustomer);
     }
 
     @Override
     public OrderResponse getOrderById(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-        return orderMapper.toOrderResponse(order);
+        return mapToOrderResponseWithCustomer(order);
     }
 
-    @Override
-    @Transactional
-    public PaymentResponse getOrder(UUID orderId) {
-        Order order = orderRepository.findOrderById(orderId)
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-        return orderMapper.toPaymentResponse(order);
+    /// Tính số tiền cần trả
+    private BigDecimal calculateOrder(BigDecimal totalItems, Long distance, BigDecimal discount) {
+        BigDecimal priceShip = BigDecimal.valueOf(distance).multiply(BigDecimal.valueOf(20000));
+        return totalItems.add(priceShip).subtract(discount);
+    }
+
+    /// Dùng để traceback
+    private void safeRollback(UUID customerId, UUID franchiseId, UUID orderId, Integer pointsToRefund,
+                              boolean usedPromotion, boolean usedLoyalty) {
+        try {
+            if (usedPromotion) {
+                promotionClient.apiPromotionTraceBack(orderId, OrderStatus.FAILED_ORDER);
+            }
+        } catch (Exception e) {
+            log.error("Promotion rollback failed", e);
+        }
+
+        try {
+            if (usedLoyalty) {
+                loyaltyClient.apiLoyaltyTraceBackPoints(customerId, franchiseId, orderId, pointsToRefund);
+            }
+        } catch (Exception e) {
+            log.error("Loyalty rollback failed", e);
+        }
+
+    }
+
+    private OrderResponse mapToOrderResponseWithCustomer(Order order) {
+        OrderResponse res = orderMapper.toOrderResponse(order);
+        if (order.getCustomerId() != null) {
+            CustomerResponse c = customerClient.getCustomerById(order.getCustomerId());
+            if (c != null) {
+                res.setCustomerName(c.getFullName());
+            }
+        }
+        return res;
     }
 }
 

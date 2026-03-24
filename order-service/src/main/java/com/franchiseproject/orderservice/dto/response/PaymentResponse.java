@@ -1,7 +1,6 @@
 package com.franchiseproject.orderservice.dto.response;
 
 import com.franchiseproject.orderservice.enums.OrderStatus;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

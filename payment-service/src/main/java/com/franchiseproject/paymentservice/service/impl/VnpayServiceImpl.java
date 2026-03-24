@@ -23,7 +23,7 @@ public class VnpayServiceImpl implements VnpayService {
     @Override
     public CreatePaymentResponse createPaymentUrl(CreatePaymentRequest request,
                                                   HttpServletRequest httpRequest) throws Exception {
-        String txnRef = VNPayUtil.generateTxnRef();
+        String txnRef = request.getOrderId().toString() + "_" + VNPayUtil.generateTxnRef();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         formatter.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         String createDate = formatter.format(new Date());

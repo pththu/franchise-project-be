@@ -38,12 +38,12 @@ public class Order {
     UUID staffId;
     @Column(name = "payment_transaction_id")
     UUID paymentTransactionId;
-    @Column(name = "promotion_id")
-    UUID promotionId;
     @Column(name = "address")
     String address;
+    @Column(name = "total_discount", precision = 12, scale = 2)
+    BigDecimal totalDiscount; //tổng số tiền đã trừ
     @Column(name = "total_due", precision = 12, scale = 2, nullable = false)
-    BigDecimal totalDue;
+    BigDecimal totalDue; //tổng số tiền phải trả
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     TypeOrder typeOrder;

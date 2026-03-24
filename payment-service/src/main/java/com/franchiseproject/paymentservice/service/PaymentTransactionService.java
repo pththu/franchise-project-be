@@ -18,5 +18,5 @@ public interface PaymentTransactionService {
 
     void expirePendingTransactions();
 
-    void createPaymentTransaction(PaymentTransaction paymentTransaction);
+    PaymentTransaction createPaymentTransaction(PaymentTransaction paymentTransaction);
 }

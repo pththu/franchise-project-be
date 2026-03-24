@@ -25,4 +25,5 @@ public interface UserService {
     Page<User> getAll(int page);
     Page<User> search(SeachUsersRequest request);
     StatsCountUserResponse countUsers();
+    List<User> getUsersByIds(List<UUID> ids);
 }

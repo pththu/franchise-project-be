@@ -24,7 +24,8 @@ public class OrderClient {
             ApiResponse<OrderResponse> response = restClient.get()
                     .uri("/api/orders/detail/{orderId}", orderId)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<>() {});
+                    .body(new ParameterizedTypeReference<>() {
+                    });
             return response.getData();
         } catch (Exception e) {
             throw new AppException(ErrorCode.NOT_FOUND_ORDER);
@@ -46,7 +47,6 @@ public class OrderClient {
             throw new AppException(ErrorCode.UPDATE_ORDER_STATUS_FAILED);
         }
     }
-
 
     /// Gửi kết quả giao dịch cho order set lại trạng thái
     public void sendPaymentResult(PaymentResultRequest request) {

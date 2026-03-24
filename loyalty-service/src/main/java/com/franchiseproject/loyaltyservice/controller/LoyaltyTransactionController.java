@@ -3,6 +3,7 @@ package com.franchiseproject.loyaltyservice.controller;
 import com.franchiseproject.loyaltyservice.dto.ApiResponse;
 import com.franchiseproject.loyaltyservice.dto.request.DeductPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.request.EarnPointsRequest;
+import com.franchiseproject.loyaltyservice.dto.request.RefundPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.response.EarnPointsResponse;
 import com.franchiseproject.loyaltyservice.dto.response.TransactionHistoryResponse;
 import com.franchiseproject.loyaltyservice.service.LoyaltyTransactionService;
@@ -49,6 +50,15 @@ public class LoyaltyTransactionController {
                 .statusCode(200)
                 .message("Earn points successfully")
                 .data(loyaltyTransactionService.earnPoints(request))
+                .build();
+    }
+
+    @PostMapping("/refund")
+    public ApiResponse<EarnPointsResponse> refundPoints(@Valid @RequestBody RefundPointsRequest request) {
+        return ApiResponse.<EarnPointsResponse>builder()
+                .statusCode(200)
+                .message("Refund points successfully")
+                .data(loyaltyTransactionService.refundPoints(request))
                 .build();
     }
 }

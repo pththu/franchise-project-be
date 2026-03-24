@@ -8,6 +8,7 @@ import com.franchiseproject.customerservice.dto.response.CustomerDetailResponse;
 import com.franchiseproject.customerservice.dto.response.CustomerFranchiseResponse;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
+import com.franchiseproject.customerservice.enums.CustomerType;
 import com.franchiseproject.customerservice.mapper.CustomerMapper;
 import com.franchiseproject.customerservice.entity.CustomerFranchise;
 import com.franchiseproject.customerservice.service.CustomerService;
@@ -150,4 +151,90 @@ public class CustomerController {
 //                .message("Sync customer successfully")
 //                .build();
 //    }
+
+    // ================== READ ==================
+
+    // 1. Dành cho Admin: Xem toàn bộ khách hàng trên hệ thống
+    @GetMapping("/admin")
+    public ApiResponse<PageResponse<CustomerFranchise>> getAllCustomersForAdmin(
+            @RequestParam(required = false) CustomerStatus status,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.<PageResponse<CustomerFranchise>>builder()
+                .statusCode(200)
+                .message("Get all customers successfully")
+                .data(customerService.getCustomersForAdmin(status, pageable))
+                .build();
+    }
+
+    // 2. Dành cho Manager: Chỉ xem khách của Franchise
+    @GetMapping("/franchise")
+    public ApiResponse<PageResponse<CustomerFranchise>> getCustomersForManager(
+            @RequestParam UUID franchiseId, // Trong thực tế, Extract UUID này từ JWT Token của Manager qua filter
+            @RequestParam(required = false) CustomerStatus status,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.<PageResponse<CustomerFranchise>>builder()
+                .statusCode(200)
+                .message("Get franchise customers successfully")
+                .data(customerService.getCustomersForManager(franchiseId, status, pageable))
+                .build();
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<CustomerFranchise> getCustomerDetail(@PathVariable UUID id) {
+        return ApiResponse.<CustomerFranchise>builder()
+                .statusCode(200)
+                .data(customerService.getCustomerById(id))
+                .build();
+    }
+
+    // ================== CREATE / SYNC ==================
+
+    // 3. Nhân viên tạo khách hàng tại quầy POS
+    @PostMapping("/franchise/{franchiseId}")
+    public ApiResponse<CustomerFranchise> createCustomerAtFranchise(
+            @PathVariable UUID franchiseId,
+            @RequestParam UUID customerId, // ID được Identity Service sinh ra khi đăng ký SĐT
+            @RequestParam(required = false) CustomerType type) {
+        return ApiResponse.<CustomerFranchise>builder()
+                .statusCode(201)
+                .message("Link customer to franchise successfully")
+                .data(customerService.createCustomerAtFranchise(customerId, franchiseId, type))
+                .build();
+    }
+
+    // 4. API Nội bộ: Identity Service gọi sang khi user tự tải App và đăng ký account
+    @PostMapping("/internal/sync")
+    public ApiResponse<Void> syncCustomerFromIdentity(
+            @RequestParam UUID customerId,
+            @RequestParam(required = false) CustomerType type) {
+        customerService.syncCustomerFromIdentity(customerId, type);
+        return ApiResponse.<Void>builder()
+                .statusCode(200)
+                .message("Sync customer successfully")
+                .build();
+    }
+
+    // ================== UPDATE & DELETE ==================
+
+    // 5. Cập nhật trạng thái
+    @PatchMapping("/{id}/status")
+    public ApiResponse<CustomerFranchise> updateStatus(
+            @PathVariable UUID id,
+            @RequestParam CustomerStatus status) {
+        return ApiResponse.<CustomerFranchise>builder()
+                .statusCode(200)
+                .message("Update customer status successfully")
+                .data(customerService.updateCustomerStatus(id, status))
+                .build();
+    }
+
+    // 6. Xóa tài khoản (Soft delete cho cả User tự xóa hoặc Staff xóa)
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteCustomer(@PathVariable UUID id) {
+        customerService.deleteCustomer(id);
+        return ApiResponse.<Void>builder()
+                .statusCode(200)
+                .message("Delete customer successfully")
+                .build();
+    }
 }

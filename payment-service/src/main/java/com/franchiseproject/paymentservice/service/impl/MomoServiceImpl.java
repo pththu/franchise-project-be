@@ -46,6 +46,17 @@ public class MomoServiceImpl implements MomoService {
         String orderInfo = "ThanhToanHoaDon_" + orderResponse.getId();
         long amount = orderResponse.getTotalDue().longValueExact();
 
+        String backendReturnUrl = momoProperties.getReturn_url(); // fallback
+        try {
+            jakarta.servlet.http.HttpServletRequest request = ((org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.currentRequestAttributes()).getRequest();
+            String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), "");
+            backendReturnUrl = baseUrl + "/api/momo/return";
+        } catch (Exception e) {
+            log.warn("Could not determine dynamic Backend returnUrl for Momo");
+        }
+
+        String redirectUrl = backendReturnUrl;
+
         PaymentTransaction paymentTransaction = paymentTransactionService.buildPaymentTransaction(orderResponse, paymentMethod);
         paymentTransaction.changeStatus(StatusTransaction.PENDING);
         paymentTransactionRepository.save(paymentTransaction);
@@ -54,7 +65,7 @@ public class MomoServiceImpl implements MomoService {
                 "accessKey=%s&amount=%d&extraData=%s&ipnUrl=%s&orderId=%s&orderInfo=%s&partnerCode=%s&redirectUrl=%s&requestId=%s&requestType=%s",
                 momoProperties.getAccess_key(), amount, "", momoProperties.getIpn_url(),
                 orderResponse.getId(), orderInfo, momoProperties.getPartner_code(),
-                momoProperties.getReturn_url(), paymentTransaction.getId(), momoProperties.getRequest_type());
+                redirectUrl, paymentTransaction.getId(), momoProperties.getRequest_type());
 
         log.info("MoMo rawSignature: {}", rawSignature);
         try {
@@ -71,7 +82,7 @@ public class MomoServiceImpl implements MomoService {
                 .partnerCode(momoProperties.getPartner_code())
                 .requestType(momoProperties.getRequest_type())
                 .ipnUrl(momoProperties.getIpn_url())
-                .redirectUrl(momoProperties.getReturn_url())
+                .redirectUrl(redirectUrl)
                 .orderId(orderResponse.getId().toString())
                 .orderInfo(orderInfo)
                 .requestId(paymentTransaction.getId().toString())

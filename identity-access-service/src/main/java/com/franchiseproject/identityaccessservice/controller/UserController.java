@@ -146,6 +146,20 @@ public class UserController {
                 .build();
     }
 
+    @PostMapping("/bulk")
+    public ApiResponse<List<UserResponse>> getUsersByIds(@RequestBody List<UUID> ids) {
+        log.info("Bulk fetching users for IDs: {}", ids);
+        List<UserResponse> data = userService.getUsersByIds(ids).stream()
+                .map(userMapper::toUserResponse)
+                .toList();
+
+        return ApiResponse.<List<UserResponse>>builder()
+                .statusCode(200)
+                .message("Bulk fetch success")
+                .data(data)
+                .build();
+    }
+
     @PutMapping("/update-account")
     public ApiResponse<UserUpdateResponse> updateAccountInformation(
             @RequestBody UserUpdateRequest request,
