@@ -21,6 +21,7 @@ public class CreateProductRequest {
     String name;
 
     String description;
+    String brand;
 
     @NotNull(message = "Category không được null")
     UUID categoryId;

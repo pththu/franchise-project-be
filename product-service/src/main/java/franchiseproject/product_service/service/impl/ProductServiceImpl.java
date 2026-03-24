@@ -1,6 +1,7 @@
 package franchiseproject.product_service.service.impl;
 
 import franchiseproject.product_service.client.InventoryClient;
+import franchiseproject.product_service.client.TranslateClient; // ✅ ADD
 import franchiseproject.product_service.dto.request.CreateProductRequest;
 import franchiseproject.product_service.dto.request.SearchProductRequest;
 import franchiseproject.product_service.dto.response.*;
@@ -54,6 +55,8 @@ public class ProductServiceImpl implements ProductService {
     ProductMapper productMapper;
     InventoryClient inventoryClient;
 
+    private final TranslateClient translateClient; // ✅ ADD
+
     private String convertListToJson(List<String> urls) {
         try {
             return new ObjectMapper().writeValueAsString(urls);
@@ -61,6 +64,7 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Convert imageUrls failed");
         }
     }
+
     @Override
     public Page<Product> getAll(int page) {
         Pageable pageable = PageRequest.of(
@@ -68,9 +72,9 @@ public class ProductServiceImpl implements ProductService {
                 10,
                 Sort.by("name").ascending()
         );
-
         return productRepository.findAll(pageable);
     }
+
     @Override
     @Transactional(readOnly = true)
     public Product getById(UUID id) {
@@ -89,12 +93,6 @@ public class ProductServiceImpl implements ProductService {
         return productVariantRepository.findAllById(ids);
     }
 
-
-    /**
-     * xóa (inactive) product thì kéo theo xóa (inactive) variants của sản phẩm đó
-     * @param product
-     * @return
-     */
     @Override
     public boolean delete(Product product) {
         if (product == null) {
@@ -126,7 +124,6 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean deleteVariant(ProductVariant variant) {
-
         if (variant == null) {
             throw new AppException(ErrorCode.DATA_IS_NULL);
         }
@@ -137,11 +134,6 @@ public class ProductServiceImpl implements ProductService {
         return  pv == null ? false : true;
     }
 
-    /**
-     * tìm kiếm với nhiều parameter
-     * @param request
-     * @return
-     */
     @Override
     @Transactional(readOnly = true)
     public Page<Product> search(SearchProductRequest request) {
@@ -178,15 +170,14 @@ public class ProductServiceImpl implements ProductService {
                 pageable
         );
     }
+
     @Override
     @Transactional
     public ProductResponse createProduct(CreateProductRequest request) {
 
-        // 1. category
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGOTY_NOT_FOUND));
 
-        // 2. product
         Product product = Product.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -194,7 +185,11 @@ public class ProductServiceImpl implements ProductService {
                 .status(ProductStatus.ACTIVE)
                 .productType("DEFAULT")
                 .unit("Cái")
-                .brand("No Brand")
+                .brand(
+                        request.getBrand() != null && !request.getBrand().isBlank()
+                                ? request.getBrand()
+                                : "No Brand"
+                )
                 .build();
 
         Product savedProduct = productRepository.save(product);
@@ -210,7 +205,6 @@ public class ProductServiceImpl implements ProductService {
 
             return ProductVariant.builder()
                     .product(savedProduct)
-                    // ✅ FIX
                     .color(color)
                     .size(size)
                     .price(v.getPrice())
@@ -222,20 +216,46 @@ public class ProductServiceImpl implements ProductService {
         }).toList();
 
         productVariantRepository.saveAll(variants);
-
         savedProduct.setVariants(variants);
+
+        // ✅ ADD TRANSLATE
+        try {
+            List<String> texts = new ArrayList<>();
+            texts.add(savedProduct.getName());
+            texts.add(savedProduct.getDescription());
+            if (savedProduct.getBrand() != null) texts.add(savedProduct.getBrand());
+
+            List<String> translated = translateClient.translate(texts);
+
+            if (!translated.isEmpty()) {
+                int n = texts.size();
+
+                savedProduct.setNameJa(translated.get(0));
+                savedProduct.setDescriptionJa(translated.get(1));
+                if (savedProduct.getBrand() != null)
+                    savedProduct.setBrandJa(translated.get(2));
+
+                savedProduct.setNameEn(translated.get(n));
+                savedProduct.setDescriptionEn(translated.get(n + 1));
+                if (savedProduct.getBrand() != null)
+                    savedProduct.setBrandEn(translated.get(n + 2));
+
+                productRepository.save(savedProduct);
+            }
+        } catch (Exception e) {
+            log.warn("Translate create failed");
+        }
 
         return productMapper.toProductResponse(savedProduct);
     }
+
     @Override
     @Transactional
     public ProductResponse updateProduct(UUID id, UpdateProductRequest request) {
 
-        // ===== 1. GET PRODUCT =====
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        // ===== 2. UPDATE PRODUCT INFO =====
         if (request.getName() != null && !request.getName().isBlank()) {
             product.setName(request.getName());
         }
@@ -266,100 +286,45 @@ public class ProductServiceImpl implements ProductService {
             product.setStatus(ProductStatus.valueOf(request.getStatus().toUpperCase()));
         }
 
-        // ===== 3. HANDLE VARIANTS =====
-        if (request.getVariants() != null) {
+        // ✅ ADD TRANSLATE
+        try {
+            List<String> texts = new ArrayList<>();
+            if (product.getName() != null) texts.add(product.getName());
+            if (product.getDescription() != null) texts.add(product.getDescription());
+            if (product.getBrand() != null) texts.add(product.getBrand());
 
-            // map existing variants
-            List<ProductVariant> existingVariants = productVariantRepository.findAllByProductId(product.getId());
+            List<String> translated = translateClient.translate(texts);
 
-            // convert to map for easy lookup
-            Map<UUID, ProductVariant> existingMap = existingVariants.stream()
-                    .collect(Collectors.toMap(ProductVariant::getId, v -> v));
+            if (!translated.isEmpty()) {
+                int n = texts.size();
+                int index = 0;
 
-            // track request ids
-            Set<UUID> requestIds = new HashSet<>();
+                if (product.getName() != null) {
+                    product.setNameJa(translated.get(index));
+                    product.setNameEn(translated.get(index + n));
+                    index++;
+                }
 
-            List<ProductVariant> newVariants = new ArrayList<>();
+                if (product.getDescription() != null) {
+                    product.setDescriptionJa(translated.get(index));
+                    product.setDescriptionEn(translated.get(index + n));
+                    index++;
+                }
 
-            for (UpdateProductVariantRequest v : request.getVariants()) {
-
-                // ===== CASE 1: UPDATE EXISTING =====
-                if (v.getId() != null) {
-
-                    ProductVariant existing = existingMap.get(v.getId());
-
-                    if (existing == null) {
-                        throw new AppException(ErrorCode.VARTIANT_NOT_FOUND);
-                    }
-
-                    requestIds.add(existing.getId());
-
-                    if (v.getPrice() != null) {
-                        existing.setPrice(v.getPrice());
-                        existing.setSalePrice(v.getPrice());
-                    }
-
-                    if (v.getStock() != null) {
-                        existing.setQuantity(v.getStock());
-                    }
-
-                    if (v.getColor() != null) {
-                        existing.setColor(ProductColor.valueOf(v.getColor().toUpperCase()));
-                    }
-
-                    if (v.getSize() != null) {
-                        existing.setSize(ProductSize.valueOf(v.getSize().toUpperCase()));
-                    }
-
-                    if (v.getStatus() != null) {
-                        existing.setStatus(ProductVariantStatus.valueOf(v.getStatus().toUpperCase()));
-                    }
-
-                    if (v.getImageUrls() != null && !v.getImageUrls().isEmpty()) {
-                        existing.setImageUrl(convertListToJson(v.getImageUrls()));
-                    }
-
-                    newVariants.add(existing);
-
-                } else {
-                    // ===== CASE 2: CREATE NEW =====
-                    ProductVariant newVariant = ProductVariant.builder()
-                            .product(product)
-                            .price(v.getPrice())
-                            .salePrice(v.getPrice())
-                            .quantity(v.getStock())
-                            .color(v.getColor() != null ? ProductColor.valueOf(v.getColor().toUpperCase()) : null)
-                            .size(v.getSize() != null ? ProductSize.valueOf(v.getSize().toUpperCase()) : null)
-                            .imageUrl(
-                                    (v.getImageUrls() != null && !v.getImageUrls().isEmpty())
-                                            ? convertListToJson(v.getImageUrls())
-                                            : null
-                            )
-                            .status(ProductVariantStatus.ACTIVE)
-                            .build();
-
-                    newVariants.add(newVariant);
+                if (product.getBrand() != null) {
+                    product.setBrandJa(translated.get(index));
+                    product.setBrandEn(translated.get(index + n));
                 }
             }
-
-            // ===== CASE 3: SOFT DELETE =====
-            for (ProductVariant existing : existingVariants) {
-                if (!requestIds.contains(existing.getId())) {
-                    existing.setStatus(ProductVariantStatus.INACTIVE);
-                    newVariants.add(existing);
-                }
-            }
-
-            productVariantRepository.saveAll(newVariants);
-            product.setVariants(newVariants);
+        } catch (Exception e) {
+            log.warn("Translate update failed");
         }
 
-        // ===== 4. SAVE PRODUCT =====
         Product updatedProduct = productRepository.save(product);
 
-        // ===== 5. RETURN =====
         return productMapper.toProductResponse(updatedProduct);
     }
+
 //    @Override
 //    @Transactional
 //    public Product create(Product product, UUID categoryId) {
