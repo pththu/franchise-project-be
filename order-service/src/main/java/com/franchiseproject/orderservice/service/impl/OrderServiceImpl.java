@@ -30,6 +30,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -118,7 +119,7 @@ public class OrderServiceImpl implements OrderService {
             log.error("Payment init failed", e);
             order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
             orderRepository.save(order);
-            return null;
+            throw new AppException(ErrorCode.PAYMENT_INIT_FAILED);
         }
     }
 
@@ -126,7 +127,8 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void handlePaymentResult(PaymentResultRequest result) {
         Order order = orderRepository.findById(result.getOrderId())
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));;
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        ;
         order.setPaymentTransactionId(result.getPaymentTransactionId());
         if (result.getStatus() == StatusTransaction.SUCCESS) {
             order.setOrderStatus(OrderStatus.PAID);

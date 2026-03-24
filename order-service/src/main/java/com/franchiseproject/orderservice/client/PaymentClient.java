@@ -1,6 +1,7 @@
 package com.franchiseproject.orderservice.client;
 
 import com.franchiseproject.orderservice.dto.request.PaymentTransactionRequest;
+import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
 import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
@@ -8,6 +9,7 @@ import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -27,11 +29,15 @@ public class PaymentClient {
     public PaymentQRResponse createTransaction(UUID orderId, UUID paymentMethodId) {
         try {
             PaymentTransactionRequest request = new PaymentTransactionRequest(orderId, paymentMethodId);
-            return paymentRestClient.post()
+            ApiResponse<PaymentQRResponse> response = paymentRestClient.post()
                     .uri("/api/payments/init")
                     .body(request)
                     .retrieve()
-                    .body(PaymentQRResponse.class);
+                    .body(new ParameterizedTypeReference<ApiResponse<PaymentQRResponse>>() {
+                    });
+            log.info("Payment request: {}", request);
+            log.info("Payment request: {}", response);
+            return response.getData();
         } catch (HttpClientErrorException e) {
             log.warn("Payment 4xx error: {}", e.getResponseBodyAsString());
             throw new AppException(ErrorCode.VALIDATION_FAILED);

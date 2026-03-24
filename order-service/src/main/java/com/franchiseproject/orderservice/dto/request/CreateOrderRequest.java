@@ -22,7 +22,7 @@ public class CreateOrderRequest {
     UUID franchiseId;
     @NotNull(message = "Không để trống phương thức thanh toán")
     UUID paymentMethodId;
-    @NotNull(message = "Không để trống người mua")
+//    @NotNull(message = "Không để trống người mua")
     UUID customerId;
     UUID staffId;
     UUID promotionId;//promotion được đã nhập
