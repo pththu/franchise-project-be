@@ -6,7 +6,6 @@ import com.franchiseproject.orderservice.client.PromotionClient;
 import com.franchiseproject.orderservice.dto.*;
 import com.franchiseproject.orderservice.dto.request.*;
 import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
-import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.dto.response.PromotionDiscountResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
