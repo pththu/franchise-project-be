@@ -14,10 +14,9 @@ public class PromotionDiscountResponse {
 
     @NotNull(message = "promotionUsageId không được trống!")
     private UUID promotionUsageId;
-
     @NotNull(message = "discount value không được trống!")
     private BigDecimal discountValue;
-
+    private BigDecimal maxDiscountValue;
     @NotNull(message = "discount type không được trống!")
     private DiscountType discountType;
 }

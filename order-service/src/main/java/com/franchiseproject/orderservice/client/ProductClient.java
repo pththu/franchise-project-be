@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ProductClient {
-    private final RestClient productRestClient;
+    private final RestClient apiProductRestClient;
 
     @org.springframework.beans.factory.annotation.Value("${application.product-service.url}")
     private String productServiceUrl;

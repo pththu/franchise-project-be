@@ -18,13 +18,13 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class PromotionClient {
-    private final RestClient promotionRestClient;
+    private final RestClient apiPromotionRestClient;
 
     /// Method check promotion cho order và giữ lượt promotion
-    public PromotionDiscountResponse apiPromotionReserve(UUID promotionId, UUID customerId, UUID orderId, BigDecimal totalItems) {
+    public PromotionDiscountResponse apiPromotionReserve(UUID promotionId, UUID franchiseId, UUID customerId, UUID orderId, BigDecimal totalItems) {
         try {
-            PromotionReserveRequest request = new PromotionReserveRequest(customerId, promotionId, orderId, totalItems);
-            return promotionRestClient.post()
+            PromotionReserveRequest request = new PromotionReserveRequest(franchiseId, customerId, promotionId, orderId, totalItems);
+            return apiPromotionRestClient.post()
                     .uri("/api/promotions/reserve")
                     .body(request)
                     .retrieve()
@@ -55,7 +55,7 @@ public class PromotionClient {
     public void apiPromotionTraceBack(UUID orderId, OrderStatus orderStatus) {
         try {
             PromotionTraceBackRequest request = new PromotionTraceBackRequest(orderId, orderStatus);
-            promotionRestClient.post()
+            apiPromotionRestClient.post()
                     .uri("/api/promotions/trace")
                     .body(request)
                     .retrieve()
