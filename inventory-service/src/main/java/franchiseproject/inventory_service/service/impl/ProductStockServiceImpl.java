@@ -1,6 +1,7 @@
 package franchiseproject.inventory_service.service.impl;
 
 import franchiseproject.inventory_service.dto.request.InitialStockRequest;
+import franchiseproject.inventory_service.dto.request.StockRequestItemRequest;
 import franchiseproject.inventory_service.dto.response.PageResponse;
 import franchiseproject.inventory_service.dto.response.ProductStockResponse;
 import franchiseproject.inventory_service.dto.response.ProductVariantDetailResponse;
@@ -147,5 +148,84 @@ public class ProductStockServiceImpl implements ProductStockService {
             return List.of();
         }
         return productStockRepository.findInStockVariantIds(locationId);
+    }
+
+    @Override
+    public List<UUID> findCapableBranches(List<StockRequestItemRequest> items) {
+        if (items == null || items.isEmpty()) return List.of();
+
+        List<UUID> alternativeLocationIds = new java.util.ArrayList<>();
+        List<UUID> variantIds = items.stream().map(StockRequestItemRequest::getProductVariantId).collect(Collectors.toList());
+        List<ProductStock> stocks = productStockRepository.findByProductVariantIdIn(variantIds);
+
+        Map<UUID, List<ProductStock>> locationStocks = stocks.stream()
+                .collect(Collectors.groupingBy(ProductStock::getLocationId));
+
+        for (Map.Entry<UUID, List<ProductStock>> entry : locationStocks.entrySet()) {
+            UUID locId = entry.getKey();
+            List<ProductStock> locStockList = entry.getValue();
+            boolean allMatch = true;
+
+            for (StockRequestItemRequest item : items) {
+                Optional<ProductStock> match = locStockList.stream()
+                        .filter(s -> s.getProductVariantId().equals(item.getProductVariantId()))
+                        .findFirst();
+                if (match.isEmpty() || match.get().getQuantity() < item.getQuantity()) {
+                    allMatch = false;
+                    break;
+                }
+            }
+            if (allMatch) {
+                alternativeLocationIds.add(locId);
+            }
+        }
+        return alternativeLocationIds;
+    }
+
+    @Override
+    @Transactional
+    public void reserveStock(List<StockRequestItemRequest> items, java.util.UUID locationId) {
+        for (StockRequestItemRequest item : items) {
+            ProductStock stock = productStockRepository.findByProductVariantIdAndLocationId(
+                    item.getProductVariantId(), locationId)
+                    .orElseThrow(() -> new RuntimeException("Stock not found for variant " + item.getProductVariantId()));
+
+            if (stock.getQuantity() < item.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for variant " + item.getProductVariantId());
+            }
+
+            stock.setQuantity(stock.getQuantity() - item.getQuantity());
+            stock.setReservedQuantity(stock.getReservedQuantity() + item.getQuantity());
+            productStockRepository.save(stock);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void commitStock(List<StockRequestItemRequest> items, java.util.UUID locationId) {
+        for (StockRequestItemRequest item : items) {
+            ProductStock stock = productStockRepository.findByProductVariantIdAndLocationId(
+                    item.getProductVariantId(), locationId)
+                    .orElseThrow(() -> new RuntimeException("Stock not found for variant " + item.getProductVariantId()));
+
+            if (stock.getReservedQuantity() < item.getQuantity()) {
+                throw new RuntimeException("Insufficient reserved stock for variant " + item.getProductVariantId());
+            }
+
+            int beforeQty = stock.getQuantity() + stock.getReservedQuantity(); // total on hand
+            stock.setReservedQuantity(stock.getReservedQuantity() - item.getQuantity());
+            ProductStock savedStock = productStockRepository.save(stock);
+
+            InventoryTransaction tx = InventoryTransaction.builder()
+                    .productStock(savedStock)
+                    .changeQuantity(-item.getQuantity())
+                    .beforeQuantity(beforeQty)
+                    .afterQuantity(savedStock.getQuantity() + savedStock.getReservedQuantity())
+                    .type("SALE")
+                    .status("COMPLETED")
+                    .referenceType("ORDER")
+                    .build();
+            inventoryTransactionRepository.save(tx);
+        }
     }
 }

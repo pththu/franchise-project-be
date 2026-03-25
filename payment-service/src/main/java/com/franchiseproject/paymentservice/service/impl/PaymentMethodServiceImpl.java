@@ -81,9 +81,17 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     @Override
     @Transactional
     public PaymentQRResponse optionPaymentMethod(OptionPaymentMethodRequest optionPaymentMethodRequest) {
+        try {
+        log.info("Initializing payment transaction for order: " + optionPaymentMethodRequest.getOrderId());
         OrderResponse orderResponse = orderClient.getOrderInfoByOrderId(optionPaymentMethodRequest.getOrderId());
+        log.info("Fetched order for payment: " + orderResponse);
+        
         PaymentMethod paymentMethod = getAvailiablePaymentMethod(optionPaymentMethodRequest);
+        log.info("Fetched payment method: " + paymentMethod.getMethodName());
+        
         paymentTransactionService.checkDuplicateTransaction(orderResponse);
+        log.info("Duplicate check passed");
+
         switch (paymentMethod.getMethodName()) {
             case "MOMO":
                 CreateMomoResponse createMomoResponse = momoService.buildCreateMomoQR(orderResponse, paymentMethod);
@@ -117,25 +125,53 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                     throw new RuntimeException("VNPAY URL generation failed", e);
                 }
             case "COD":
-                if (orderResponse.getTypeOrder().equals("POS")) {
+                try {
+                UUID txId = null;
+                String typeOrder = orderResponse.getTypeOrder() != null ? orderResponse.getTypeOrder().trim() : "";
+                
+                if ("POS".equalsIgnoreCase(typeOrder)) {
                     PaymentTransaction p = PaymentTransaction.builder()
                             .amount(orderResponse.getTotalDue())
                             .orderId(orderResponse.getId())
                             .status(StatusTransaction.SUCCESS)
                             .paymentMethod(paymentMethod)
                             .build();
-                    PaymentTransaction savedTx = paymentTransactionService.createPaymentTransaction(p);
+                    PaymentTransaction saved = paymentTransactionService.createPaymentTransaction(p);
+                    txId = saved.getId();
+                    
                     orderClient.sendPaymentResult(PaymentResultRequest.builder()
                             .orderId(orderResponse.getId())
-                            .paymentTransactionId(savedTx.getId())
+                            .paymentTransactionId(txId)
                             .amount(orderResponse.getTotalDue())
                             .paymentMethod("COD")
                             .status(StatusTransaction.SUCCESS)
                             .build());
+                } else if ("Online".equalsIgnoreCase(typeOrder)) {
+                    PaymentTransaction p = PaymentTransaction.builder()
+                            .amount(orderResponse.getTotalDue())
+                            .orderId(orderResponse.getId())
+                            .status(StatusTransaction.PENDING)
+                            .paymentMethod(paymentMethod)
+                            .build();
+                    PaymentTransaction saved = paymentTransactionService.createPaymentTransaction(p);
+                    txId = saved.getId();
                 }
-                return null;
+                return PaymentQRResponse.builder()
+                        .amount(orderResponse.getTotalDue().longValue())
+                        .method("COD")
+                        .paymentTransactionId(txId)
+                        .build();
+                } catch (Exception e) {
+                    log.error("COD payment creation failed", e);
+                    throw e;
+                }
+                
             default:
                 throw new AppException(ErrorCode.PAYMENT_METHOD_NOT_SUPPORTED);
+        }
+        } catch (Exception e) {
+            log.error("optionPaymentMethod failed for order: " + optionPaymentMethodRequest.getOrderId(), e);
+            throw e;
         }
     }
 

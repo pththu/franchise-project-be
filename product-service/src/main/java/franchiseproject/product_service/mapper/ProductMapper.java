@@ -7,7 +7,9 @@ import franchiseproject.product_service.entity.ProductVariant;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
@@ -21,22 +23,48 @@ public interface ProductMapper {
     @Mapping(target = "price", source = "salePrice")
 
     // 🔥 FIX QUAN TRỌNG NHẤT (JSON → LIST)
-    @Mapping(target = "imageUrls", expression = "java(parseJsonToList(productVariant.getImageUrl()))")
+//    @Mapping(target = "imageUrls", expression = "java(parseJsonToList(productVariant.getImageUrl()))")
 
+    @Mapping(target = "images", expression = "java(parseJsonToImageMap(productVariant.getImageUrl()))")
     ProductVariantResponse toProductVariantResponse(ProductVariant productVariant);
 
     // ===== LIST VARIANTS =====
     List<ProductVariantResponse> toProductVariantResponseList(List<ProductVariant> variants);
 
     // ===== HELPER =====
-    default List<String> parseJsonToList(String json) {
+//    default List<String> parseJsonToList(String json) {
+//        try {
+//            if (json == null || json.isEmpty())
+//                return List.of();
+//            return new com.fasterxml.jackson.databind.ObjectMapper()
+//                    .readValue(json, List.class);
+//        } catch (Exception e) {
+//            return List.of();
+//        }
+//    }
+
+    default Map<String, String> parseJsonToImageMap(String json) {
+        Map<String, String> imageMap = new HashMap<>();
         try {
-            if (json == null || json.isEmpty())
-                return List.of();
-            return new com.fasterxml.jackson.databind.ObjectMapper()
+            if (json == null || json.isEmpty()) {
+                return imageMap;
+            }
+
+            // Parse chuỗi JSON array thành List
+            List<String> urls = new com.fasterxml.jackson.databind.ObjectMapper()
                     .readValue(json, List.class);
+
+            // Duyệt list và đánh index image01, image02...
+            if (urls != null) {
+                for (int i = 0; i < urls.size(); i++) {
+                    // format: image01, image02... (cần %02d để có số 0 phía trước)
+                    String key = String.format("image%02d", i + 1);
+                    imageMap.put(key, urls.get(i));
+                }
+            }
         } catch (Exception e) {
-            return List.of();
+            // Log error nếu cần thiết: log.error("Failed to parse images", e);
         }
+        return imageMap;
     }
 }

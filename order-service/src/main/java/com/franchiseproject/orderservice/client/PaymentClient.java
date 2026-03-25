@@ -36,8 +36,11 @@ public class PaymentClient {
                     .body(new ParameterizedTypeReference<ApiResponse<PaymentQRResponse>>() {
                     });
             log.info("Payment request: {}", request);
-            log.info("Payment request: {}", response);
-            return response.getData();
+            log.info("Payment response raw data: {}", response != null ? response.getData() : "null");
+            if (response != null && response.getData() != null) {
+                log.info("Deserialized paymentTransactionId inside Client: {}", response.getData().getPaymentTransactionId());
+            }
+            return response != null ? response.getData() : null;
         } catch (HttpClientErrorException e) {
             log.warn("Payment 4xx error: {}", e.getResponseBodyAsString());
             throw new AppException(ErrorCode.VALIDATION_FAILED);
