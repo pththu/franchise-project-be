@@ -195,6 +195,7 @@ public class OrderServiceImpl implements OrderService {
             order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
         }
         orderRepository.save(order);
+        promotionClient.apiPromotionTraceBack(order.getId(), order.getOrderStatus());
         inventoryClient.notifyOrderStatus(order.getId(), order.getOrderStatus().name());
         inventoryClient.notifyNewOrder(order.getFranchiseId());
     }
