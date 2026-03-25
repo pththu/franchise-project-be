@@ -15,55 +15,23 @@ import java.util.UUID;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<CustomerFranchise, UUID> {
-//    @Query("SELECT DISTINCT c FROM Customer c " +
-//            "LEFT JOIN c.customerFranchises cf " +
-//            "WHERE (:keyword IS NULL OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-//            "OR LOWER(c.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-//            "AND (:status IS NULL OR c.status = :status)")
-//    Page<Customer> searchCustomers(
-//            @Param("keyword") String keyword,
-//            @Param("status") CustomerStatus status,
-//            Pageable pageable
-//    );
-//
-//    @Query("SELECT DISTINCT c FROM Customer c " +
-//            "WHERE (:keyword IS NULL OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-//            "OR LOWER(c.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-//            "AND (:status IS NULL OR c.status = :status)")
-//    Page<Customer> searchAllCustomers(
-//            @Param("keyword") String keyword,
-//            @Param("status") CustomerStatus status,
-//            Pageable pageable
-//    );
-//
-//    @Query("SELECT DISTINCT c FROM Customer c " +
-//            "INNER JOIN c.customerFranchises cf " +
-//            "WHERE cf.franchiseId = :franchiseId " +
-//            "AND (:keyword IS NULL OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-//            "OR LOWER(c.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-//            "AND (:status IS NULL OR c.status = :status)")
-//    Page<Customer> searchCustomersByFranchise(
-//            @Param("franchiseId") UUID franchiseId,
-//            @Param("keyword") String keyword,
-//            @Param("status") CustomerStatus status,
-//            Pageable pageable
-//    );
-//
-//    Optional<Customer> findByPhoneOrEmail(String phone, String email);
-//
-//    Optional<Customer> findByPhone(String phone);
-//
-//    Optional<Customer> findByEmail(String email);
-//
-//    List<CustomerFranchise> findByCustomerId(UUID customerId);
-//
-//    boolean existsByCustomerIdAndFranchiseId(UUID customerId, UUID franchiseId);
 
     Page<CustomerFranchise> findByFranchiseIdAndStatus(UUID franchiseId, CustomerStatus status, Pageable pageable);
 
     Page<CustomerFranchise> findByFranchiseId(UUID franchiseId, Pageable pageable);
 
     Page<CustomerFranchise> findByStatus(CustomerStatus status, Pageable pageable);
+
+    @Query("SELECT c FROM CustomerFranchise c " +
+            "WHERE (:franchiseId IS NULL OR c.franchiseId = :franchiseId) " +
+            "AND (:status IS NULL OR c.status = :status) " +
+            "AND (:filterByCustomerIds = false OR c.customerId IN :customerIds)")
+    Page<CustomerFranchise> searchCustomers(
+            @Param("franchiseId") UUID franchiseId,
+            @Param("status") CustomerStatus status,
+            @Param("customerIds") List<UUID> customerIds,
+            @Param("filterByCustomerIds") boolean filterByCustomerIds,
+            Pageable pageable);
 
     boolean existsByCustomerIdAndFranchiseId(UUID customerId, UUID franchiseId);
 
