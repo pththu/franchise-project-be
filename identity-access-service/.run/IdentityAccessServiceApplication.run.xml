@@ -1,5 +1,4 @@
 <component name="ProjectRunConfigurationManager">
-<<<<<<< Updated upstream
   <configuration default="false" name="IdentityAccessServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
       <env name="DB_URL" value="jdbc:postgresql://dpg-d644ehfpm1nc738hbvrg-a.singapore-postgres.render.com/auth_franchise_heoe" />
@@ -46,7 +45,7 @@
       <option name="Make" enabled="true" />
     </method>
   </configuration>
-=======
+
     <configuration default="false" name="IdentityAccessServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
         <envs>
             <env name="DB_URL" value="jdbc:postgresql://dpg-d644ehfpm1nc738hbvrg-a.singapore-postgres.render.com/auth_franchise_heoe" />
@@ -93,5 +92,4 @@
             <option name="Make" enabled="true" />
         </method>
     </configuration>
->>>>>>> Stashed changes
 </component>
