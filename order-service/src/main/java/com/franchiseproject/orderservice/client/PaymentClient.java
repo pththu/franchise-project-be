@@ -24,12 +24,12 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class PaymentClient {
-    private final RestClient paymentRestClient;
+    private final RestClient apiPaymentRestClient;
 
     public PaymentQRResponse createTransaction(UUID orderId, UUID paymentMethodId) {
         try {
             PaymentTransactionRequest request = new PaymentTransactionRequest(orderId, paymentMethodId);
-            ApiResponse<PaymentQRResponse> response = paymentRestClient.post()
+            ApiResponse<PaymentQRResponse> response = apiPaymentRestClient.post()
                     .uri("/api/payments/init")
                     .body(request)
                     .retrieve()
@@ -46,22 +46,4 @@ public class PaymentClient {
             throw new AppException(ErrorCode.PAYMENT_INIT_FAILED);
         }
     }
-    //Mock Test
-//    public PaymentResponse createTransaction(UUID orderId,
-//                                             UUID customerId,
-//                                             BigDecimal finalTotal) {
-//
-//        if (orderId == null || customerId == null || finalTotal == null) {
-//            throw new AppException(ErrorCode.NO_TRANSACTION);
-//        }
-//
-//        // MOCK RESPONSE
-//        return PaymentResponse.builder()
-//                .paymentTransactionId(UUID.randomUUID())
-//                .orderId(orderId)
-//                .customerId(customerId)
-//                .finalTotal(finalTotal)
-//                .orderStatus(OrderStatus.CONFIRMED)
-//                .build();
-//    }
 }

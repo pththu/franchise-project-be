@@ -59,7 +59,7 @@ public class PromotionController {
     }
 
     // 🔥 APPLY DISCOUNT
-    @PostMapping("/apply")
+    @PostMapping("/reserve")
     public Object apply(@RequestBody ApplyDiscountRequest req) {
         return service.applyDiscount(req);
     }

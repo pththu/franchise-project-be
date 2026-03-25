@@ -8,6 +8,7 @@ import com.franchiseproject.orderservice.dto.request.*;
 import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.dto.response.PromotionDiscountResponse;
+import com.franchiseproject.orderservice.enums.DiscountType;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
 import com.franchiseproject.orderservice.client.ProductClient;
@@ -34,6 +35,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -121,16 +123,24 @@ public class OrderServiceImpl implements OrderService {
         boolean usedPromotion = false;
         try {
             BigDecimal discount = BigDecimal.ZERO;
+            BigDecimal maxDiscountValue = BigDecimal.ZERO;
+            DiscountType discountType = null;
             if (request.getPoint() != null) {
                 discount = loyaltyClient.apiLoyaltyReserve(request.getCustomerId(), request.getPoint());
                 usedLoyalty = discount.compareTo(BigDecimal.ZERO) > 0;
             } else if (request.getPromotionId() != null) {
                 PromotionDiscountResponse promotion = promotionClient.apiPromotionReserve(request.getPromotionId(),
-                        request.getCustomerId(), order.getId(), totalItems);
+                        request.getFranchiseId(), request.getCustomerId(), order.getId(), totalItems);
                 discount = promotion.getDiscountValue();
+                discountType = promotion.getDiscountType();
+                maxDiscountValue = promotion.getMaxDiscountValue();
+                log.info("discount: " + discount);
+                log.info("maxDiscountValue: " + maxDiscountValue);
+                log.info("discountType: " + discountType);
                 usedPromotion = discount.compareTo(BigDecimal.ZERO) > 0;
             }
-            BigDecimal finalTotal = calculateOrder(totalItems, request.getDistance(), discount);
+            BigDecimal finalTotal = calculateOrder(totalItems, request.getDistance(), discount, discountType, maxDiscountValue);
+            log.info("Final total: " + finalTotal);
             order.setTotalDue(finalTotal);
             order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
             orderRepository.save(order);// save lần 2 sau khi set giá cả các thứ.
@@ -232,7 +242,6 @@ public class OrderServiceImpl implements OrderService {
         List<Order> o = orderRepository.findAllByCustomerId(customerId);
         return o.stream().map(this::mapToOrderResponseWithCustomer).toList();
     }
-
 
 
     @Override
@@ -396,9 +405,31 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /// Tính số tiền cần trả
-    private BigDecimal calculateOrder(BigDecimal totalItems, Long distance, BigDecimal discount) {
-        BigDecimal priceShip = BigDecimal.valueOf(distance).multiply(BigDecimal.valueOf(20000));
-        return totalItems.add(priceShip).subtract(discount);
+    private BigDecimal calculateOrder(BigDecimal totalItems, Long distance, BigDecimal discount, DiscountType discountType, BigDecimal maxDiscountValue) {
+        if (totalItems == null || totalItems.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new AppException(ErrorCode.VALIDATION_FAILED);
+        }
+
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        BigDecimal priceShip = BigDecimal.valueOf(distance).multiply(BigDecimal.valueOf(2000));
+        BigDecimal finalAmount = totalItems.add(priceShip);
+
+        if (discount == null || discount.compareTo(BigDecimal.ZERO) <= 0) {
+            return finalAmount;
+        }
+        if (DiscountType.PERCENT.equals(discountType)) {
+            discountAmount = totalItems
+                    .multiply(discount)
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            if (maxDiscountValue != null) {
+                discountAmount = discountAmount.min(maxDiscountValue);
+            }
+        } else if (DiscountType.FIXED.equals(discountType)) {
+            discountAmount = discount;
+        }
+        // chống âm tiền
+        BigDecimal result = finalAmount.subtract(discountAmount);
+        return result.max(BigDecimal.ZERO);
     }
 
     /// Dùng để traceback
