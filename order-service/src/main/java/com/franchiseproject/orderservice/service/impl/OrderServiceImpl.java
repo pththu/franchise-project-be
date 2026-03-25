@@ -445,7 +445,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         BigDecimal discountAmount = BigDecimal.ZERO;
-        BigDecimal priceShip = BigDecimal.valueOf(distance).multiply(BigDecimal.valueOf(2000));
+        BigDecimal priceShip = BigDecimal.valueOf(distance).multiply(BigDecimal.valueOf(20000));
         BigDecimal finalAmount = totalItems.add(priceShip);
 
         if (discount == null || discount.compareTo(BigDecimal.ZERO) <= 0) {
