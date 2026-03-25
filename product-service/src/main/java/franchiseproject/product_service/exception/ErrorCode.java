@@ -23,11 +23,12 @@ public enum ErrorCode {
     PRODUCT_VARTIANT_EXISTED(409, "Product variant is existed"),
     CATEGORY_EXISTED(409, "Category is existed"),
     PRODUCT_EXISTED(409, "Products is existed"),
+    TRANSLATION_FAILED(503, "Translation service unavailable"),
     TOO_MANY_REQUESTS(429, "Too many request"),
     UNCATEGORIZED_EXCEPTION(500, "Uncategorized exception"),
 
-
     ;
+
     private int code;
     private String message;
 }
