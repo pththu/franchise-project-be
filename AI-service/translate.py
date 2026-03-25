@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def translater(text_to_translate: list, target_language: str):
-    client = genai.Client(api_key='AIzaSyCx_YyRCxZMPrjj8vol_a4rviST19URW_o')
+    client = genai.Client(api_key='AIzaSyCNZ3X2OEe1mBRMC71vtvuhuYW-vuogmdw')
 
     system_prompt = (
         "Bạn là một người phiên dịch chuyên nghiệp. "
