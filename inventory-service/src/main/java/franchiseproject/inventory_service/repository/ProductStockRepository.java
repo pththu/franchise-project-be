@@ -27,4 +27,7 @@ public interface ProductStockRepository extends JpaRepository<ProductStock, UUID
 
     @Query("SELECT ps.productVariantId FROM ProductStock ps WHERE ps.locationId = :locationId AND ps.quantity > 0")
     List<UUID> findInStockVariantIds(@Param("locationId") UUID locationId);
+
+    @Query("SELECT ps FROM ProductStock ps WHERE ps.productVariantId IN :variantIds")
+    List<ProductStock> findByProductVariantIdIn(@Param("variantIds") List<UUID> variantIds);
 }

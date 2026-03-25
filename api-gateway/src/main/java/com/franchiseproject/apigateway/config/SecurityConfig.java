@@ -52,6 +52,8 @@ public class SecurityConfig {
                         "/api/products/search-by-ids",
                         "/api/products/filter",
 //                        "/api/customers/get-all",
+                        "/api/orders/*/status",
+                        "/api/payments/**"
         };
 
         @Bean
