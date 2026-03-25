@@ -59,8 +59,7 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(
                 page,
                 10,
-                Sort.by("name").ascending()
-        );
+                Sort.by("name").ascending());
         return productRepository.findAll(pageable);
     }
 
@@ -132,12 +131,11 @@ public class ProductServiceImpl implements ProductService {
         variant.setStatus(ProductVariantStatus.INACTIVE);
         ProductVariant pv = productVariantRepository.save(variant);
 
-        return  pv == null ? false : true;
+        return pv == null ? false : true;
     }
 
     @Override
     public Page<Product> filterProductsByCustomer(FilterProductsByCustomerRequest request) {
-
 
         if (request.getFranchiseId() != null) {
             List<UUID> variantIds = inventoryClient.getInStockVariantIds(request.getFranchiseId());
@@ -146,27 +144,28 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-
         String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
-                ? request.getKeyword().trim() : null;
+                ? request.getKeyword().trim()
+                : null;
 
         List<ProductColor> colors = request.getColors() != null ? request.getColors()
                 .stream()
                 .map(c -> (c != null && !c.trim().isEmpty())
-                        ? ProductColor.valueOf(c.trim()) : null)
+                        ? ProductColor.valueOf(c.trim())
+                        : null)
                 .toList() : null;
 
         List<ProductSize> sizes = request.getSizes() != null ? request.getSizes()
                 .stream()
-                .map(size ->  (size != null && !size.trim().isEmpty())
-                            ? ProductSize.valueOf(size.trim()) : null)
+                .map(size -> (size != null && !size.trim().isEmpty())
+                        ? ProductSize.valueOf(size.trim())
+                        : null)
                 .toList() : null;
 
         Pageable pageable = PageRequest.of(
                 request.getPage().intValue(),
                 request.getSizePage().intValue(),
-                Sort.by(request.getSortBy()).ascending()
-        );
+                Sort.by(request.getSortBy()).ascending());
 
         return productRepository.filterProducts(
                 request.getCategories(),
@@ -176,35 +175,37 @@ public class ProductServiceImpl implements ProductService {
                 colors,
                 sizes,
                 request.getProductIds(),
-                pageable
-        );
+                pageable);
     }
-
 
     @Override
     @Transactional(readOnly = true)
     public Page<Product> search(SearchProductRequest request) {
 
         String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
-                ? request.getKeyword().trim() : null;
+                ? request.getKeyword().trim()
+                : null;
 
         String categoryName = (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty())
-                ? request.getCategoryName().trim() : null;
+                ? request.getCategoryName().trim()
+                : null;
 
         ProductStatus status = (request.getStatus() != null && !request.getStatus().trim().isEmpty())
-                ? ProductStatus.valueOf(request.getStatus().trim()) : null;
+                ? ProductStatus.valueOf(request.getStatus().trim())
+                : null;
 
         ProductColor color = (request.getColor() != null && !request.getColor().trim().isEmpty())
-                ? ProductColor.valueOf(request.getColor().trim()) : null;
+                ? ProductColor.valueOf(request.getColor().trim())
+                : null;
 
         ProductSize size = (request.getSize() != null && !request.getSize().trim().isEmpty())
-                ? ProductSize.valueOf(request.getSize().trim()) : null;
+                ? ProductSize.valueOf(request.getSize().trim())
+                : null;
 
         Pageable pageable = PageRequest.of(
                 request.getPage().intValue(),
                 request.getSizePage().intValue(),
-                Sort.by(request.getSortBy()).ascending()
-        );
+                Sort.by(request.getSortBy()).ascending());
 
         return productRepository.search(
                 keyword,
@@ -214,8 +215,7 @@ public class ProductServiceImpl implements ProductService {
                 size,
                 request.getFromPrice(),
                 request.getToPrice(),
-                pageable
-        );
+                pageable);
     }
 
     @Override
@@ -235,13 +235,14 @@ public class ProductServiceImpl implements ProductService {
                 .brand(
                         request.getBrand() != null && !request.getBrand().isBlank()
                                 ? request.getBrand()
-                                : "No Brand"
-                )
+                                : "No Brand")
                 .build();
 
         Product savedProduct = productRepository.save(product);
 
-        List<ProductVariant> variants = request.getVariants().stream().map(v -> {
+        List<ProductVariant> variants = request.getVariants()
+                .stream()
+                .map(v -> {
 
             ProductColor color = ProductColor.valueOf(v.getColor().toUpperCase());
             ProductSize size = ProductSize.valueOf(v.getSize().toUpperCase());
@@ -260,39 +261,13 @@ public class ProductServiceImpl implements ProductService {
                     .imageUrl(imageUrl)
                     .status(ProductVariantStatus.ACTIVE)
                     .build();
-        }).toList();
+        }).collect(Collectors.toList());
 
         productVariantRepository.saveAll(variants);
         savedProduct.setVariants(variants);
 
-        // ✅ ADD TRANSLATE
-        try {
-            List<String> texts = new ArrayList<>();
-            texts.add(savedProduct.getName());
-            texts.add(savedProduct.getDescription());
-            if (savedProduct.getBrand() != null) texts.add(savedProduct.getBrand());
-
-            List<String> translated = translateClient.translate(texts);
-
-            if (!translated.isEmpty()) {
-                int n = texts.size();
-
-                savedProduct.setNameJa(translated.get(0));
-                savedProduct.setDescriptionJa(translated.get(1));
-                if (savedProduct.getBrand() != null)
-                    savedProduct.setBrandJa(translated.get(2));
-
-                savedProduct.setNameEn(translated.get(n));
-                savedProduct.setDescriptionEn(translated.get(n + 1));
-                if (savedProduct.getBrand() != null)
-                    savedProduct.setBrandEn(translated.get(n + 2));
-
-                productRepository.save(savedProduct);
-            }
-        } catch (Exception e) {
-            log.warn("Translate create failed");
-        }
-
+        applyProductTranslations(savedProduct);
+        System.out.println("12345");
         return productMapper.toProductResponse(savedProduct);
     }
 
@@ -333,78 +308,92 @@ public class ProductServiceImpl implements ProductService {
             product.setStatus(ProductStatus.valueOf(request.getStatus().toUpperCase()));
         }
 
-        // ✅ ADD TRANSLATE
-        try {
-            List<String> texts = new ArrayList<>();
-            if (product.getName() != null) texts.add(product.getName());
-            if (product.getDescription() != null) texts.add(product.getDescription());
-            if (product.getBrand() != null) texts.add(product.getBrand());
-
-            List<String> translated = translateClient.translate(texts);
-
-            if (!translated.isEmpty()) {
-                int n = texts.size();
-                int index = 0;
-
-                if (product.getName() != null) {
-                    product.setNameJa(translated.get(index));
-                    product.setNameEn(translated.get(index + n));
-                    index++;
-                }
-
-                if (product.getDescription() != null) {
-                    product.setDescriptionJa(translated.get(index));
-                    product.setDescriptionEn(translated.get(index + n));
-                    index++;
-                }
-
-                if (product.getBrand() != null) {
-                    product.setBrandJa(translated.get(index));
-                    product.setBrandEn(translated.get(index + n));
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Translate update failed");
-        }
+        log.info("product: {}: ", product.getNameEn());
+        applyProductTranslations(product);
 
         Product updatedProduct = productRepository.save(product);
-
+        log.info("updatedProduct: {}: ", updatedProduct.getNameEn());
         return productMapper.toProductResponse(updatedProduct);
     }
 
-//    @Override
-//    @Transactional
-//    public Product create(Product product, UUID categoryId) {
-//        Category category = categoryRepository.findById(categoryId)
-//                .orElseThrow(() -> new NotFoundException("Category not found: " + categoryId));
-//
-//        product.setId(null);
-//        product.setCategory(category);
-//
-//        return productRepository.save(product);
-//    }
+    private void applyProductTranslations(Product product) {
+        List<String> sourceTexts = new ArrayList<>();
+        sourceTexts.add(product.getName());
+        sourceTexts.add(product.getDescription());
+        sourceTexts.add(product.getBrand());
 
-//    @Override
-//    @Transactional
-//    public Product update(UUID id, Product product, UUID categoryId) {
-//        Product existing = getById(id);
-//
-//        if (categoryId != null) {
-//            Category category = categoryRepository.findById(categoryId)
-//                    .orElseThrow(() -> new NotFoundException("Category not found"));
-//            existing.setCategory(category);
-//        }
-//
-//        if (product.getProductType() != null) existing.setProductType(product.getProductType());
-//        if (product.getName() != null) existing.setName(product.getName());
-//        if (product.getDescription() != null) existing.setDescription(product.getDescription());
-//        if (product.getPrice() != null) existing.setPrice(product.getPrice());
-//        if (product.getUnit() != null) existing.setUnit(product.getUnit());
-//        if (product.getStatus() != null) existing.setStatus(product.getStatus());
-//        if (product.getImageUrl() != null) existing.setImageUrl(product.getImageUrl());
-//
-//        return productRepository.save(existing);
-//    }
+        Map<String, List<String>> translatedByLanguage = translateClient.translateByLanguage(sourceTexts,
+                List.of("en", "ja"));
+
+        log.info("translatedByLanguage: {}", translatedByLanguage);
+        log.info("enValues: {}", translatedByLanguage.get("en"));
+        log.info("jaValues: {}", translatedByLanguage.get("ja"));
+
+        List<String> enValues = translatedByLanguage.get("en");
+        List<String> jaValues = translatedByLanguage.get("ja");
+
+        if (!isValidTranslationChunk(enValues, sourceTexts.size())
+                || !isValidTranslationChunk(jaValues, sourceTexts.size())) {
+            log.warn("Invalid translation payload: {}", translatedByLanguage);
+            throw new AppException(ErrorCode.TRANSLATION_FAILED);
+        }
+
+        System.out.println("enValues.get(0): "+ enValues.get(0));
+        System.out.println("enValues.get(0): "+ enValues.get(0).getClass());
+
+        product.setNameEn(enValues.get(0));
+        product.setDescriptionEn(enValues.get(1));
+        product.setBrandEn(enValues.get(2));
+
+        product.setNameJa(jaValues.get(0));
+        product.setDescriptionJa(jaValues.get(1));
+        product.setBrandJa(jaValues.get(2));
+
+        System.out.println("product: "+ product.getNameJa());
+        productRepository.save(product);
+    }
+
+    private boolean isValidTranslationChunk(List<String> values, int expectedSize) {
+        return values != null && values.size() >= expectedSize;
+    }
+
+    // @Override
+    // @Transactional
+    // public Product create(Product product, UUID categoryId) {
+    // Category category = categoryRepository.findById(categoryId)
+    // .orElseThrow(() -> new NotFoundException("Category not found: " +
+    // categoryId));
+    //
+    // product.setId(null);
+    // product.setCategory(category);
+    //
+    // return productRepository.save(product);
+    // }
+
+    // @Override
+    // @Transactional
+    // public Product update(UUID id, Product product, UUID categoryId) {
+    // Product existing = getById(id);
+    //
+    // if (categoryId != null) {
+    // Category category = categoryRepository.findById(categoryId)
+    // .orElseThrow(() -> new NotFoundException("Category not found"));
+    // existing.setCategory(category);
+    // }
+    //
+    // if (product.getProductType() != null)
+    // existing.setProductType(product.getProductType());
+    // if (product.getName() != null) existing.setName(product.getName());
+    // if (product.getDescription() != null)
+    // existing.setDescription(product.getDescription());
+    // if (product.getPrice() != null) existing.setPrice(product.getPrice());
+    // if (product.getUnit() != null) existing.setUnit(product.getUnit());
+    // if (product.getStatus() != null) existing.setStatus(product.getStatus());
+    // if (product.getImageUrl() != null)
+    // existing.setImageUrl(product.getImageUrl());
+    //
+    // return productRepository.save(existing);
+    // }
 
     private Sort parseSort(String sort) {
         if (sort == null || sort.isBlank()) {
@@ -414,69 +403,68 @@ public class ProductServiceImpl implements ProductService {
         String[] parts = sort.split(",");
         String field = parts[0];
 
-        Sort.Direction direction =
-                (parts.length > 1 && parts[1].equalsIgnoreCase("asc"))
-                        ? Sort.Direction.ASC
-                        : Sort.Direction.DESC;
+        Sort.Direction direction = (parts.length > 1 && parts[1].equalsIgnoreCase("asc"))
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
 
         return Sort.by(direction, field);
     }
 
-//    @Override
-//    public Product uploadImage(UUID id, MultipartFile file) {
-//        Product product = getById(id);
-//
-//        try {
-//            String uploadDir = System.getProperty("user.dir") + "/uploads/";
-//            File dir = new File(uploadDir);
-//
-//            if (!dir.exists()) dir.mkdirs();
-//
-//            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-//            File dest = new File(uploadDir + fileName);
-//
-//            file.transferTo(dest);
-//
-//            product.setImageUrl("/uploads/" + fileName);
-//
-//            return productRepository.save(product);
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException("Upload failed");
-//        }
-//    }
+    // @Override
+    // public Product uploadImage(UUID id, MultipartFile file) {
+    // Product product = getById(id);
+    //
+    // try {
+    // String uploadDir = System.getProperty("user.dir") + "/uploads/";
+    // File dir = new File(uploadDir);
+    //
+    // if (!dir.exists()) dir.mkdirs();
+    //
+    // String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+    // File dest = new File(uploadDir + fileName);
+    //
+    // file.transferTo(dest);
+    //
+    // product.setImageUrl("/uploads/" + fileName);
+    //
+    // return productRepository.save(product);
+    //
+    // } catch (IOException e) {
+    // throw new RuntimeException("Upload failed");
+    // }
+    // }
 
-//    @Override
-//    public Product updateImage(UUID id, MultipartFile file) {
-//
-//        Product product = getById(id);
-//
-//        try {
-//            String uploadDir = System.getProperty("user.dir") + "/uploads/";
-//            File dir = new File(uploadDir);
-//
-//            if (!dir.exists()) dir.mkdirs();
-//
-//            if (product.getImageUrl() != null) {
-//                String oldFileName = product.getImageUrl().replace("/uploads/", "");
-//                File oldFile = new File(uploadDir + oldFileName);
-//                if (oldFile.exists()) oldFile.delete();
-//            }
-//
-//            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-//            File dest = new File(uploadDir + fileName);
-//
-//            file.transferTo(dest);
-//
-//            product.setImageUrl("/uploads/" + fileName);
-//
-//            return productRepository.save(product);
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException("Update failed");
-//        }
-//    }
-//    }
+    // @Override
+    // public Product updateImage(UUID id, MultipartFile file) {
+    //
+    // Product product = getById(id);
+    //
+    // try {
+    // String uploadDir = System.getProperty("user.dir") + "/uploads/";
+    // File dir = new File(uploadDir);
+    //
+    // if (!dir.exists()) dir.mkdirs();
+    //
+    // if (product.getImageUrl() != null) {
+    // String oldFileName = product.getImageUrl().replace("/uploads/", "");
+    // File oldFile = new File(uploadDir + oldFileName);
+    // if (oldFile.exists()) oldFile.delete();
+    // }
+    //
+    // String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+    // File dest = new File(uploadDir + fileName);
+    //
+    // file.transferTo(dest);
+    //
+    // product.setImageUrl("/uploads/" + fileName);
+    //
+    // return productRepository.save(product);
+    //
+    // } catch (IOException e) {
+    // throw new RuntimeException("Update failed");
+    // }
+    // }
+    // }
 
     @Override
     @Transactional(readOnly = true)
@@ -487,24 +475,27 @@ public class ProductServiceImpl implements ProductService {
         }
 
         String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
-                ? request.getKeyword().trim() : null;
+                ? request.getKeyword().trim()
+                : null;
 
         String categoryName = (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty())
-                ? request.getCategoryName().trim() : null;
+                ? request.getCategoryName().trim()
+                : null;
 
         ProductStatus status = ProductStatus.ACTIVE; // Optional for customers
 
         ProductColor color = (request.getColor() != null && !request.getColor().trim().isEmpty())
-                ? ProductColor.valueOf(request.getColor().trim()) : null;
+                ? ProductColor.valueOf(request.getColor().trim())
+                : null;
 
         ProductSize size = (request.getSize() != null && !request.getSize().trim().isEmpty())
-                ? ProductSize.valueOf(request.getSize().trim()) : null;
+                ? ProductSize.valueOf(request.getSize().trim())
+                : null;
 
         Pageable pageable = PageRequest.of(
                 request.getPage().intValue(),
                 request.getSizePage().intValue(),
-                Sort.by(request.getSortBy()).ascending()
-        );
+                Sort.by(request.getSortBy()).ascending());
 
         return productRepository.searchByFranchise(
                 keyword,
@@ -515,7 +506,8 @@ public class ProductServiceImpl implements ProductService {
                 request.getFromPrice(),
                 request.getToPrice(),
                 variantIds,
-                pageable
-        );
+                pageable);
     }
+
+
 }
