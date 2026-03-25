@@ -1,6 +1,8 @@
 package com.franchiseproject.customerservice.service;
 
 import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
+import com.franchiseproject.customerservice.dto.response.CustomerFranchiseResponse;
+import com.franchiseproject.customerservice.dto.response.CustomerResponse;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.entity.CustomerFranchise;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
@@ -11,6 +13,12 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CustomerService {
+    List<CustomerResponse> getAll(int page);
+
+    // READ
+    PageResponse<CustomerFranchise> getCustomersForAdmin(CustomerStatus status, Pageable pageable);
+
+    PageResponse<CustomerFranchise> getCustomersForManager(UUID franchiseId, CustomerStatus status, Pageable pageable);
 
     // READ & SEARCH
     CustomerFranchise getCustomerById(UUID id);

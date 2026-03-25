@@ -16,6 +16,7 @@ import java.util.UUID;
 @Repository
 public interface CustomerRepository extends JpaRepository<CustomerFranchise, UUID> {
 
+    Page<CustomerFranchise> findAll(Pageable page);
     Page<CustomerFranchise> findByFranchiseIdAndStatus(UUID franchiseId, CustomerStatus status, Pageable pageable);
 
     Page<CustomerFranchise> findByFranchiseId(UUID franchiseId, Pageable pageable);
