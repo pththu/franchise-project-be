@@ -1,6 +1,11 @@
 package com.franchiseproject.customerservice.service.impl;
 
+import com.franchiseproject.customerservice.client.IdentityClient;
+import com.franchiseproject.customerservice.dto.ApiResponse;
+import com.franchiseproject.customerservice.dto.response.CustomerResponse;
+import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
+import com.franchiseproject.customerservice.dto.response.UserResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
 import com.franchiseproject.customerservice.enums.CustomerType;
 import com.franchiseproject.customerservice.exception.AppException;
@@ -11,26 +16,66 @@ import com.franchiseproject.customerservice.service.CustomerService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.franchiseproject.customerservice.enums.LoyaltyTier;
 import com.franchiseproject.customerservice.entity.CustomerFranchise;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class CustomerServiceImpl implements CustomerService {
+
     CustomerRepository customerRepository;
     CustomerMapper customerMapper;
+    IdentityClient identityClient;
 
-//    @Override
-//    public List<CustomerFranchise> getAll() {
-//        return customerFranchiseRepository.findAll();
-//    }
+    @Override
+    public List<CustomerResponse> getAll(int page) {
+        log.info("get all customer");
+        Pageable pageable = PageRequest.of(
+                page,
+                10,
+                Sort.by("customerId").ascending()
+        );
+
+        Page<CustomerFranchise> customerFranchises = customerRepository.findAll(pageable);
+        if (customerFranchises.isEmpty()) return Collections.emptyList();
+
+        return customerFranchises.getContent().stream()
+                .map(customer -> {
+                    // 1. Map data từ DB sang DTO
+                    CustomerResponse response = customerMapper.toCustomerResponse(customer);
+
+                    // 2. Gọi API lấy User (IdentityClient đã sửa lỗi JSON)
+                    try {
+                        UserResponse user = identityClient.getUserById(customer.getCustomerId());
+                        log.info("user: {}", user.getFullName());
+                        if (user != null) {
+                            response.setUserResponse(user);
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to fetch user for customer ID: {}", customer.getCustomerId());
+                    }
+
+                    return response;
+                })
+                .toList();
+    }
 
 //    @Override
 //    public List<CustomerFranchise> getLoyaltyInfoByCustomerId(UUID customerId) {
@@ -182,31 +227,11 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
 
-    @Override
-    @Transactional
-    public CustomerFranchise createCustomerAtFranchise(UUID customerId, UUID franchiseId, CustomerType type) {
-        // customerId này phải được Identity Service trả về (Client tạo account bên Identity xong bắn id qua)
-        if (customerRepository.existsByCustomerIdAndFranchiseId(customerId, franchiseId)) {
-            throw new AppException(ErrorCode.CUSTOMER_ALREADY_EXISTS);
-        }
-
-        CustomerFranchise cf = CustomerFranchise.builder()
-                .customerId(customerId)
-                .franchiseId(franchiseId)
-                .type(type != null ? type : CustomerType.WALK_IN) // Phân biệt loại account
-                .status(CustomerStatus.ACTIVE)
-                .loyaltyTier(LoyaltyTier.BRONZE)
-                .loyaltyCurrentPoint(0)
-                .loyaltyTotalPoint(0)
-                .build();
-
-        return customerRepository.save(cf);
-    }
-
+    // ================== CREATE / SYNC ==================
     @Override
     @Transactional
     public void syncCustomerFromIdentity(UUID customerId, CustomerType type) {
-        // User tự đăng ký App -> Không thuộc franchise cụ thể nào ban đầu (franchiseId = null)
+        // User tự đăng ký App -> franchiseId = null
         CustomerFranchise cf = CustomerFranchise.builder()
                 .customerId(customerId)
                 .franchiseId(null)
@@ -219,6 +244,58 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.save(cf);
     }
 
+    // ================== SEARCH & FILTER ==================
+    @Override
+    public PageResponse<CustomerFranchise> searchCustomers(UUID franchiseId, CustomerStatus status, List<UUID> customerIds, Pageable pageable) {
+        boolean filterByCustomerIds = customerIds != null && !customerIds.isEmpty();
+
+        // Nếu Frontend truyền keyword và Identity trả về rỗng -> Tức là không có user nào khớp -> Trả về mảng rỗng
+        if (customerIds != null && customerIds.isEmpty()) {
+            return buildPageResponse(Page.empty(pageable));
+        }
+
+        Page<CustomerFranchise> page = customerRepository.searchCustomers(
+                franchiseId, status,
+                filterByCustomerIds ? customerIds : null,
+                filterByCustomerIds,
+                pageable
+        );
+        return buildPageResponse(page);
+    }
+
+    // ================== CREATE / LINK ==================
+    @Override
+    @Transactional
+    public CustomerFranchise createCustomerAtFranchise(UUID customerId, UUID franchiseId, CustomerType type) {
+        if (customerRepository.existsByCustomerIdAndFranchiseId(customerId, franchiseId)) {
+            throw new AppException(ErrorCode.CUSTOMER_ALREADY_EXISTS);
+        }
+
+        CustomerFranchise cf = CustomerFranchise.builder()
+                .customerId(customerId) // ID từ identity
+                .franchiseId(franchiseId) // ID chi nhánh của Staff tạo
+                .type(type != null ? type : CustomerType.WALK_IN)
+                .status(CustomerStatus.ACTIVE)
+                .loyaltyTier(LoyaltyTier.BRONZE)
+                .loyaltyCurrentPoint(0)
+                .loyaltyTotalPoint(0)
+                .build();
+
+        return customerRepository.save(cf);
+    }
+
+    // ================== UPDATE ==================
+    @Override
+    @Transactional
+    public CustomerFranchise updateCustomerFranchise(UUID id, UpdateCustomerRequest request) {
+        CustomerFranchise customer = getCustomerById(id);
+
+        if (request.getStatus() != null) customer.setStatus(request.getStatus());
+        // Có thể update CustomerType nếu sau này có nhu cầu
+
+        return customerRepository.save(customer);
+    }
+
     @Override
     @Transactional
     public CustomerFranchise updateCustomerStatus(UUID id, CustomerStatus status) {
@@ -227,14 +304,30 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.save(customer);
     }
 
+    // ================== SOFT DELETE ==================
     @Override
     @Transactional
     public void deleteCustomer(UUID id) {
-        // Soft Delete
         CustomerFranchise customer = getCustomerById(id);
-        customer.setStatus(CustomerStatus.INACTIVE);
+        customer.setStatus(CustomerStatus.DELETED);
         customerRepository.save(customer);
     }
+
+//    @Override
+//    public PageResponse<CustomerFranchise> getCustomersForAdmin(CustomerStatus status, Pageable pageable) {
+//        Page<CustomerFranchise> page = (status == null)
+//                ? customerRepository.findAll(pageable)
+//                : customerRepository.findByStatus(status, pageable);
+//        return buildPageResponse(page);
+//    }
+//
+//    @Override
+//    public PageResponse<CustomerFranchise> getCustomersForManager(UUID franchiseId, CustomerStatus status, Pageable pageable) {
+//        Page<CustomerFranchise> page = (status == null)
+//                ? customerRepository.findByFranchiseId(franchiseId, pageable)
+//                : customerRepository.findByFranchiseIdAndStatus(franchiseId, status, pageable);
+//        return buildPageResponse(page);
+//    }
 
     private PageResponse<CustomerFranchise> buildPageResponse(Page<CustomerFranchise> pageResult) {
         return PageResponse.<CustomerFranchise>builder()

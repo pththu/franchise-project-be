@@ -124,6 +124,7 @@ public class UserServiceImpl implements UserService {
         String passwordDefault = "Franchise@01";
         String cognitoSub;
 
+        // 1. Chỉ gọi Cognito 1 lần trong khối try-catch để bắt lỗi
         try {
             cognitoSub = cognitoService.registerUser(
                     req.getUsername(),
@@ -140,6 +141,12 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
 
+        // 2. Ép franchiseId = null nếu là CUSTOMER
+        UUID assignedFranchiseId = req.getFranchiseId();
+        if (role.getName().equalsIgnoreCase("CUSTOMER")) {
+            assignedFranchiseId = null;
+        }
+
         User user = User.builder()
                 .id(UUID.fromString(cognitoSub))
                 .username(req.getUsername())
@@ -149,12 +156,13 @@ public class UserServiceImpl implements UserService {
                 .verifyEmail(false)
                 .gender(req.isGender())
                 .role(role)
+                .franchiseId(assignedFranchiseId)
                 .status(UserStatus.ACTIVE)
                 .build();
 
         userRepository.save(user);
 
-        // Add vào Cognito group theo roleName được chỉ định trong request
+        // 3. Add vào Cognito group theo roleName được chỉ định trong request
         try {
             cognitoService.addUserToGroup(user.getUsername(), role.getName());
             log.info("CreateUser: added {} to Cognito group '{}'", user.getUsername(), role.getName());
@@ -297,7 +305,7 @@ public class UserServiceImpl implements UserService {
     /**
      * Cập nhật thông tin cá nhân (fullName, phone, gender).
      * Chỉ update field nào có giá trị mới khác giá trị hiện tại.
-     *
+     * <p>
      * subject: JWT sub — có thể là UUID (từ Cognito access token) hoặc username.
      */
     @Override
