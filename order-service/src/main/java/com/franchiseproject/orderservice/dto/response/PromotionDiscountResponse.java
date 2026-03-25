@@ -15,6 +15,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PromotionDiscountResponse {
     UUID promotionUsageId;
+    BigDecimal maxDiscountValue;
     BigDecimal discountValue;
     DiscountType discountType;
 }

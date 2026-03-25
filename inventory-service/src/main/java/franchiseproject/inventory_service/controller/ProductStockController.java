@@ -2,6 +2,7 @@ package franchiseproject.inventory_service.controller;
 
 import franchiseproject.inventory_service.dto.ApiResponse;
 import franchiseproject.inventory_service.dto.request.InitialStockRequest;
+import franchiseproject.inventory_service.dto.request.StockRequestItemRequest;
 import franchiseproject.inventory_service.dto.response.PageResponse;
 import franchiseproject.inventory_service.dto.response.ProductStockResponse;
 import franchiseproject.inventory_service.service.ProductStockService;
@@ -55,6 +56,32 @@ public class ProductStockController {
                 .statusCode(200)
                 .message("Lấy danh sách mã biến thể còn hàng thành công")
                 .data(productStockService.getInStockVariantIds(locationId))
+                .build();
+    }
+
+    @PostMapping("/capable-branches")
+    public ApiResponse<List<UUID>> getCapableBranches(@RequestBody List<StockRequestItemRequest> items) {
+        return ApiResponse.<List<UUID>>builder()
+                .statusCode(200)
+                .message("Lấy danh sách chi nhánh có thể đáp ứng thành công")
+                .data(productStockService.findCapableBranches(items))
+                .build();
+    }
+    @PostMapping("/reserve")
+    public ApiResponse<Void> reserveStock(@RequestBody List<StockRequestItemRequest> items, @RequestParam UUID locationId) {
+        productStockService.reserveStock(items, locationId);
+        return ApiResponse.<Void>builder()
+                .statusCode(200)
+                .message("Trừ kho tạm thời (giữ hàng) thành công")
+                .build();
+    }
+
+    @PostMapping("/commit")
+    public ApiResponse<Void> commitStock(@RequestBody List<StockRequestItemRequest> items, @RequestParam UUID locationId) {
+        productStockService.commitStock(items, locationId);
+        return ApiResponse.<Void>builder()
+                .statusCode(200)
+                .message("Khấu trừ kho chính thức thành công")
                 .build();
     }
 }

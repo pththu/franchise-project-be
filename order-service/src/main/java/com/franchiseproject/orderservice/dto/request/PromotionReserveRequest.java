@@ -16,6 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PromotionReserveRequest {
+    UUID franchiseId;
     @NotNull(message = "customerId không được trống")
     UUID customerId;
     @NotNull(message = "promotionId không được trống")
@@ -23,5 +24,5 @@ public class PromotionReserveRequest {
     @NotNull(message = "orderId không được trống")
     UUID orderId;
     @PositiveOrZero(message = "Tiền không được âm")
-    BigDecimal totalItems;
+    BigDecimal orderValue;
 }

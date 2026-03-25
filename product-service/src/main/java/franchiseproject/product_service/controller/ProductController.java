@@ -2,6 +2,7 @@ package franchiseproject.product_service.controller;
 
 import franchiseproject.product_service.dto.ApiResponse;
 import franchiseproject.product_service.dto.request.CreateProductRequest;
+import franchiseproject.product_service.dto.request.FilterProductsByCustomerRequest;
 import franchiseproject.product_service.dto.request.SearchProductRequest;
 import franchiseproject.product_service.dto.request.UpdateProductRequest;
 import franchiseproject.product_service.dto.response.ProductResponse;
@@ -40,6 +41,24 @@ public class ProductController {
                 .statusCode(200)
                 .message("Get all products success")
                 .data(productService.getAll(page)
+                        .map(productMapper::toProductResponse))
+                .build();
+    }
+
+    @GetMapping("/filter")
+    public ApiResponse<Page<ProductResponse>> filterProductsByCustomer(@Valid @ModelAttribute FilterProductsByCustomerRequest request) {
+
+        log.info("filterByCategoryAndPrice products API called with request: {} {}", request.getFromPrice(), request.getToPrice());
+
+        if (request.getFromPrice() != null && request.getToPrice() != null) {
+            if (request.getFromPrice().compareTo(request.getToPrice()) > 0) {
+                throw new AppException(ErrorCode.INVALID_PRICE_RANGE);
+            }
+        }
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .statusCode(200)
+                .message("Filter product by category and price")
+                .data(productService.filterProductsByCustomer(request)
                         .map(productMapper::toProductResponse))
                 .build();
     }

@@ -54,7 +54,23 @@ public class Product {
     @JoinColumn(name = "category_id")
     @JsonIgnoreProperties("product")
     Category category;
+    @Column(name = "name_en")
+    String nameEn;
 
+    @Column(name = "name_ja")
+    String nameJa;
+
+    @Column(name = "description_en")
+    String descriptionEn;
+
+    @Column(name = "description_ja")
+    String descriptionJa;
+
+    @Column(name = "brand_en")
+    String brandEn;
+
+    @Column(name = "brand_ja")
+    String brandJa;
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     List<ProductVariant> variants;
 }

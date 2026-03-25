@@ -18,13 +18,13 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class PromotionClient {
-    private final RestClient promotionRestClient;
+    private final RestClient apiPromotionRestClient;
 
     /// Method check promotion cho order và giữ lượt promotion
-    public PromotionDiscountResponse apiPromotionReserve(UUID promotionId, UUID customerId, UUID orderId, BigDecimal totalItems) {
+    public PromotionDiscountResponse apiPromotionReserve(UUID promotionId, UUID franchiseId, UUID customerId, UUID orderId, BigDecimal totalItems) {
         try {
-            PromotionReserveRequest request = new PromotionReserveRequest(customerId, promotionId, orderId, totalItems);
-            return promotionRestClient.post()
+            PromotionReserveRequest request = new PromotionReserveRequest(franchiseId, customerId, promotionId, orderId, totalItems);
+            return apiPromotionRestClient.post()
                     .uri("/api/promotions/reserve")
                     .body(request)
                     .retrieve()
@@ -54,10 +54,12 @@ public class PromotionClient {
     /// Method traceback cho promotion khi order bị failed
     public void apiPromotionTraceBack(UUID orderId, OrderStatus orderStatus) {
         try {
-            PromotionTraceBackRequest request = new PromotionTraceBackRequest(orderId, orderStatus);
-            promotionRestClient.post()
-                    .uri("/api/promotions/trace")
-                    .body(request)
+            apiPromotionRestClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/promotions/trace")
+                            .queryParam("orderId", orderId)
+                            .queryParam("status", orderStatus.name())
+                            .build())
                     .retrieve()
                     .toBodilessEntity();
             log.info("Promotion rollback success: customerId={}", orderId);

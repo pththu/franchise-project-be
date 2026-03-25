@@ -16,13 +16,13 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class LoyaltyClient {
-    private final RestClient loyalRestClient;
+    private final RestClient apiLoyaltyRestClient;
 
     /// Method check điểm Loyalty để trừ hóa đơn cho order và giữ điểm
     public BigDecimal apiLoyaltyReserve(UUID customerId, Integer loyaltyPoints) {
         try {
             LoyaltyReserveRequest request = new LoyaltyReserveRequest(customerId, loyaltyPoints);
-            return loyalRestClient.post()
+            return apiLoyaltyRestClient.post()
                     .uri("/api/loyalty/reserve")
                     .body(request)
                     .retrieve()
@@ -49,7 +49,7 @@ public class LoyaltyClient {
     public void apiLoyaltyTraceBackPoints(UUID customerId, UUID franchiseId, UUID orderId, Integer pointsToRefund) {
         try {
             LoyaltyTraceBackRequest request = new LoyaltyTraceBackRequest(customerId, franchiseId, orderId, pointsToRefund);
-            loyalRestClient.post()
+            apiLoyaltyRestClient.post()
                     .uri("/api/loyalty/refund")
                     .body(request)
                     .retrieve()

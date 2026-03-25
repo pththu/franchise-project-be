@@ -24,20 +24,23 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class PaymentClient {
-    private final RestClient paymentRestClient;
+    private final RestClient apiPaymentRestClient;
 
     public PaymentQRResponse createTransaction(UUID orderId, UUID paymentMethodId) {
         try {
             PaymentTransactionRequest request = new PaymentTransactionRequest(orderId, paymentMethodId);
-            ApiResponse<PaymentQRResponse> response = paymentRestClient.post()
+            ApiResponse<PaymentQRResponse> response = apiPaymentRestClient.post()
                     .uri("/api/payments/init")
                     .body(request)
                     .retrieve()
                     .body(new ParameterizedTypeReference<ApiResponse<PaymentQRResponse>>() {
                     });
             log.info("Payment request: {}", request);
-            log.info("Payment request: {}", response);
-            return response.getData();
+            log.info("Payment response raw data: {}", response != null ? response.getData() : "null");
+            if (response != null && response.getData() != null) {
+                log.info("Deserialized paymentTransactionId inside Client: {}", response.getData().getPaymentTransactionId());
+            }
+            return response != null ? response.getData() : null;
         } catch (HttpClientErrorException e) {
             log.warn("Payment 4xx error: {}", e.getResponseBodyAsString());
             throw new AppException(ErrorCode.VALIDATION_FAILED);
@@ -46,22 +49,4 @@ public class PaymentClient {
             throw new AppException(ErrorCode.PAYMENT_INIT_FAILED);
         }
     }
-    //Mock Test
-//    public PaymentResponse createTransaction(UUID orderId,
-//                                             UUID customerId,
-//                                             BigDecimal finalTotal) {
-//
-//        if (orderId == null || customerId == null || finalTotal == null) {
-//            throw new AppException(ErrorCode.NO_TRANSACTION);
-//        }
-//
-//        // MOCK RESPONSE
-//        return PaymentResponse.builder()
-//                .paymentTransactionId(UUID.randomUUID())
-//                .orderId(orderId)
-//                .customerId(customerId)
-//                .finalTotal(finalTotal)
-//                .orderStatus(OrderStatus.CONFIRMED)
-//                .build();
-//    }
 }

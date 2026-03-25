@@ -6,6 +6,7 @@ import franchiseproject.product_service.enums.ProductSize;
 import franchiseproject.product_service.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -90,4 +92,61 @@ public interface ProductRepository extends JpaRepository<Product, UUID>,
             @Param("variantIds") java.util.List<java.util.UUID> variantIds,
             Pageable pageable
     );
+
+//    @Query("""
+//      SELECT DISTINCT p FROM Product p
+//        LEFT JOIN p.category c
+//        LEFT JOIN p.variants v
+//    WHERE
+//        (:categories IS NULL OR c.name IN :categories)
+//        AND (
+//          (:fromPrice IS NOT NULL AND :toPrice IS NOT NULL AND (v.salePrice BETWEEN :fromPrice AND :toPrice))
+//          OR (:fromPrice IS NOT NULL AND :toPrice IS NULL AND v.salePrice >= :fromPrice)
+//          OR (:fromPrice IS NOT NULL AND :toPrice IS NOT NULL AND v.salePrice <= :toPrice)
+//          OR (:fromPrice IS NULL AND :toPrice IS NULL)
+//        )
+//        AND p.status = 'ACTIVE'
+//    """)
+//    Page<Product> filterProducts(
+//            @Param("categories") List<String> categories,
+//            @Param("fromPrice") BigDecimal fromPrice,
+//            @Param("toPrice") BigDecimal toPrice,
+//            Pageable pageable
+//    );
+    @EntityGraph(attributePaths = {"category", "variants"})
+    @Query("""
+       SELECT DISTINCT p  FROM Product p
+        LEFT JOIN p.variants v
+        LEFT JOIN p.category c
+        WHERE (:productIds IS NULL OR p.id IN :productIds) 
+            AND (
+              (
+                :keyword IS NULL OR
+                LOWER(p.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR
+                LOWER(p.brand) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR
+                LOWER(c.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))
+              )
+          AND (:categories IS NULL OR c.name IN :categories)
+          AND (:sizes IS NULL OR v.size IN :sizes)
+          AND (:colors IS NULL OR v.color IN :colors)
+          AND (
+              (:fromPrice IS NOT NULL AND :toPrice IS NOT NULL AND (v.salePrice BETWEEN :fromPrice AND :toPrice))
+              OR (:fromPrice IS NOT NULL AND :toPrice IS NULL AND v.salePrice >= :fromPrice)
+              OR (:fromPrice IS NOT NULL AND :toPrice IS NOT NULL AND v.salePrice <= :toPrice)
+              OR (:fromPrice IS NULL AND :toPrice IS NULL) 
+          ))
+          AND v.status = 'ACTIVE'              
+          AND p.status = 'ACTIVE'
+    """)
+    Page<Product> filterProducts(
+            @Param("categories") List<String> categories,
+            @Param("fromPrice") BigDecimal fromPrice,
+            @Param("toPrice") BigDecimal toPrice,
+            @Param("keyword") String keyword,
+            @Param("colors") List<ProductColor> colors,
+            @Param("sizes") List<ProductSize> sizes,
+            @Param("productIds") List<UUID> productIds,
+            Pageable pageable
+    );
+
 }
