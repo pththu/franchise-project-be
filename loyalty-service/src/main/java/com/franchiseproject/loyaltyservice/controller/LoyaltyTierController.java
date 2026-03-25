@@ -17,11 +17,11 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LoyaltyTierController {
 
-    LoyaltyTierRepository tierBenefitRepository;
+    LoyaltyTierRepository loyaltyTierRepository;
 
-    @GetMapping("/tiers") // Thêm path rõ ràng
+    @GetMapping("/tiers")
     public ApiResponse<List<LoyaltyTier>> getAllTiers() {
-        List<LoyaltyTier> tiers = tierBenefitRepository.findAll();
+        List<LoyaltyTier> tiers = loyaltyTierRepository.findAll();
         return ApiResponse.<List<com.franchiseproject.loyaltyservice.model.LoyaltyTier>>builder()
                 .statusCode(200)
                 .message("Get all tiers configuration successfully")
