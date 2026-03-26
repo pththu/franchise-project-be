@@ -23,7 +23,7 @@ public interface UserService {
     AssignRoleResponse assignRole(Role role, User user);
     UserStatusResponse updateStatus(UUID userId, UserStatus newStatus);
     Page<User> getAll(int page);
-    Page<User> search(SeachUsersRequest request);
+    Page<UserResponse> search(SeachUsersRequest request);
     StatsCountUserResponse countUsers();
     List<User> getUsersByIds(List<UUID> ids);
 }

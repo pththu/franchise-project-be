@@ -1,5 +1,6 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
+import com.franchiseproject.identityaccessservice.client.FranchiseClient;
 import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
 import com.franchiseproject.identityaccessservice.dto.request.SeachUsersRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
@@ -27,9 +28,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -40,6 +41,7 @@ public class UserServiceImpl implements UserService {
     CognitoService cognitoService;
     UserRepository userRepository;
     UserMapper userMapper;
+    FranchiseClient franchiseClient;
     PasswordEncoder passwordEncoder;
 
     static final int DEFAULT_PAGE_SIZE = 20;
@@ -61,7 +63,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<User> search(SeachUsersRequest request) {
+    public Page<UserResponse> search(SeachUsersRequest request) {
 
         String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
                 ? request.getKeyword().trim() : null;
@@ -86,7 +88,34 @@ public class UserServiceImpl implements UserService {
                 request.getSize().intValue(),
                 sort
         );
-        return userRepository.searchUsers(keyword, roleName, status, request.getGender(), pageable);
+
+        Page<User> usersPage = userRepository.searchUsers(keyword, roleName, status, request.getGender(), pageable);
+
+        if (usersPage.isEmpty()) {
+            return Page.empty(usersPage.getPageable());
+        }
+
+        // 2. Lấy danh sách unique franchiseId, loại bỏ null
+        Set<UUID> franchiseIds = usersPage.getContent().stream()
+                .map(User::getFranchiseId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        log.info("franchiseIds {}", franchiseIds);
+
+        // 3. Gọi API song song để lấy thông tin Franchise
+        Map<UUID, FranchiseResponse> franchiseMap = fetchFranchisesConcurrently(franchiseIds);
+
+        // 4. Map User entity sang UserResponse và gán FranchiseResponse
+        return usersPage.map(user -> {
+            UserResponse response = userMapper.toUserResponse(user);
+
+            if (user.getFranchiseId() != null) {
+                response.setFranchise(franchiseMap.get(user.getFranchiseId()));
+            }
+
+            return response;
+        });
     }
 
     @Override
@@ -364,5 +393,23 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getUsersByIds(List<UUID> ids) {
         return userRepository.findAllById(ids);
+    }
+
+    private Map<UUID, FranchiseResponse> fetchFranchisesConcurrently(Set<UUID> franchiseIds) {
+        if (franchiseIds.isEmpty()) return Collections.emptyMap();
+
+        // Khởi tạo danh sách các tasks chạy song song
+        List<CompletableFuture<AbstractMap.SimpleEntry<UUID, FranchiseResponse>>> futures = franchiseIds.stream()
+                .map(id -> CompletableFuture.supplyAsync(() -> {
+                    FranchiseResponse franchise = franchiseClient.getFranchiseById(id); // Hàm gọi API của bạn
+                    return new AbstractMap.SimpleEntry<>(id, franchise);
+                }))
+                .toList();
+
+        // Đợi tất cả hoàn thành và gom kết quả lại thành Map
+        return futures.stream()
+                .map(CompletableFuture::join)
+                .filter(entry -> entry.getValue() != null) // Bỏ qua nếu call API lỗi trả về null
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

@@ -1,5 +1,6 @@
 package com.franchiseproject.identityaccessservice.controller;
 
+import com.franchiseproject.identityaccessservice.client.FranchiseClient;
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
 import com.franchiseproject.identityaccessservice.dto.request.*;
 import com.franchiseproject.identityaccessservice.dto.response.*;
@@ -24,8 +25,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -37,6 +39,7 @@ public class UserController {
     UserService userService;
     RoleService roleService;
     UserMapper userMapper;
+    FranchiseClient franchiseClient;
     PasswordEncoder passwordEncoder;
 
     @GetMapping
@@ -61,7 +64,10 @@ public class UserController {
             @Valid @ModelAttribute SeachUsersRequest request) {
 
         log.info("Search users API called with request: {}", request);
-        Page<UserResponse> data = userService.search(request).map(userMapper::toUserResponse);
+//        Page<UserResponse> data = userService.search(request).map(userMapper::toUserResponse);
+        Page<UserResponse> data = userService.search(request);
+
+        log.info("data: {}", data.getContent().get(0).getFranchise().getName());
 
         return ApiResponse.<PageResponse<UserResponse>>builder()
                 .statusCode(200)
