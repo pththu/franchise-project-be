@@ -12,6 +12,7 @@ import com.franchiseproject.identityaccessservice.enums.UserStatus;
 import com.franchiseproject.identityaccessservice.exception.AppException;
 import com.franchiseproject.identityaccessservice.exception.ErrorCode;
 import com.franchiseproject.identityaccessservice.mapper.UserMapper;
+import com.franchiseproject.identityaccessservice.repository.RoleRepository;
 import com.franchiseproject.identityaccessservice.repository.UserRepository;
 import com.franchiseproject.identityaccessservice.service.CognitoService;
 import com.franchiseproject.identityaccessservice.service.UserService;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     CognitoService cognitoService;
+    RoleRepository roleRepository;
     UserRepository userRepository;
     UserMapper userMapper;
     FranchiseClient franchiseClient;
@@ -339,19 +341,12 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public UserUpdateResponse updateAccountInformation(String subject, UserUpdateRequest request) {
-        log.info("UpdateAccountInformation: subject={}, request={}", subject, request);
+    public UserUpdateResponse updateAccountInformation(UUID userId, UserUpdateRequest request) {
+        log.info("UpdateAccountInformation: subject={}, request={}", userId, request);
 
         // Tìm user theo UUID (JWT sub) trước, fallback sang username
-        User user;
-        try {
-            UUID userId = UUID.fromString(subject);
-            user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        } catch (IllegalArgumentException e) {
-            user = userRepository.findByUsername(subject)
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        }
 
         boolean changed = false;
 
@@ -362,22 +357,21 @@ public class UserServiceImpl implements UserService {
             log.info("UpdateAccountInformation: updated fullName for {}", user.getUsername());
         }
 
-        String phone = request.getPhone();
-        if (phone != null && !phone.isBlank() && !phone.equals(user.getPhone())) {
-            user.setPhone(phone);
-            changed = true;
-            log.info("UpdateAccountInformation: updated phone for {}", user.getUsername());
+        if (request.getStatus() == UserStatus.DELETED) {
+            changed = deleteAccountUser(userId).isDeleted();
         }
 
-        String gender = request.getGender();
-        if (gender != null && !gender.isBlank()) {
-            // Boolean.parseBoolean handles "true"/"false" case-insensitively; getBoolean reads system property
-            boolean newGender = Boolean.parseBoolean(gender);
-            if (user.isGender() != newGender) {
-                user.setGender(newGender);
-                changed = true;
-                log.info("UpdateAccountInformation: updated gender for {}", user.getUsername());
-            }
+        if (request.getRoleName() != null) {
+            Role role = roleRepository.findByName(request.getRoleName())
+                            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+
+            changed = assignRole(role, user).isAssigned();
+        }
+
+
+        if (request.getFranchise() != null) {
+            user.setFranchiseId(request.getFranchise());
+            changed = true;
         }
 
         if (changed) {

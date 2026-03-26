@@ -166,15 +166,24 @@ public class UserController {
                 .build();
     }
 
-    @PutMapping("/update-account")
-    public ApiResponse<UserUpdateResponse> updateAccountInformation(
+    @PutMapping("/{userId}/update")
+    public ApiResponse<UserUpdateResponse> updateUser(
+            @PathVariable("userId") UUID targetId,
             @RequestBody UserUpdateRequest request,
             @AuthenticationPrincipal Jwt jwt) {
+
+        String callerRole = jwt.getClaimAsString("role");
+
+        if (!callerRole.equals("ADMIN")
+                && !callerRole.equals("STAFF")
+                && !callerRole.equals("STORE_MANAGER")) {
+            throw new AppException(ErrorCode.FORBIDDEN);
+        }
 
         return ApiResponse.<UserUpdateResponse>builder()
                 .statusCode(200)
                 .message("Update account information success")
-                .data(userService.updateAccountInformation(jwt.getSubject(), request))
+                .data(userService.updateAccountInformation(targetId, request))
                 .build();
     }
 
@@ -206,18 +215,21 @@ public class UserController {
             @AuthenticationPrincipal Jwt jwt) {
 
         String callerRole = jwt.getClaimAsString("role");
-        log.info("UpdateStatus: caller={}, targetUser={}, newStatus={}", callerRole, userId, status);
 
-        // Chỉ ADMIN và MANAGER được phép thay đổi status
-        if (!callerRole.equals("ADMIN") && !callerRole.equals("MANAGER")) {
+        // Chỉ ADMIN, STORE_MANAGER và STAFF được phép thay đổi status
+        if (!callerRole.equals("ADMIN")
+                && !callerRole.equals("STAFF")
+                && !callerRole.equals("STORE_MANAGER")) {
             throw new AppException(ErrorCode.FORBIDDEN);
         }
 
-        // MANAGER chỉ có thể suspend/activate STAFF và CUSTOMER, không được động vào ADMIN/MANAGER khác
-        if (callerRole.equals("MANAGER")) {
+        // STORE MANAGER chỉ có thể suspend/activate STAFF và CUSTOMER, không được động vào ADMIN/MANAGER khác
+        if (callerRole.equals("STORE_MANAGER")) {
             User target = userService.getById(userId);
             String targetRole = target.getRole().getName();
-            if (targetRole.equals("ADMIN") || targetRole.equals("MANAGER")) {
+            if (targetRole.equals("ADMIN")
+                    || targetRole.equals("MANAGER")
+                    || targetRole.equals("STORE_MANAGER")) {
                 throw new AppException(ErrorCode.FORBIDDEN);
             }
         }
