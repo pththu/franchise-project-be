@@ -54,10 +54,12 @@ public class PromotionClient {
     /// Method traceback cho promotion khi order bị failed
     public void apiPromotionTraceBack(UUID orderId, OrderStatus orderStatus) {
         try {
-            PromotionTraceBackRequest request = new PromotionTraceBackRequest(orderId, orderStatus);
             apiPromotionRestClient.post()
-                    .uri("/api/promotions/trace")
-                    .body(request)
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/promotions/trace")
+                            .queryParam("orderId", orderId)
+                            .queryParam("status", orderStatus.name())
+                            .build())
                     .retrieve()
                     .toBodilessEntity();
             log.info("Promotion rollback success: customerId={}", orderId);
