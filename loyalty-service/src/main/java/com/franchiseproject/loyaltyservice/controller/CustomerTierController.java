@@ -32,6 +32,17 @@ public class CustomerTierController {
                 .data(customerTierService.getCustomerTierInfo(customerId, franchiseId))
                 .build();
     }
+    @GetMapping("/customers/phone/{phone}/franchises/{franchiseId}/tier-info")
+    public ApiResponse<CustomerTierResponse> getCustomerTierInfoByPhone(
+            @PathVariable String phone,
+            @PathVariable UUID franchiseId) {
+
+        return ApiResponse.<CustomerTierResponse>builder()
+                .statusCode(200)
+                .message("Get customer tier info by phone successfully")
+                .data(customerTierService.getCustomerTierInfoByPhone(phone, franchiseId))
+                .build();
+    }
 
     @GetMapping("/customers")
     public ApiResponse<List<CustomerLoyaltyResponse>> getCustomersByTier(

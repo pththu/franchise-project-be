@@ -55,13 +55,25 @@ public class PaymentController {
     /// Lấy giao dịch theo orderId
     @GetMapping("/{orderId}/get-transaction")
     public ApiResponse<PaymentTransactionResponse> getPaymentTransactionByOrderId(@PathVariable UUID orderId) {
-        PaymentTransactionResponse paymentTransactionResponse = paymentTransactionService.getPaymentTransactionByOrderId(orderId);
-        return ApiResponse.<PaymentTransactionResponse>builder()
-                .message("Get Transaction by OrderId Success!")
-                .data(paymentTransactionResponse)
-                .statusCode(200)
-                .errors(null)
-                .build();
+        try {
+            PaymentTransactionResponse paymentTransactionResponse = paymentTransactionService.getPaymentTransactionByOrderId(orderId);
+            return ApiResponse.<PaymentTransactionResponse>builder()
+                    .message("Get Transaction by OrderId Success!")
+                    .data(paymentTransactionResponse)
+                    .statusCode(200)
+                    .errors(null)
+                    .build();
+        } catch (com.franchiseproject.paymentservice.exception.AppException e) {
+            if (e.getErrorCode() == com.franchiseproject.paymentservice.exception.ErrorCode.NOT_FOUND_TRANSACTION) {
+                return ApiResponse.<PaymentTransactionResponse>builder()
+                        .message("No online transaction for this order")
+                        .data(null)
+                        .statusCode(200)
+                        .errors(null)
+                        .build();
+            }
+            throw e;
+        }
     }
 
     /// Lấy các phương thức thanh toán khả dụng

@@ -121,9 +121,12 @@ public class OrderServiceImpl implements OrderService {
             BigDecimal discount = BigDecimal.ZERO;
             BigDecimal maxDiscountValue = BigDecimal.ZERO;
             DiscountType discountType = null;
-            if (request.getPoint() != null) {
-                discount = loyaltyClient.apiLoyaltyReserve(request.getCustomerId(), request.getPoint());
-                usedLoyalty = discount.compareTo(BigDecimal.ZERO) > 0;
+            if (request.getPoint() != null && request.getPoint() > 0) {
+                discount = BigDecimal.valueOf(request.getPoint()).multiply(BigDecimal.valueOf(100));
+                discountType = DiscountType.FIXED;
+                maxDiscountValue = discount;
+                usedLoyalty = false; // Frontend self-deducts, no rollback needed
+
             } else if (request.getPromotionId() != null) {
                 PromotionDiscountResponse promotion = promotionClient.apiPromotionReserve(request.getPromotionId(),
                         request.getFranchiseId(), request.getCustomerId(), order.getId(), totalItems);

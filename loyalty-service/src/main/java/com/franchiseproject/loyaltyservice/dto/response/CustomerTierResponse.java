@@ -13,6 +13,8 @@ import java.util.UUID;
 public class CustomerTierResponse {
     UUID customerId;
     UUID franchiseId;
+    String customerName;
+    String customerPhone;
     String currentTier;
     Integer currentPoints;
     Integer totalPoints;

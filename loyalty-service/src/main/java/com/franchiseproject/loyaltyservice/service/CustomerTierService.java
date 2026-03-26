@@ -10,5 +10,7 @@ import java.util.UUID;
 public interface CustomerTierService {
     CustomerTierResponse getCustomerTierInfo(UUID customerId, UUID franchiseId);
 
+    CustomerTierResponse getCustomerTierInfoByPhone(String phone, UUID franchiseId);
+
     List<CustomerLoyaltyResponse> getCustomersByTier(CustomerLoyaltyTier tier);
 }

@@ -7,6 +7,8 @@ import com.franchiseproject.loyaltyservice.exception.AppException;
 import com.franchiseproject.loyaltyservice.exception.ErrorCode;
 import com.franchiseproject.loyaltyservice.model.CustomerFranchise;
 import com.franchiseproject.loyaltyservice.repository.CustomerFranchiseRepository;
+import com.franchiseproject.loyaltyservice.repository.CustomerRepository;
+import com.franchiseproject.loyaltyservice.model.Customer;
 import com.franchiseproject.loyaltyservice.service.CustomerTierService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -22,6 +24,18 @@ import java.util.UUID;
 public class CustomerTierServiceImpl implements CustomerTierService {
 
     CustomerFranchiseRepository customerFranchiseRepository;
+    CustomerRepository customerRepository;
+
+    @Override
+    public CustomerTierResponse getCustomerTierInfoByPhone(String phone, UUID franchiseId) {
+        Customer customer = customerRepository.findByPhone(phone)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+        
+        CustomerTierResponse response = getCustomerTierInfo(customer.getId(), franchiseId);
+        response.setCustomerName(customer.getFullName());
+        response.setCustomerPhone(customer.getPhone());
+        return response;
+    }
 
     @Override
     public CustomerTierResponse getCustomerTierInfo(UUID customerId, UUID franchiseId) {
