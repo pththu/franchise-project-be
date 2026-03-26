@@ -1,10 +1,7 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
 import com.franchiseproject.identityaccessservice.client.FranchiseClient;
-import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
-import com.franchiseproject.identityaccessservice.dto.request.SeachUsersRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
+import com.franchiseproject.identityaccessservice.dto.request.*;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
@@ -331,6 +328,35 @@ public class UserServiceImpl implements UserService {
                 userRepository.findById(userId)
                         .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED))
         );
+    }
+
+    @Override
+    public UserUpdateResponse updateProfile(UUID subject, UpdateProfileRequest request) {
+
+        User user = userRepository.findById(subject)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        boolean changed = false;
+
+        String fullName = request.getFullName();
+        if (fullName != null && !fullName.isBlank() && !user.getFullName().equals(fullName)) {
+            user.setFullName(fullName);
+            changed = true;
+        }
+
+        if (request.getGender() != null && request.getGender().booleanValue() != user.isGender()) {
+            user.setGender(request.getGender().booleanValue());
+            changed = true;
+        }
+
+        if (changed) {
+            userRepository.save(user);
+        }
+
+        return UserUpdateResponse.builder()
+                .isUpdated(changed)
+                .userResponse(userMapper.toUserResponse(user))
+                .build();
     }
 
     /**

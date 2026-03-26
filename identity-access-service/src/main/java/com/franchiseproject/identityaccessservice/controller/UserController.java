@@ -39,8 +39,6 @@ public class UserController {
     UserService userService;
     RoleService roleService;
     UserMapper userMapper;
-    FranchiseClient franchiseClient;
-    PasswordEncoder passwordEncoder;
 
     @GetMapping
     public ApiResponse<Page<UserResponse>> getAll(
@@ -64,7 +62,6 @@ public class UserController {
             @Valid @ModelAttribute SeachUsersRequest request) {
 
         log.info("Search users API called with request: {}", request);
-//        Page<UserResponse> data = userService.search(request).map(userMapper::toUserResponse);
         Page<UserResponse> data = userService.search(request);
 
         log.info("data: {}", data.getContent().get(0).getFranchise().getName());
@@ -184,6 +181,28 @@ public class UserController {
                 .statusCode(200)
                 .message("Update account information success")
                 .data(userService.updateAccountInformation(targetId, request))
+                .build();
+    }
+
+    @PutMapping("/update-profile")
+    public ApiResponse<UserUpdateResponse> updateProfile(
+            @RequestBody UpdateProfileRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+
+        if (request == null && request.getFullName() == null && request.getGender() == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
+        }
+
+        if (jwt.getSubject() == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        return ApiResponse.<UserUpdateResponse>builder()
+                .statusCode(200)
+                .message("Update profile success")
+                .data(userService.updateProfile(userId, request))
                 .build();
     }
 
