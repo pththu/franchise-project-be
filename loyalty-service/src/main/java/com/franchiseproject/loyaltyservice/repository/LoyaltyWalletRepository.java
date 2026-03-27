@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Repository
 public interface LoyaltyWalletRepository extends JpaRepository<LoyaltyWallet, UUID> {
-    Optional<LoyaltyWallet> findByCustomerIdAndFranchiseId(UUID customerId, UUID franchiseId);
+    Optional<LoyaltyWallet> findByUserIdAndFranchiseId(UUID userId, UUID franchiseId);
 
     @Query("SELECT wallet.customerLoyaltyTier, COUNT(wallet) FROM LoyaltyWallet wallet GROUP BY wallet.customerLoyaltyTier")
     java.util.List<Object[]> countCustomersByTier();
