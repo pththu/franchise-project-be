@@ -14,9 +14,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface CustomerRepository extends JpaRepository<CustomerFranchise, UUID> {
+public interface CustomerFranchiseRepository extends JpaRepository<CustomerFranchise, UUID> {
 
     Page<CustomerFranchise> findAll(Pageable page);
+
     Page<CustomerFranchise> findByFranchiseIdAndStatus(UUID franchiseId, CustomerStatus status, Pageable pageable);
 
     Page<CustomerFranchise> findByFranchiseId(UUID franchiseId, Pageable pageable);
@@ -26,15 +27,16 @@ public interface CustomerRepository extends JpaRepository<CustomerFranchise, UUI
     @Query("SELECT c FROM CustomerFranchise c " +
             "WHERE (:franchiseId IS NULL OR c.franchiseId = :franchiseId) " +
             "AND (:status IS NULL OR c.status = :status) " +
-            "AND (:filterByCustomerIds = false OR c.customerId IN :customerIds)")
+            "AND (:filterByUserIds = false OR c.userId IN :userIds)")
     Page<CustomerFranchise> searchCustomers(
             @Param("franchiseId") UUID franchiseId,
             @Param("status") CustomerStatus status,
-            @Param("customerIds") List<UUID> customerIds,
-            @Param("filterByCustomerIds") boolean filterByCustomerIds,
-            Pageable pageable);
+            @Param("userIds") List<UUID> userIds,
+            @Param("filterByUserIds") boolean filterByUserIds,
+            Pageable pageable
+    );
 
-    boolean existsByCustomerIdAndFranchiseId(UUID customerId, UUID franchiseId);
+    boolean existsByUserIdAndFranchiseId(UUID userId, UUID franchiseId);
 
-    Optional<CustomerFranchise> findByCustomerIdAndFranchiseId(UUID customerId, UUID franchiseId);
+    Optional<CustomerFranchise> findByUserIdAndFranchiseId(UUID userId, UUID franchiseId);
 }
