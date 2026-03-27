@@ -35,15 +35,6 @@ public class InternalPermissionController {
             @RequestParam String path,
             @RequestParam String method) {
 
-        // Logic cũ của bạn được dời sang đây
-//        return role.getPermissions().stream().anyMatch(permission -> {
-//            boolean methodMatch = "ANY".equalsIgnoreCase(permission.getHttpMethod())
-//                    || method.equalsIgnoreCase(permission.getHttpMethod());
-//            boolean urlMatch = antPathMatcher.match(permission.getApi(), path);
-//
-//            return methodMatch && urlMatch;
-//        });
-
         log.info("roleName {}", roleName);
         if (roleName.isEmpty()) {
             return false;
