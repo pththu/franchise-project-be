@@ -5,8 +5,8 @@ import com.franchiseproject.loyaltyservice.dto.response.CustomerLoyaltyResponse;
 import com.franchiseproject.loyaltyservice.enums.CustomerLoyaltyTier;
 import com.franchiseproject.loyaltyservice.exception.AppException;
 import com.franchiseproject.loyaltyservice.exception.ErrorCode;
-import com.franchiseproject.loyaltyservice.model.CustomerFranchise;
-import com.franchiseproject.loyaltyservice.repository.CustomerFranchiseRepository;
+import com.franchiseproject.loyaltyservice.model.LoyaltyWallet;
+import com.franchiseproject.loyaltyservice.repository.LoyaltyWalletRepository;
 import com.franchiseproject.loyaltyservice.service.CustomerTierService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,15 +21,15 @@ import java.util.UUID;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class CustomerTierServiceImpl implements CustomerTierService {
 
-    CustomerFranchiseRepository customerFranchiseRepository;
+    LoyaltyWalletRepository loyaltyWalletRepository;
 
     @Override
     public CustomerTierResponse getCustomerTierInfo(UUID customerId, UUID franchiseId) {
-        CustomerFranchise cf = customerFranchiseRepository
+        LoyaltyWallet wallet = loyaltyWalletRepository
                 .findByCustomerIdAndFranchiseId(customerId, franchiseId)
-                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_PROFILE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.LOYALTY_WALLET_NOT_FOUND));
 
-        CustomerLoyaltyTier currentTier = cf.getCustomerLoyaltyTier();
+        CustomerLoyaltyTier currentTier = wallet.getCustomerLoyaltyTier();
         if (currentTier == null) {
             currentTier = CustomerLoyaltyTier.BRONZE;
         }
@@ -38,19 +38,19 @@ public class CustomerTierServiceImpl implements CustomerTierService {
                 .customerId(customerId)
                 .franchiseId(franchiseId)
                 .currentTier(currentTier.name())
-                .currentPoints(cf.getLoyaltyCurrentPoint())
-                .totalPoints(cf.getLoyaltyTotalPoint())
+                .currentPoints(wallet.getLoyaltyCurrentPoint())
+                .totalPoints(wallet.getLoyaltyTotalPoint())
                 .build();
     }
 
     @Override
     public List<CustomerLoyaltyResponse> getCustomersByTier(CustomerLoyaltyTier tier) {
-        List<CustomerFranchise> customerFranchises;
+        List<LoyaltyWallet> customerFranchises;
 
         if (tier == null) {
-            customerFranchises = customerFranchiseRepository.findAll();
+            customerFranchises = loyaltyWalletRepository.findAll();
         } else {
-            customerFranchises = customerFranchiseRepository.findByCustomerLoyaltyTier(tier);
+            customerFranchises = loyaltyWalletRepository.findByCustomerLoyaltyTier(tier);
         }
 
         return customerFranchises.stream()
