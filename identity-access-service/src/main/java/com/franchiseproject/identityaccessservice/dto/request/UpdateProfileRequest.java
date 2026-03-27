@@ -11,9 +11,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserUpdateRequest {
+public class UpdateProfileRequest {
     String fullName;
-    String roleName;
-    UUID franchise;
-    UserStatus status;
+    Boolean gender;
 }
