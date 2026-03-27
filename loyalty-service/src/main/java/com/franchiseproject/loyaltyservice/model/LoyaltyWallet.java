@@ -11,7 +11,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "loyalty_wallets") // Đổi tên bảng dưới DB cho ngầu
+@Table(name = "loyalty_wallets")
 @Setter
 @Getter
 @Builder
@@ -24,8 +24,8 @@ public class LoyaltyWallet {
     @Column(unique = true, nullable = false)
     UUID id;
 
-    @Column(name = "customer_id", columnDefinition = "UUID", nullable = false)
-    UUID customerId;
+    @Column(name = "user_id", columnDefinition = "UUID", nullable = false)
+    UUID userId;
 
     @Column(name = "franchise_id", columnDefinition = "UUID", nullable = false)
     UUID franchiseId;
