@@ -101,7 +101,6 @@ public class UserServiceImpl implements UserService {
             return Page.empty(usersPage.getPageable());
         }
 
-        // 2. Lấy danh sách unique franchiseId, loại bỏ null
         Set<UUID> franchiseIds = usersPage.getContent().stream()
                 .map(User::getFranchiseId)
                 .filter(Objects::nonNull)
@@ -109,10 +108,8 @@ public class UserServiceImpl implements UserService {
 
         log.info("franchiseIds {}", franchiseIds);
 
-        // 3. Gọi API song song để lấy thông tin Franchise
         Map<UUID, FranchiseResponse> franchiseMap = fetchFranchisesConcurrently(franchiseIds);
 
-        // 4. Map User entity sang UserResponse và gán FranchiseResponse
         return usersPage.map(user -> {
             UserResponse response = userMapper.toUserResponse(user);
 
@@ -159,7 +156,6 @@ public class UserServiceImpl implements UserService {
         String passwordDefault = "Franchise@01";
         String cognitoSub;
 
-        // 1. Chỉ gọi Cognito 1 lần trong khối try-catch để bắt lỗi
         try {
             cognitoSub = cognitoService.registerUser(
                     req.getUsername(),
@@ -176,7 +172,6 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
 
-        // 2. Ép franchiseId = null nếu là CUSTOMER
         UUID assignedFranchiseId = req.getFranchiseId();
         if (role.getName().equalsIgnoreCase("CUSTOMER")) {
             assignedFranchiseId = null;
@@ -197,12 +192,10 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        // 3. Add vào Cognito group theo roleName được chỉ định trong request
         try {
             cognitoService.addUserToGroup(user.getUsername(), role.getName());
             log.info("CreateUser: added {} to Cognito group '{}'", user.getUsername(), role.getName());
         } catch (Exception e) {
-            // Log warning nhưng không rollback — Cognito group có thể sync lại sau
             log.warn("CreateUser: failed to add {} to Cognito group '{}': {}",
                     user.getUsername(), role.getName(), e.getMessage());
         }
@@ -229,7 +222,6 @@ public class UserServiceImpl implements UserService {
         String oldRoleName = user.getRole() != null ? user.getRole().getName() : null;
         String newRoleName = newRole.getName();
 
-        // Không cần làm gì nếu role không đổi
         if (newRoleName.equals(oldRoleName)) {
             log.info("AssignRole: user {} already has role '{}', skipping", user.getUsername(), newRoleName);
             return AssignRoleResponse.builder()
@@ -237,7 +229,6 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
-        // 1. Xóa khỏi Cognito group cũ
         if (oldRoleName != null) {
             try {
                 cognitoService.removeUserFromGroup(user.getUsername(), oldRoleName);
@@ -248,7 +239,6 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        // 2. Add vào Cognito group mới
         try {
             cognitoService.addUserToGroup(user.getUsername(), newRoleName);
             log.info("AssignRole: added {} to Cognito group '{}'", user.getUsername(), newRoleName);
@@ -258,7 +248,6 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
 
-        // 3. Cập nhật DB
         user.setRole(newRole);
         userRepository.save(user);
 
@@ -294,12 +283,10 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        // 1. Cập nhật status DB
         user.setStatus(UserStatus.DELETED);
         userRepository.save(user);
         log.info("DeleteAccount: status=DELETED saved for user={}", user.getUsername());
 
-        // 2. Disable trên Cognito
         try {
             cognitoService.disableUser(user.getUsername());
         } catch (Exception e) {
@@ -311,10 +298,6 @@ public class UserServiceImpl implements UserService {
                 .isDeleted(true)
                 .build();
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // USER SELF-SERVICE
-    // ─────────────────────────────────────────────────────────────
 
     @Override
     public boolean changePassword(ChangePasswordRequest request, UUID userId) {
@@ -377,9 +360,8 @@ public class UserServiceImpl implements UserService {
     public UserUpdateResponse updateAccountInformation(UUID userId, UserUpdateRequest request) {
         log.info("UpdateAccountInformation: subject={}, request={}", userId, request);
 
-        // Tìm user theo UUID (JWT sub) trước, fallback sang username
         User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         boolean changed = false;
 
@@ -396,7 +378,7 @@ public class UserServiceImpl implements UserService {
 
         if (request.getRoleName() != null) {
             Role role = roleRepository.findByName(request.getRoleName())
-                            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
 
             changed = assignRole(role, user).isAssigned();
         }
@@ -446,18 +428,22 @@ public class UserServiceImpl implements UserService {
     private Map<UUID, FranchiseResponse> fetchFranchisesConcurrently(Set<UUID> franchiseIds) {
         if (franchiseIds.isEmpty()) return Collections.emptyMap();
 
-        // Khởi tạo danh sách các tasks chạy song song
         List<CompletableFuture<AbstractMap.SimpleEntry<UUID, FranchiseResponse>>> futures = franchiseIds.stream()
                 .map(id -> CompletableFuture.supplyAsync(() -> {
-                    FranchiseResponse franchise = franchiseClient.getFranchiseById(id); // Hàm gọi API của bạn
+                    FranchiseResponse franchise = franchiseClient.getFranchiseById(id);
                     return new AbstractMap.SimpleEntry<>(id, franchise);
                 }))
                 .toList();
-
-        // Đợi tất cả hoàn thành và gom kết quả lại thành Map
         return futures.stream()
                 .map(CompletableFuture::join)
-                .filter(entry -> entry.getValue() != null) // Bỏ qua nếu call API lỗi trả về null
+                .filter(entry -> entry.getValue() != null)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    public UserResponse getUserById(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.toUserResponse(user);
     }
 }

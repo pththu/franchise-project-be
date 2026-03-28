@@ -15,6 +15,7 @@ import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -73,6 +74,21 @@ public class InternalPermissionController {
                 .statusCode(200)
                 .message("Get One")
                 .data(userMapper.toUserResponse(user))
+                .build();
+    }
+
+    @PostMapping("/users/search-by-ids")
+    public ApiResponse<List<UserResponse>> getUsersByIdsInternal(@RequestBody List<UUID> userIds) {
+        var users = userService.getUsersByIds(userIds);
+
+        List<UserResponse> userResponses = users.stream()
+                .map(userMapper::toUserResponse)
+                .toList();
+
+        return ApiResponse.<List<UserResponse>>builder()
+                .statusCode(200)
+                .message("Get users successfully")
+                .data(userResponses)
                 .build();
     }
 }

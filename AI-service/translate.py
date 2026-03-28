@@ -19,21 +19,20 @@ def translater(text_to_translate: list, target_language: str):
         "2. KHÔNG được tạo nhiều biến thể, KHÔNG paraphrase."
         "3. KHÔNG thêm từ, KHÔNG thêm lời chào, KHÔNG giải thích."
         "4. Giữ nguyên thứ tự input."
-        "5. Output phải là danh sách, mỗi phần tử tương ứng 1 input cho mỗi ngôn ngữ cần dịch."
+        "5. Output phải là danh sách ngăn cách nhau bởi dấu '|', mỗi phần tử tương ứng 1 input cho mỗi ngôn ngữ cần dịch."
         "6. Nếu input chỉ có 1 từ → chỉ trả về 1 từ/1 cụm từ tương đương."
-        "7. Thêm dấu phẩy để ngăn cách khi có nhiều từ cần dịch."
 
         "FORMAT OUTPUT:"
         "Chỉ trả về chuỗi kết quả lần lượt từng ngôn ngữ theo thứ tự không thêm gì khác có dạng như sau:"
-        "kết quả 1,kết quả 2,..."
+        "kết quả 1|kết quả 2|..."
 
         "Ví dụ:"
         "Input: hi, good morning"
         "language: en, de"
-        "Output: xin chào,chào buổi sáng,hallo,guten morgen"
+        "Output: xin chào|chào buổi sáng|hallo|guten morgen"
     )
 
-    text = ", ".join(text_to_translate)
+    text = "| ".join(text_to_translate)
 
     logger.info(f"Translating {len(text_to_translate)} item(s) to '{target_language}'")
     start = time.time()
@@ -47,7 +46,8 @@ def translater(text_to_translate: list, target_language: str):
         }
     )
 
-    response_api = response.text.split(',')
+    response_api = response.text.split('|')
+    print(response.text)
 
     end = time.time()
     logger.info(f"Translation completed in {end - start:.2f}s")

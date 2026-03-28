@@ -12,7 +12,7 @@ import org.mapstruct.ReportingPolicy;
 public interface LoyaltyMapper {
 
     @Mapping(source = "transaction.id", target = "transactionId")
-    @Mapping(source = "transaction.customerId", target = "customerId")
+    @Mapping(source = "transaction.userId", target = "userId")
     @Mapping(source = "transaction.points", target = "pointsEarned")
     @Mapping(source = "transaction.balanceAfter", target = "currentBalance")
     @Mapping(source = "transaction.createdAt", target = "timestamp")

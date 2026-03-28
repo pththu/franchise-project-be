@@ -95,11 +95,16 @@ public class FranchiseServiceImpl implements FranchiseService {
     @Override
     @Transactional
     public void deleteFranchise(UUID id) {  // Đã sửa thành UUID
-        if (!franchiseRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Franchise not found with id: " + id);
-        }
+//        if (!franchiseRepository.existsById(id)) {
+//            throw new ResourceNotFoundException("Franchise not found with id: " + id);
+//        }
+//
+//        franchiseRepository.deleteById(id);
+        Franchise existingFranchise = franchiseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + id));
 
-        franchiseRepository.deleteById(id);
+        existingFranchise.setStatus(FranchiseStatus.DELETED);
+        franchiseRepository.save(existingFranchise);
         log.info("Franchise deleted with id: {}", id);
     }
 
