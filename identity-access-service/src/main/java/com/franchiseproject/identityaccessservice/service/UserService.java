@@ -1,9 +1,6 @@
 package com.franchiseproject.identityaccessservice.service;
 
-import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
-import com.franchiseproject.identityaccessservice.dto.request.SeachUsersRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
+import com.franchiseproject.identityaccessservice.dto.request.*;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
@@ -18,12 +15,13 @@ public interface UserService {
     UserCreationResponse createOne(UserCreationRequest req, Role role);
     boolean changePassword(ChangePasswordRequest request, UUID userId);
     UserResponse getProfile(UUID userId);
-    UserUpdateResponse updateAccountInformation(String subject, UserUpdateRequest request);
+    UserUpdateResponse updateProfile(UUID subject, UpdateProfileRequest request);
+    UserUpdateResponse updateAccountInformation(UUID subject, UserUpdateRequest request);
     UserDeleteResponse deleteAccountUser(UUID userId);
     AssignRoleResponse assignRole(Role role, User user);
     UserStatusResponse updateStatus(UUID userId, UserStatus newStatus);
     Page<User> getAll(int page);
-    Page<User> search(SeachUsersRequest request);
+    Page<UserResponse> search(SeachUsersRequest request);
     StatsCountUserResponse countUsers();
     List<User> getUsersByIds(List<UUID> ids);
 }

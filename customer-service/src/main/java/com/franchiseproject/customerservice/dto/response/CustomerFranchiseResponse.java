@@ -1,5 +1,7 @@
 package com.franchiseproject.customerservice.dto.response;
 
+import com.franchiseproject.customerservice.enums.CustomerStatus;
+import com.franchiseproject.customerservice.enums.CustomerType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,8 +15,12 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerFranchiseResponse {
     UUID id;
-    String fullName;
-    String email;
-    String phone;
+    UUID franchiseId;
+    UserResponse userResponse;
+    CustomerType type;
+    CustomerStatus status;
+    Instant firstOrderAt;
+    Instant lastOrderAt;
     Instant createdAt;
+    Instant updatedAt;
 }
