@@ -1,5 +1,6 @@
 package com.franchiseproject.identityaccessservice.controller;
 
+import com.franchiseproject.identityaccessservice.client.FranchiseClient;
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
 import com.franchiseproject.identityaccessservice.dto.request.*;
 import com.franchiseproject.identityaccessservice.dto.response.*;
@@ -24,8 +25,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -37,7 +39,6 @@ public class UserController {
     UserService userService;
     RoleService roleService;
     UserMapper userMapper;
-    PasswordEncoder passwordEncoder;
 
     @GetMapping
     public ApiResponse<Page<UserResponse>> getAll(
@@ -61,7 +62,9 @@ public class UserController {
             @Valid @ModelAttribute SeachUsersRequest request) {
 
         log.info("Search users API called with request: {}", request);
-        Page<UserResponse> data = userService.search(request).map(userMapper::toUserResponse);
+        Page<UserResponse> data = userService.search(request);
+
+        log.info("data: {}", data.getContent().get(0).getFranchise().getName());
 
         return ApiResponse.<PageResponse<UserResponse>>builder()
                 .statusCode(200)
@@ -160,15 +163,46 @@ public class UserController {
                 .build();
     }
 
-    @PutMapping("/update-account")
-    public ApiResponse<UserUpdateResponse> updateAccountInformation(
+    @PutMapping("/{userId}/update")
+    public ApiResponse<UserUpdateResponse> updateUser(
+            @PathVariable("userId") UUID targetId,
             @RequestBody UserUpdateRequest request,
             @AuthenticationPrincipal Jwt jwt) {
+
+        String callerRole = jwt.getClaimAsString("role");
+
+        if (!callerRole.equals("ADMIN")
+                && !callerRole.equals("STAFF")
+                && !callerRole.equals("STORE_MANAGER")) {
+            throw new AppException(ErrorCode.FORBIDDEN);
+        }
 
         return ApiResponse.<UserUpdateResponse>builder()
                 .statusCode(200)
                 .message("Update account information success")
-                .data(userService.updateAccountInformation(jwt.getSubject(), request))
+                .data(userService.updateAccountInformation(targetId, request))
+                .build();
+    }
+
+    @PutMapping("/update-profile")
+    public ApiResponse<UserUpdateResponse> updateProfile(
+            @RequestBody UpdateProfileRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+
+        if (request == null && request.getFullName() == null && request.getGender() == null) {
+            throw new AppException(ErrorCode.DATA_IS_NULL);
+        }
+
+        if (jwt.getSubject() == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        return ApiResponse.<UserUpdateResponse>builder()
+                .statusCode(200)
+                .message("Update profile success")
+                .data(userService.updateProfile(userId, request))
                 .build();
     }
 
@@ -176,7 +210,7 @@ public class UserController {
     public ApiResponse<ChangePasswordResponse> changePassword(
             @RequestBody ChangePasswordRequest request,
             @AuthenticationPrincipal Jwt jwt
-            ) {
+    ) {
 
         UUID userId = UUID.fromString(jwt.getSubject());
         return ApiResponse.<ChangePasswordResponse>builder()
@@ -200,18 +234,21 @@ public class UserController {
             @AuthenticationPrincipal Jwt jwt) {
 
         String callerRole = jwt.getClaimAsString("role");
-        log.info("UpdateStatus: caller={}, targetUser={}, newStatus={}", callerRole, userId, status);
 
-        // Chỉ ADMIN và MANAGER được phép thay đổi status
-        if (!callerRole.equals("ADMIN") && !callerRole.equals("MANAGER")) {
+        // Chỉ ADMIN, STORE_MANAGER và STAFF được phép thay đổi status
+        if (!callerRole.equals("ADMIN")
+                && !callerRole.equals("STAFF")
+                && !callerRole.equals("STORE_MANAGER")) {
             throw new AppException(ErrorCode.FORBIDDEN);
         }
 
-        // MANAGER chỉ có thể suspend/activate STAFF và CUSTOMER, không được động vào ADMIN/MANAGER khác
-        if (callerRole.equals("MANAGER")) {
+        // STORE MANAGER chỉ có thể suspend/activate STAFF và CUSTOMER, không được động vào ADMIN/MANAGER khác
+        if (callerRole.equals("STORE_MANAGER")) {
             User target = userService.getById(userId);
             String targetRole = target.getRole().getName();
-            if (targetRole.equals("ADMIN") || targetRole.equals("MANAGER")) {
+            if (targetRole.equals("ADMIN")
+                    || targetRole.equals("MANAGER")
+                    || targetRole.equals("STORE_MANAGER")) {
                 throw new AppException(ErrorCode.FORBIDDEN);
             }
         }
@@ -268,4 +305,28 @@ public class UserController {
                 .data(userService.deleteAccountUser(userId))
                 .build();
     }
+
+//    @GetMapping("/api/auth/internal/users/{userId}")
+//    public ApiResponse<UserResponse> getUserInternal(@PathVariable UUID userId) {
+//        return ApiResponse.<UserResponse>builder()
+//                .statusCode(200)
+//                .message("Get user successfully")
+//                .data(userService.getUserById(userId))
+//                .build();
+//    }
+
+//    @PostMapping("/api/auth/internal/users/search-by-ids")
+//    public ApiResponse<List<UserResponse>> getUsersByIdsInternal(@RequestBody List<UUID> userIds) {
+//        var users = userService.getUsersByIds(userIds);
+//
+//        List<UserResponse> userResponses = users.stream()
+//                .map(userMapper::toUserResponse)
+//                .toList();
+//
+//        return ApiResponse.<List<UserResponse>>builder()
+//                .statusCode(200)
+//                .message("Get users successfully")
+//                .data(userResponses)
+//                .build();
+//    }
 }

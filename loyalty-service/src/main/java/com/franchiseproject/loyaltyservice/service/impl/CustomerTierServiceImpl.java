@@ -1,28 +1,37 @@
 package com.franchiseproject.loyaltyservice.service.impl;
 
 import com.franchiseproject.loyaltyservice.dto.response.CustomerTierResponse;
+import com.franchiseproject.loyaltyservice.dto.response.LoyaltyWalletResponse;
 import com.franchiseproject.loyaltyservice.dto.response.CustomerLoyaltyResponse;
 import com.franchiseproject.loyaltyservice.enums.CustomerLoyaltyTier;
 import com.franchiseproject.loyaltyservice.exception.AppException;
 import com.franchiseproject.loyaltyservice.exception.ErrorCode;
+<<<<<<< HEAD
 import com.franchiseproject.loyaltyservice.model.CustomerFranchise;
 import com.franchiseproject.loyaltyservice.repository.CustomerFranchiseRepository;
 import com.franchiseproject.loyaltyservice.repository.CustomerRepository;
 import com.franchiseproject.loyaltyservice.model.Customer;
+=======
+import com.franchiseproject.loyaltyservice.model.LoyaltyWallet;
+import com.franchiseproject.loyaltyservice.repository.LoyaltyWalletRepository;
+>>>>>>> sprint04
 import com.franchiseproject.loyaltyservice.service.CustomerTierService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class CustomerTierServiceImpl implements CustomerTierService {
 
+<<<<<<< HEAD
     CustomerFranchiseRepository customerFranchiseRepository;
     CustomerRepository customerRepository;
 
@@ -56,25 +65,46 @@ public class CustomerTierServiceImpl implements CustomerTierService {
                 .totalPoints(cf.getLoyaltyTotalPoint())
                 .build();
     }
+=======
+    LoyaltyWalletRepository loyaltyWalletRepository;
+>>>>>>> sprint04
 
     @Override
     public List<CustomerLoyaltyResponse> getCustomersByTier(CustomerLoyaltyTier tier) {
-        List<CustomerFranchise> customerFranchises;
+        List<LoyaltyWallet> wallets;
 
         if (tier == null) {
-            customerFranchises = customerFranchiseRepository.findAll();
+            wallets = loyaltyWalletRepository.findAll();
         } else {
-            customerFranchises = customerFranchiseRepository.findByCustomerLoyaltyTier(tier);
+            wallets = loyaltyWalletRepository.findByCustomerLoyaltyTier(tier);
         }
 
-        return customerFranchises.stream()
+        return wallets.stream()
                 .map(cf -> CustomerLoyaltyResponse.builder()
-                        .customerId(cf.getCustomerId())
+                        .userId(cf.getUserId())
                         .franchiseId(cf.getFranchiseId())
                         .customerLoyaltyTier(cf.getCustomerLoyaltyTier())
                         .loyaltyCurrentPoint(cf.getLoyaltyCurrentPoint())
                         .loyaltyTotalPoint(cf.getLoyaltyTotalPoint())
                         .build())
                 .toList();
+    }
+
+    @Override
+    public List<CustomerTierResponse> getBulkCustomerTierInfo(List<UUID> customerIds) {
+        if (customerIds == null || customerIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<LoyaltyWallet> wallets = loyaltyWalletRepository.findByUserIdIn(customerIds);
+
+        return wallets.stream().map(wallet ->
+                CustomerTierResponse.builder()
+                        .userId(wallet.getUserId())
+                        .loyaltyTier(wallet.getCustomerLoyaltyTier())
+                        .currentPoint(wallet.getLoyaltyCurrentPoint())
+                        .totalPoint(wallet.getLoyaltyTotalPoint())
+                        .build()
+        ).collect(Collectors.toList());
     }
 }

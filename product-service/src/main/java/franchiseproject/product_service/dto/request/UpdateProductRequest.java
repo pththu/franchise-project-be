@@ -17,19 +17,12 @@ public class UpdateProductRequest {
 
     // ===== Product Info =====
     String name;
-
     String description;
-
     UUID categoryId;
-
     String productType;
-
     String unit;
-
     String brand;
-
     String status; // ACTIVE / INACTIVE
-
 
     // ===== Variants =====
     @Valid
