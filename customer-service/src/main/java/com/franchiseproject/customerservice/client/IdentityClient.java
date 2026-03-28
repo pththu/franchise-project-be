@@ -31,42 +31,34 @@ public class IdentityClient {
     String identityServiceBaseUrl;
 
     public UserResponse getUserById(UUID userId) {
-        if (userId == null) {
-            return null;
-        }
-
+        if (userId == null) return null;
         String url = identityServiceBaseUrl + "/api/auth/internal/users/" + userId;
-
         try {
-            log.info("Calling Identity API: {}", url);
             ResponseEntity<ApiResponse<UserResponse>> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<ApiResponse<UserResponse>>() {}
+                    url, HttpMethod.GET, null,
+                    new ParameterizedTypeReference<ApiResponse<UserResponse>>() {
+                    }
             );
-            return response.getBody().getData();
+            return response.getBody() != null ? response.getBody().getData() : null;
         } catch (Exception e) {
-            // Master Tip: In ra toàn bộ lỗi để biết nó là 404, 500 hay lỗi Parse JSON
-            log.error("REST_CALL_ERROR | URL: {} | Error: {}", url, e.getMessage(), e);
+            log.error("Error fetching user {}: {}", userId, e.getMessage());
             return null;
         }
     }
 
     public List<UserResponse> getUsersByIds(List<UUID> userIds) {
         if (userIds == null || userIds.isEmpty()) return Collections.emptyList();
-
-        // Giả sử identity-service có endpoint: POST /api/auth/users/search-by-ids
         String url = identityServiceBaseUrl + "/api/auth/internal/users/search-by-ids";
         try {
+            HttpEntity<List<UUID>> entity = new HttpEntity<>(userIds);
             ResponseEntity<ApiResponse<List<UserResponse>>> response = restTemplate.exchange(
-                    url, HttpMethod.POST, new HttpEntity<>(userIds),
+                    url, HttpMethod.POST, entity,
                     new ParameterizedTypeReference<ApiResponse<List<UserResponse>>>() {
                     }
             );
-            return (response.getBody() != null) ? response.getBody().getData() : Collections.emptyList();
+            return response.getBody() != null ? response.getBody().getData() : Collections.emptyList();
         } catch (Exception e) {
-            System.err.println("Bulk fetch users failed: " + e.getMessage());
+            log.error("Bulk fetch users failed: {}", e.getMessage());
             return Collections.emptyList();
         }
     }

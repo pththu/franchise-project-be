@@ -210,7 +210,7 @@ public class UserController {
     public ApiResponse<ChangePasswordResponse> changePassword(
             @RequestBody ChangePasswordRequest request,
             @AuthenticationPrincipal Jwt jwt
-            ) {
+    ) {
 
         UUID userId = UUID.fromString(jwt.getSubject());
         return ApiResponse.<ChangePasswordResponse>builder()
@@ -305,4 +305,28 @@ public class UserController {
                 .data(userService.deleteAccountUser(userId))
                 .build();
     }
+
+//    @GetMapping("/api/auth/internal/users/{userId}")
+//    public ApiResponse<UserResponse> getUserInternal(@PathVariable UUID userId) {
+//        return ApiResponse.<UserResponse>builder()
+//                .statusCode(200)
+//                .message("Get user successfully")
+//                .data(userService.getUserById(userId))
+//                .build();
+//    }
+
+//    @PostMapping("/api/auth/internal/users/search-by-ids")
+//    public ApiResponse<List<UserResponse>> getUsersByIdsInternal(@RequestBody List<UUID> userIds) {
+//        var users = userService.getUsersByIds(userIds);
+//
+//        List<UserResponse> userResponses = users.stream()
+//                .map(userMapper::toUserResponse)
+//                .toList();
+//
+//        return ApiResponse.<List<UserResponse>>builder()
+//                .statusCode(200)
+//                .message("Get users successfully")
+//                .data(userResponses)
+//                .build();
+//    }
 }

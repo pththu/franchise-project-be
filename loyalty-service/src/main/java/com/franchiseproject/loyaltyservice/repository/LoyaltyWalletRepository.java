@@ -18,4 +18,6 @@ public interface LoyaltyWalletRepository extends JpaRepository<LoyaltyWallet, UU
     java.util.List<Object[]> countCustomersByTier();
 
     List<LoyaltyWallet> findByCustomerLoyaltyTier(CustomerLoyaltyTier tier);
+
+    List<LoyaltyWallet> findByUserIdIn(List<UUID> userIds);
 }
