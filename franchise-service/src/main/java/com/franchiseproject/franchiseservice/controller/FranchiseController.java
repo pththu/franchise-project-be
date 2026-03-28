@@ -2,10 +2,8 @@ package com.franchiseproject.franchiseservice.controller;
 
 import com.franchiseproject.franchiseservice.dto.ApiResponse;
 import com.franchiseproject.franchiseservice.dto.FranchiseDTO;
-import com.franchiseproject.franchiseservice.dto.response.CheckStatusFranchiseResponse;
+import com.franchiseproject.franchiseservice.dto.response.CheckFranchiseResponse;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
-import com.franchiseproject.franchiseservice.exception.AppException;
-import com.franchiseproject.franchiseservice.exception.ErrorCode;
 import com.franchiseproject.franchiseservice.mapper.FranchiseMapper;
 import com.franchiseproject.franchiseservice.service.FranchiseService;
 import jakarta.validation.Valid;
@@ -16,9 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -90,8 +86,8 @@ public class FranchiseController {
     }
 
     @GetMapping("/check/{franchiseId}")
-    public ApiResponse<CheckStatusFranchiseResponse> checkStatusFranchise(@PathVariable("franchiseId") UUID id) {
-        return ApiResponse.<CheckStatusFranchiseResponse>builder()
+    public ApiResponse<CheckFranchiseResponse> checkStatusFranchise(@PathVariable("franchiseId") UUID id) {
+        return ApiResponse.<CheckFranchiseResponse>builder()
                 .statusCode(200)
                 .message("Check status franchise: " + id)
                 .data(franchiseService.checkFranchiseById(id))

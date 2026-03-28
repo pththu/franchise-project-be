@@ -1,7 +1,7 @@
 package com.franchiseproject.franchiseservice.service.impl;
 
 import com.franchiseproject.franchiseservice.dto.FranchiseDTO;
-import com.franchiseproject.franchiseservice.dto.response.CheckStatusFranchiseResponse;
+import com.franchiseproject.franchiseservice.dto.response.CheckFranchiseResponse;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
 import com.franchiseproject.franchiseservice.exception.AppException;
 import com.franchiseproject.franchiseservice.exception.BadRequestException;
@@ -138,11 +138,11 @@ public class FranchiseServiceImpl implements FranchiseService {
     }
 
     @Override
-    public CheckStatusFranchiseResponse checkFranchiseById(UUID id) {
+    public CheckFranchiseResponse checkFranchiseById(UUID id) {
         Franchise franchise = franchiseRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
 
-        return CheckStatusFranchiseResponse.builder()
+        return CheckFranchiseResponse.builder()
                 .isExists(franchise == null ? false : true)
                 .status(franchise == null ? null : franchise.getStatus())
                 .build();

@@ -236,14 +236,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new AppException(ErrorCode.LOGIN_FAILED);
         }
 
-        UUID franchiseId = user.getFranchiseId();
-        UserResponse userResponse = userMapper.toUserResponse(user);
-        if (franchiseId != null) {
-            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
-            if (franchiseResponse != null) {
-                userResponse.setFranchise(franchiseResponse);
-            }
-        }
+//        UUID franchiseId = user.getFranchiseId();
+//        UserResponse userResponse = userMapper.toUserResponse(user);
+//        if (franchiseId != null) {
+//            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
+//            if (franchiseResponse != null) {
+//                userResponse.setFranchise(franchiseResponse);
+//            }
+//        }
 
         return TokenResponse.builder()
                 .accessToken(authResult.accessToken())
@@ -251,7 +251,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .refreshToken(authResult.refreshToken())
                 .expiresIn(authResult.expiresIn())
                 .tokenType(authResult.tokenType())
-                .user(userResponse)
+                .user(userMapper.toUserResponse(user, franchiseClient))
                 .build();
     }
 
@@ -261,12 +261,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         AuthenticationResultType result = cognitoService.refreshToken(user.getUsername(), refreshToken);
+
+//        UUID franchiseId = user.getFranchiseId();
+//        UserResponse userResponse = userMapper.toUserResponse(user);
+//        if (franchiseId != null) {
+//            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
+//            if (franchiseResponse != null) {
+//                userResponse.setFranchise(franchiseResponse);
+//            }
+//        }
+
         return TokenResponse.builder()
                 .accessToken(result.accessToken())
                 .idToken(result.idToken())
                 .expiresIn(result.expiresIn())
                 .tokenType(result.tokenType())
-                .user(userMapper.toUserResponse(user))
+                .user(userMapper.toUserResponse(user, franchiseClient))
                 .build();
     }
 
