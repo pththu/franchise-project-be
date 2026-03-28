@@ -78,6 +78,7 @@
     "Maven.customer-service [clean].executor": "Run",
     "Maven.franchise-service [clean].executor": "Run",
     "Maven.franchise-service [install].executor": "Run",
+    "Maven.franchiseproject [clean].executor": "Run",
     "Maven.identity-access-service [clean].executor": "Run",
     "Maven.inventory-service [clean].executor": "Run",
     "Maven.inventory-service [install].executor": "Run",
@@ -104,7 +105,8 @@
     "Spring Boot.PromotionServiceApplication.executor": "Run",
     "Spring Boot.ReportServiceApplication.executor": "Run",
     "Spring Boot.ShiftServiceApplication.executor": "Run",
-    "git-widget-placeholder": "sprint04__team02__coreEarnRedeem__tai",
+    "git-widget-placeholder": "sprint04__team02__crudCustomer__ManHM",
+    "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "T:/study/iuh/internship/code/FranchiseProject/sprint04/be/franchise-service/src/main/java/com/franchiseproject/franchiseservice/exception",
@@ -145,17 +147,6 @@
         <option value="SpringBootApplicationConfigurationType" />
       </set>
     </option>
-    <option name="hiddenConfigurations">
-      <map>
-        <entry key="SpringBootApplicationConfigurationType">
-          <value>
-            <set>
-              <option value="DeliveryServiceApplication" />
-            </set>
-          </value>
-        </entry>
-      </map>
-    </option>
     <option name="configurationStatuses">
       <map>
         <entry key="SpringBootApplicationConfigurationType">
@@ -171,15 +162,13 @@
               <entry key="PaymentServiceApplication" value="FAILED" />
               <entry key="ProductServiceApplication" value="FAILED" />
               <entry key="PromotionServiceApplication" value="STOPPED" />
-              <entry key="ReportServiceApplication" value="STOPPED" />
-              <entry key="ShiftServiceApplication" value="STOPPED" />
             </map>
           </value>
         </entry>
       </map>
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.LoyaltyServiceApplication">
+  <component name="RunManager" selected="Spring Boot.FranchiseServiceApplication">
     <configuration default="true" type="JetRunConfigurationType">
       <method v="2">
         <option name="Make" enabled="true" />

@@ -1,5 +1,6 @@
 package com.franchiseproject.loyaltyservice.service.impl;
 
+import com.franchiseproject.loyaltyservice.dto.response.CustomerTierResponse;
 import com.franchiseproject.loyaltyservice.dto.response.LoyaltyWalletResponse;
 import com.franchiseproject.loyaltyservice.dto.response.CustomerLoyaltyResponse;
 import com.franchiseproject.loyaltyservice.enums.CustomerLoyaltyTier;
@@ -13,8 +14,10 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -42,5 +45,23 @@ public class CustomerTierServiceImpl implements CustomerTierService {
                         .loyaltyTotalPoint(cf.getLoyaltyTotalPoint())
                         .build())
                 .toList();
+    }
+
+    @Override
+    public List<CustomerTierResponse> getBulkCustomerTierInfo(List<UUID> customerIds) {
+        if (customerIds == null || customerIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<LoyaltyWallet> wallets = loyaltyWalletRepository.findByUserIdIn(customerIds);
+
+        return wallets.stream().map(wallet ->
+                CustomerTierResponse.builder()
+                        .userId(wallet.getUserId())
+                        .loyaltyTier(wallet.getCustomerLoyaltyTier())
+                        .currentPoint(wallet.getLoyaltyCurrentPoint())
+                        .totalPoint(wallet.getLoyaltyTotalPoint())
+                        .build()
+        ).collect(Collectors.toList());
     }
 }
