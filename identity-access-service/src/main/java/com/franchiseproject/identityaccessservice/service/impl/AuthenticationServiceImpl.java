@@ -1,7 +1,10 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
+import com.franchiseproject.identityaccessservice.client.FranchiseClient;
 import com.franchiseproject.identityaccessservice.dto.request.*;
+import com.franchiseproject.identityaccessservice.dto.response.FranchiseResponse;
 import com.franchiseproject.identityaccessservice.dto.response.TokenResponse;
+import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
@@ -37,6 +40,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     CognitoService cognitoService;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    FranchiseClient franchiseClient;
 
     /**
      * Register luôn gắn role = CUSTOMER.
@@ -232,13 +236,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new AppException(ErrorCode.LOGIN_FAILED);
         }
 
+        UUID franchiseId = user.getFranchiseId();
+        UserResponse userResponse = userMapper.toUserResponse(user);
+        if (franchiseId != null) {
+            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
+            if (franchiseResponse != null) {
+                userResponse.setFranchise(franchiseResponse);
+            }
+        }
+
         return TokenResponse.builder()
                 .accessToken(authResult.accessToken())
                 .idToken(authResult.idToken())
                 .refreshToken(authResult.refreshToken())
                 .expiresIn(authResult.expiresIn())
                 .tokenType(authResult.tokenType())
-                .user(userMapper.toUserResponse(user))
+                .user(userResponse)
                 .build();
     }
 

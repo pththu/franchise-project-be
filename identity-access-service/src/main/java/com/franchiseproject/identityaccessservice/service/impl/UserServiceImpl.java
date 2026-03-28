@@ -5,6 +5,7 @@ import com.franchiseproject.identityaccessservice.dto.request.*;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.enums.FranchiseStatus;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
 import com.franchiseproject.identityaccessservice.exception.AppException;
 import com.franchiseproject.identityaccessservice.exception.ErrorCode;
@@ -88,7 +89,13 @@ public class UserServiceImpl implements UserService {
                 sort
         );
 
-        Page<User> usersPage = userRepository.searchUsers(keyword, roleName, status, request.getGender(), pageable);
+        Page<User> usersPage = userRepository.searchUsers(
+                keyword,
+                roleName,
+                status,
+                request.getGender(),
+                pageable
+        );
 
         if (usersPage.isEmpty()) {
             return Page.empty(usersPage.getPageable());
@@ -395,6 +402,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getUsersByIds(List<UUID> ids) {
         return userRepository.findAllById(ids);
+    }
+
+    @Override
+    public Page<UserResponse> getStaffByFranchise(UUID franchiseId, int page) {
+
+        CheckFranchiseResponse response = franchiseClient.checkFranchiseById(franchiseId);
+
+        if (!response.getIsExists().booleanValue()) {
+            throw new AppException(ErrorCode.FRANCHISE_NOT_EXISTED);
+        }
+
+        if (response.getStatus() == FranchiseStatus.INACTIVE) {
+            throw new AppException(ErrorCode.FRANCHISE_INACTIVE);
+        }
+
+        Sort sort =  Sort.by("name").ascending();
+
+        Pageable pageable = PageRequest.of(page,10, sort);
+        Page<User> users = userRepository.findByRole("STAFF", pageable);
+
+        return users.map(userMapper::toUserResponse);
     }
 
     private Map<UUID, FranchiseResponse> fetchFranchisesConcurrently(Set<UUID> franchiseIds) {

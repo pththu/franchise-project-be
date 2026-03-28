@@ -306,6 +306,20 @@ public class UserController {
                 .build();
     }
 
+    // uncheck
+    @GetMapping("/franchise/staff")
+    public ApiResponse<Page<UserResponse>> getStaffByFranchise(
+            @PathParam("frannchiseId") UUID franchiseId,
+            @PathParam("page") int page
+    ) {
+        return ApiResponse.<Page<UserResponse>>builder()
+                .statusCode(200)
+                .message("Get list staff")
+                .data(userService.getStaffByFranchise(franchiseId, page))
+                .build();
+    }
+
+
 //    @GetMapping("/api/auth/internal/users/{userId}")
 //    public ApiResponse<UserResponse> getUserInternal(@PathVariable UUID userId) {
 //        return ApiResponse.<UserResponse>builder()
