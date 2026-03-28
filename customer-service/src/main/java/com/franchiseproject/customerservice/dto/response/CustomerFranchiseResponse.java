@@ -21,6 +21,8 @@ public class CustomerFranchiseResponse {
     CustomerStatus status;
     Instant firstOrderAt;
     Instant lastOrderAt;
+    FranchiseResponse franchise;
+    CustomerTierResponse loyaltyInfo;
     Instant createdAt;
     Instant updatedAt;
 }
