@@ -12,18 +12,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerTierResponse {
-<<<<<<< HEAD
-    UUID customerId;
-    UUID franchiseId;
-    String customerName;
-    String customerPhone;
-    String currentTier;
-    Integer currentPoints;
-    Integer totalPoints;
-=======
     UUID userId;
     CustomerLoyaltyTier loyaltyTier;
     int currentPoint;
     int totalPoint;
->>>>>>> sprint04
 }

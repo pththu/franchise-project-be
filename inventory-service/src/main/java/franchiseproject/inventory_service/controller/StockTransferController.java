@@ -69,4 +69,13 @@ public class StockTransferController {
                 .data(stockTransferService.receiveTransfer(id))
                 .build();
     }
+
+    @PutMapping("/{id}/reject")
+    public ApiResponse<StockTransferResponse> rejectTransfer(@PathVariable UUID id) {
+        return ApiResponse.<StockTransferResponse>builder()
+                .statusCode(200)
+                .message("Từ chối lệnh điều chuyển thành công")
+                .data(stockTransferService.rejectTransfer(id))
+                .build();
+    }
 }

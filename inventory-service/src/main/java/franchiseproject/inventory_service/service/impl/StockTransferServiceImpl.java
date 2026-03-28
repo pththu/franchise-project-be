@@ -15,7 +15,10 @@ import franchiseproject.inventory_service.exception.ErrorCode;
 import franchiseproject.inventory_service.repository.InventoryTransactionRepository;
 import franchiseproject.inventory_service.client.ProductClient;
 import franchiseproject.inventory_service.repository.ProductStockRepository;
+import franchiseproject.inventory_service.repository.StockRequestRepository;
 import franchiseproject.inventory_service.repository.StockTransferRepository;
+import franchiseproject.inventory_service.enums.StockRequestStatus;
+import franchiseproject.inventory_service.dto.response.NotificationDTO;
 import franchiseproject.inventory_service.service.StockTransferService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +47,7 @@ public class StockTransferServiceImpl implements StockTransferService {
     InventoryTransactionRepository inventoryTransactionRepository;
     ProductClient productClient;
     SimpMessagingTemplate messagingTemplate;
+    StockRequestRepository stockRequestRepository;
 
     @Override
     @Transactional
@@ -118,7 +122,7 @@ public class StockTransferServiceImpl implements StockTransferService {
         }
         for (franchiseproject.inventory_service.entity.StockTransferItem item : t.getItems()) {
             ProductStock sourceStock = productStockRepository.findByProductVariantIdAndLocationId(
-                    item.getProductVariantId(), t.getFromLocationId())
+                            item.getProductVariantId(), t.getFromLocationId())
                     .orElseThrow(() -> new AppException(ErrorCode.INSUFFICIENT_STOCK));
             if (sourceStock.getQuantity() < item.getQuantity()) {
                 throw new AppException(ErrorCode.INSUFFICIENT_STOCK);
@@ -140,6 +144,20 @@ public class StockTransferServiceImpl implements StockTransferService {
         }
         t.setStatus(TransferStatus.IN_TRANSIT);
         StockTransfer saved = stockTransferRepository.save(t);
+
+        // Sync StockRequest status if exists
+        if (t.getReferenceRequestId() != null) {
+            stockRequestRepository.findById(t.getReferenceRequestId()).ifPresent(req -> {
+                req.setStatus(StockRequestStatus.SHIPPED);
+                stockRequestRepository.save(req);
+                messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.builder()
+                        .type("STOCK_REQUEST_SHIPPED")
+                        .message("Yêu cầu nhập hàng " + req.getRequestCode() + " đã xuất hàng")
+                        .payload(req)
+                        .build());
+            });
+        }
+
         StockTransferResponse response = mapToResponse(saved);
 
         messagingTemplate.convertAndSend("/topic/admin/notifications", franchiseproject.inventory_service.dto.response.NotificationDTO.<StockTransferResponse>builder()
@@ -193,11 +211,64 @@ public class StockTransferServiceImpl implements StockTransferService {
         }
         t.setStatus(TransferStatus.COMPLETED);
         StockTransfer saved = stockTransferRepository.save(t);
+
+        // Sync StockRequest status if exists
+        if (t.getReferenceRequestId() != null) {
+            stockRequestRepository.findById(t.getReferenceRequestId()).ifPresent(req -> {
+                req.setStatus(StockRequestStatus.RECEIVED);
+                stockRequestRepository.save(req);
+                messagingTemplate.convertAndSend("/topic/admin/notifications", NotificationDTO.builder()
+                        .type("STOCK_REQUEST_RECEIVED")
+                        .message("Yêu cầu nhập hàng " + req.getRequestCode() + " đã hoàn tất")
+                        .payload(req)
+                        .build());
+            });
+        }
+
         StockTransferResponse response = mapToResponse(saved);
 
         messagingTemplate.convertAndSend("/topic/admin/notifications", franchiseproject.inventory_service.dto.response.NotificationDTO.<StockTransferResponse>builder()
                 .type("STOCK_TRANSFER_COMPLETED")
                 .message("Lệnh điều chuyển " + response.getTransferCode() + " đã hoàn tất")
+                .payload(response)
+                .build());
+
+        return response;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public StockTransferResponse rejectTransfer(UUID id) {
+        StockTransfer t = stockTransferRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (t.getStatus() != TransferStatus.PENDING) {
+            throw new AppException(ErrorCode.BAD_REQUEST);
+        }
+
+        t.setStatus(TransferStatus.CANCELLED);
+        StockTransfer saved = stockTransferRepository.save(t);
+
+        // Sync StockRequest status back to PENDING if exists
+        if (t.getReferenceRequestId() != null) {
+            stockRequestRepository.findById(t.getReferenceRequestId()).ifPresent(req -> {
+                req.setStatus(StockRequestStatus.PENDING);
+                String rejectNote = "| Nguồn từ chối lệnh điều chuyển. Vui lòng chọn nguồn khác.";
+                req.setNotes(req.getNotes() == null ? rejectNote : req.getNotes() + " " + rejectNote);
+                stockRequestRepository.save(req);
+                
+                messagingTemplate.convertAndSend("/topic/admin/notifications", franchiseproject.inventory_service.dto.response.NotificationDTO.builder()
+                        .type("STOCK_REQUEST_REJECTED_BY_SOURCE")
+                        .message("Nguồn đã từ chối lệnh điều chuyển cho yêu cầu " + req.getRequestCode())
+                        .payload(req)
+                        .build());
+            });
+        }
+
+        StockTransferResponse response = mapToResponse(saved);
+        
+        messagingTemplate.convertAndSend("/topic/admin/notifications", franchiseproject.inventory_service.dto.response.NotificationDTO.<StockTransferResponse>builder()
+                .type("STOCK_TRANSFER_CANCELLED")
+                .message("Lệnh điều chuyển " + response.getTransferCode() + " đã bị từ chối")
                 .payload(response)
                 .build());
 
