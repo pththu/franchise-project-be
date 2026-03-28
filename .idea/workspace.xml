@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="" />
+    <list default="true" id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customer-service/.run/CustomerServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/.run/CustomerServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identity-access-service/.run/IdentityAccessServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/.run/IdentityAccessServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/InventoryServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/InventoryServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loyalty-service/.run/LoyaltyServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/.run/LoyaltyServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/.run/ProductServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/.run/ProductServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/promotion-service/.run/PromotionServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/promotion-service/.run/PromotionServiceApplication.run.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -78,11 +86,9 @@
     "Maven.customer-service [clean].executor": "Run",
     "Maven.franchise-service [clean].executor": "Run",
     "Maven.franchise-service [install].executor": "Run",
-    "Maven.franchiseproject [clean].executor": "Run",
     "Maven.identity-access-service [clean].executor": "Run",
     "Maven.inventory-service [clean].executor": "Run",
     "Maven.inventory-service [install].executor": "Run",
-    "Maven.loyalty-service [clean].executor": "Run",
     "Maven.product-service [clean].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RequestMappingsPanelOrder0": "0",
@@ -105,8 +111,7 @@
     "Spring Boot.PromotionServiceApplication.executor": "Run",
     "Spring Boot.ReportServiceApplication.executor": "Run",
     "Spring Boot.ShiftServiceApplication.executor": "Run",
-    "git-widget-placeholder": "sprint04__team02__crudCustomer__ManHM",
-    "ignore.virus.scanning.warn.message": "true",
+    "git-widget-placeholder": "sprint04__team02__updateUserCustomerManager__thu",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "T:/study/iuh/internship/code/FranchiseProject/sprint04/be/franchise-service/src/main/java/com/franchiseproject/franchiseservice/exception",
@@ -132,6 +137,7 @@
       <recent name="D:\mockproject\inventory-service\src\main\java\franchiseproject\inventory_service" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.franchiseproject.identityaccessservice.dto.response" />
       <recent name="com.franchiseproject.identityaccessservice.enums" />
       <recent name="com.franchiseproject.franchiseservice.dto" />
       <recent name="com.franchiseproject.customerservice.enums" />
@@ -147,6 +153,17 @@
         <option value="SpringBootApplicationConfigurationType" />
       </set>
     </option>
+    <option name="hiddenConfigurations">
+      <map>
+        <entry key="SpringBootApplicationConfigurationType">
+          <value>
+            <set>
+              <option value="DeliveryServiceApplication" />
+            </set>
+          </value>
+        </entry>
+      </map>
+    </option>
     <option name="configurationStatuses">
       <map>
         <entry key="SpringBootApplicationConfigurationType">
@@ -156,27 +173,22 @@
               <entry key="CustomerServiceApplication" value="STOPPED" />
               <entry key="FranchiseServiceApplication" value="STOPPED" />
               <entry key="IdentityAccessServiceApplication" value="STOPPED" />
-              <entry key="InventoryServiceApplication" value="FAILED" />
+              <entry key="InventoryServiceApplication" value="STOPPED" />
               <entry key="LoyaltyServiceApplication" value="STOPPED" />
               <entry key="OrderServiceApplication" value="STOPPED" />
-              <entry key="PaymentServiceApplication" value="FAILED" />
-              <entry key="ProductServiceApplication" value="FAILED" />
+              <entry key="PaymentServiceApplication" value="STOPPED" />
+              <entry key="ProductServiceApplication" value="STOPPED" />
               <entry key="PromotionServiceApplication" value="STOPPED" />
+              <entry key="ReportServiceApplication" value="STOPPED" />
+              <entry key="ShiftServiceApplication" value="STOPPED" />
             </map>
           </value>
         </entry>
       </map>
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.FranchiseServiceApplication">
+  <component name="RunManager" selected="Spring Boot.PromotionServiceApplication">
     <configuration default="true" type="JetRunConfigurationType">
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="DeliveryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="delivery-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.deliveryservice.DeliveryServiceApplication" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -207,7 +219,6 @@
     </configuration>
     <list>
       <item itemvalue="Spring Boot.OrderServiceApplication" />
-      <item itemvalue="Spring Boot.DeliveryServiceApplication" />
       <item itemvalue="Spring Boot.FranchiseServiceApplication" />
       <item itemvalue="Spring Boot.ReportServiceApplication" />
       <item itemvalue="Spring Boot.ShiftServiceApplication" />

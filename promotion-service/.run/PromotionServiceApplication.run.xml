@@ -23,9 +23,9 @@
   <configuration default="false" name="PromotionServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <option name="ALTERNATIVE_JRE_PATH" value="graalvm-jdk-17" />
     <envs>
+      <env name="DB_PASSWORD" value="FNLbwoIxRBofbo4fblMhULaUHqGbThi7" />
       <env name="DB_URL" value="jdbc:postgresql://dpg-d6fg4615pdvs739n1csg-a.singapore-postgres.render.com:5432/franchise_db_74u0?sslmode=require" />
       <env name="DB_USERNAME" value="franchise_user" />
-      <env name="DB_PASSWORD" value="FNLbwoIxRBofbo4fblMhULaUHqGbThi7" />
     </envs>
     <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
     <module name="promotion-service" />

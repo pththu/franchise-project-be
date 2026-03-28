@@ -1,6 +1,7 @@
 package com.franchiseproject.identityaccessservice.client;
 
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
+import com.franchiseproject.identityaccessservice.dto.response.CheckFranchiseResponse;
 import com.franchiseproject.identityaccessservice.dto.response.FranchiseResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,29 @@ public class FranchiseClient {
             );
 
             log.info("response: {}", response.getBody().getData().getName());
+            return response.getBody().getData();
+        } catch (Exception e) {
+            log.error("REST_CALL_ERROR | URL: {} | Error: {}", url, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public CheckFranchiseResponse checkFranchiseById(UUID franchiseId) {
+        if (franchiseId == null) {
+            return null;
+        }
+
+        String url = franchiseServiceBaseUrl + "/api/franchises/check/" + franchiseId;
+
+        try {
+            log.info("Calling Franchise API: {}", url);
+            ResponseEntity<ApiResponse<CheckFranchiseResponse>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ApiResponse<CheckFranchiseResponse>>() {}
+            );
+
             return response.getBody().getData();
         } catch (Exception e) {
             log.error("REST_CALL_ERROR | URL: {} | Error: {}", url, e.getMessage(), e);

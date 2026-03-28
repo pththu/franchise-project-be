@@ -36,6 +36,7 @@ public interface UserService {
     StatsCountUserResponse countUsers();
 
     List<User> getUsersByIds(List<UUID> ids);
+    Page<UserResponse> getStaffByFranchise(UUID franchiseId, int page);
 
     UserResponse getUserById(UUID id);
 }
