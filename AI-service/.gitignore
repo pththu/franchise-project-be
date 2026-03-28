@@ -5,3 +5,4 @@ ChatBotFranchise/
 chatbot.py
 mock_product_api.py
 models/
+Vector/
