@@ -278,6 +278,10 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
+        String previousName = product.getName();
+        String previousDescription = product.getDescription();
+        String previousBrand = product.getBrand();
+
         if (request.getName() != null && !request.getName().isBlank()) {
             product.setName(request.getName());
         }
@@ -308,12 +312,120 @@ public class ProductServiceImpl implements ProductService {
             product.setStatus(ProductStatus.valueOf(request.getStatus().toUpperCase()));
         }
 
+        if (request.getVariants() != null) {
+            mergeProductVariants(product, request.getVariants());
+        }
+
+        boolean needsTranslation = hasTextChanged(previousName, product.getName())
+                || hasTextChanged(previousDescription, product.getDescription())
+                || hasTextChanged(previousBrand, product.getBrand());
+
         log.info("product: {}: ", product.getNameEn());
-        applyProductTranslations(product);
+        if (needsTranslation) {
+            applyProductTranslations(product);
+        } else {
+            log.info("Skip translation because name/description/brand unchanged for product {}", product.getId());
+        }
 
         Product updatedProduct = productRepository.save(product);
+        updatedProduct.setVariants(productVariantRepository.findAllByProductId(updatedProduct.getId()));
         log.info("updatedProduct: {}: ", updatedProduct.getNameEn());
         return productMapper.toProductResponse(updatedProduct);
+    }
+
+    private void mergeProductVariants(Product product, List<UpdateProductVariantRequest> requestVariants) {
+        List<ProductVariant> existingVariants = productVariantRepository.findAllByProductId(product.getId());
+        Map<UUID, ProductVariant> existingById = existingVariants.stream()
+                .collect(Collectors.toMap(ProductVariant::getId, variant -> variant));
+
+        Set<UUID> retainedVariantIds = new HashSet<>();
+        List<ProductVariant> variantsToSave = new ArrayList<>();
+
+        for (UpdateProductVariantRequest requestVariant : requestVariants) {
+            if (requestVariant.getId() != null) {
+                ProductVariant existingVariant = existingById.get(requestVariant.getId());
+                if (existingVariant == null) {
+                    throw new AppException(ErrorCode.VARTIANT_NOT_FOUND);
+                }
+
+                updateVariantFields(existingVariant, requestVariant);
+                retainedVariantIds.add(existingVariant.getId());
+                variantsToSave.add(existingVariant);
+                continue;
+            }
+
+            ProductVariant newVariant = buildNewVariant(product, requestVariant);
+            variantsToSave.add(newVariant);
+        }
+
+        for (ProductVariant existingVariant : existingVariants) {
+            if (!retainedVariantIds.contains(existingVariant.getId())) {
+                existingVariant.setStatus(ProductVariantStatus.INACTIVE);
+                variantsToSave.add(existingVariant);
+            }
+        }
+
+        if (!variantsToSave.isEmpty()) {
+            productVariantRepository.saveAll(variantsToSave);
+        }
+    }
+
+    private ProductVariant buildNewVariant(Product product, UpdateProductVariantRequest requestVariant) {
+        ProductColor color = ProductColor.valueOf(requestVariant.getColor().toUpperCase());
+        ProductSize size = ProductSize.valueOf(requestVariant.getSize().toUpperCase());
+
+        String imageUrl = requestVariant.getImageUrls() != null
+                ? convertListToJson(requestVariant.getImageUrls())
+                : null;
+
+        ProductVariantStatus status = (requestVariant.getStatus() != null && !requestVariant.getStatus().isBlank())
+                ? ProductVariantStatus.valueOf(requestVariant.getStatus().toUpperCase())
+                : ProductVariantStatus.ACTIVE;
+
+        return ProductVariant.builder()
+                .product(product)
+                .color(color)
+                .size(size)
+                .price(requestVariant.getPrice())
+                .salePrice(requestVariant.getPrice())
+                .quantity(requestVariant.getStock() != null ? requestVariant.getStock() : 0)
+                .imageUrl(imageUrl)
+                .status(status)
+                .build();
+    }
+
+    private void updateVariantFields(ProductVariant variant, UpdateProductVariantRequest requestVariant) {
+        if (requestVariant.getColor() != null && !requestVariant.getColor().isBlank()) {
+            variant.setColor(ProductColor.valueOf(requestVariant.getColor().toUpperCase()));
+        }
+
+        if (requestVariant.getSize() != null && !requestVariant.getSize().isBlank()) {
+            variant.setSize(ProductSize.valueOf(requestVariant.getSize().toUpperCase()));
+        }
+
+        if (requestVariant.getPrice() != null) {
+            variant.setPrice(requestVariant.getPrice());
+            variant.setSalePrice(requestVariant.getPrice());
+        }
+
+        if (requestVariant.getImageUrls() != null) {
+            variant.setImageUrl(convertListToJson(requestVariant.getImageUrls()));
+        }
+
+        if (requestVariant.getStatus() != null && !requestVariant.getStatus().isBlank()) {
+            variant.setStatus(ProductVariantStatus.valueOf(requestVariant.getStatus().toUpperCase()));
+        }
+    }
+
+    private boolean hasTextChanged(String oldValue, String newValue) {
+        return !normalizeText(oldValue).equals(normalizeText(newValue));
+    }
+
+    private String normalizeText(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim();
     }
 
     private void applyProductTranslations(Product product) {
