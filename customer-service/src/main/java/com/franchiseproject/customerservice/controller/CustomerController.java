@@ -95,22 +95,22 @@ public class CustomerController {
     @PostMapping("/franchise/{franchiseId}")
     public ApiResponse<CustomerFranchise> createCustomerAtFranchise(
             @PathVariable UUID franchiseId,
-            @RequestParam UUID customerId,
+            @RequestParam UUID userId,
             @RequestParam(required = false) CustomerType type) {
 
         return ApiResponse.<CustomerFranchise>builder()
                 .statusCode(201)
                 .message("Link customer to franchise successfully")
-                .data(customerService.createCustomerAtFranchise(customerId, franchiseId, type))
+                .data(customerService.createCustomerAtFranchise(userId, franchiseId, type))
                 .build();
     }
 
     // API Nội bộ: Identity Service gọi sang khi user tự đăng ký App
     @PostMapping("/internal/sync")
     public ApiResponse<Void> syncCustomerFromIdentity(
-            @RequestParam UUID customerId,
+            @RequestParam UUID userId,
             @RequestParam(required = false) CustomerType type) {
-        customerService.syncCustomerFromIdentity(customerId, type);
+        customerService.syncCustomerFromIdentity(userId, type);
         return ApiResponse.<Void>builder()
                 .statusCode(200)
                 .message("Sync customer successfully")

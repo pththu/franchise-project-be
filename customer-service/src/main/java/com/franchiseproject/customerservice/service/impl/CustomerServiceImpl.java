@@ -1,11 +1,10 @@
 package com.franchiseproject.customerservice.service.impl;
 
+import com.franchiseproject.customerservice.client.FranchiseClient;
 import com.franchiseproject.customerservice.client.IdentityClient;
 import com.franchiseproject.customerservice.client.LoyaltyClient;
 import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
-import com.franchiseproject.customerservice.dto.response.CustomerFranchiseResponse;
-import com.franchiseproject.customerservice.dto.response.PageResponse;
-import com.franchiseproject.customerservice.dto.response.UserResponse;
+import com.franchiseproject.customerservice.dto.response.*;
 import com.franchiseproject.customerservice.entity.CustomerFranchise;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
 import com.franchiseproject.customerservice.enums.CustomerType;
@@ -41,6 +40,7 @@ public class CustomerServiceImpl implements CustomerService {
     CustomerFranchiseMapper customerFranchiseMapper;
     IdentityClient identityClient;
     LoyaltyClient loyaltyClient;
+    FranchiseClient franchiseClient;
 
     @Override
     public List<CustomerFranchiseResponse> getAll(int page) {
@@ -107,7 +107,7 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerFranchise cf = CustomerFranchise.builder()
                 .userId(userId)
                 .franchiseId(null)
-                .type(type != null ? type : CustomerType.REGISTERED)
+//                .type(type != null ? type : CustomerType.REGISTERED)
                 .status(CustomerStatus.ACTIVE)
                 .build();
         customerFranchiseRepository.save(cf);
@@ -116,7 +116,6 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public CustomerFranchise createCustomerAtFranchise(UUID userId, UUID franchiseId, CustomerType type) {
-        // Sửa lại tên hàm trong repository cho khớp với thuộc tính userId
         if (customerFranchiseRepository.existsByUserIdAndFranchiseId(userId, franchiseId)) {
             throw new AppException(ErrorCode.CUSTOMER_ALREADY_EXISTS);
         }
@@ -124,7 +123,7 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerFranchise cf = CustomerFranchise.builder()
                 .userId(userId)
                 .franchiseId(franchiseId)
-                .type(type != null ? type : CustomerType.WALK_IN)
+//                .type(type != null ? type : CustomerType.WALK_IN)
                 .status(CustomerStatus.ACTIVE)
                 .build();
 
@@ -176,18 +175,35 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         List<UUID> userIds = pageResult.getContent().stream()
-                .map(CustomerFranchise::getUserId)
-                .distinct()
-                .toList();
+                .map(CustomerFranchise::getUserId).distinct().toList();
 
-        List<UserResponse> users = identityClient.getUsersByIds(userIds);
-        Map<UUID, UserResponse> userMap = users.stream()
+        List<UUID> franchiseIds = pageResult.getContent().stream()
+                .map(CustomerFranchise::getFranchiseId)
+                .filter(id -> id != null)
+                .distinct().toList();
+
+        Map<UUID, UserResponse> userMap = identityClient.getUsersByIds(userIds).stream()
                 .collect(Collectors.toMap(UserResponse::getId, user -> user));
+
+        Map<UUID, FranchiseResponse> franchiseMap = franchiseClient.getFranchisesByIds(franchiseIds).stream()
+                .collect(Collectors.toMap(FranchiseResponse::getId, f -> f));
+
+        Map<UUID, CustomerTierResponse> loyaltyMap = loyaltyClient.getBulkCustomerTierInfo(userIds).stream()
+                .filter(tier -> tier.getUserId() != null)
+                .collect(Collectors.toMap(CustomerTierResponse::getUserId, tier -> tier, (t1, t2) -> t1));
 
         List<CustomerFranchiseResponse> responses = pageResult.getContent().stream()
                 .map(cf -> {
                     CustomerFranchiseResponse response = customerFranchiseMapper.toCustomerFranchiseResponse(cf);
-                    response.setUserResponse(userMap.get(cf.getUserId()));
+
+                    if (cf.getUserId() != null) {
+                        response.setUserResponse(userMap.get(cf.getUserId()));
+                        response.setLoyaltyInfo(loyaltyMap.get(cf.getUserId()));
+                    }
+
+                    if (cf.getFranchiseId() != null) {
+                        response.setFranchise(franchiseMap.get(cf.getFranchiseId()));
+                    }
 
                     return response;
                 })

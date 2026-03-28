@@ -1,7 +1,6 @@
 package com.franchiseproject.customerservice.entity;
 
 import com.franchiseproject.customerservice.enums.CustomerStatus;
-import com.franchiseproject.customerservice.enums.CustomerType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -31,9 +30,9 @@ public class CustomerFranchise {
     UUID franchiseId;
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
-    CustomerType type;
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
+//    CustomerType type;
+//    @Enumerated(EnumType.STRING)
+//    @Column(length = 20, nullable = false)
     CustomerStatus status;
     @Column(name = "first_order_at")
     Instant firstOrderAt;
