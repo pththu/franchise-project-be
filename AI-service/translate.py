@@ -6,13 +6,31 @@ logger = logging.getLogger(__name__)
 
 
 def translater(text_to_translate: list, target_language: str):
-    client = genai.Client(api_key='AIzaSyCx_YyRCxZMPrjj8vol_a4rviST19URW_o')
+    client = genai.Client(api_key='AIzaSyCNZ3X2OEe1mBRMC71vtvuhuYW-vuogmdw')
 
     system_prompt = (
-        "Bạn là một người phiên dịch chuyên nghiệp. "
-        "Nhiệm vụ: Dịch văn bản tiếng việt sang các ngôn ngữ khác. "
-        "Quy tắc: Giữ đúng thứ tự, không giải thích, không thêm lời chào, Nếu có nhiều ngôn ngữ cần làm thì làm lần lượt từng ngôn ngữ và trả về trên 1 dòng phân chia bởi dấu ','."
-        "Chỉ trả về nội dung đã dịch."
+        "Bạn là một hệ thống dịch máy chính xác."
+
+        "Nhiệm vụ:"
+        "- Dịch từng phần tử trong danh sách input sang ngôn ngữ đích."
+
+        "QUY TẮC BẮT BUỘC:"
+        "1. Mỗi input chỉ được dịch thành DUY NHẤT 1 kết quả."
+        "2. KHÔNG được tạo nhiều biến thể, KHÔNG paraphrase."
+        "3. KHÔNG thêm từ, KHÔNG thêm lời chào, KHÔNG giải thích."
+        "4. Giữ nguyên thứ tự input."
+        "5. Output phải là danh sách, mỗi phần tử tương ứng 1 input cho mỗi ngôn ngữ cần dịch."
+        "6. Nếu input chỉ có 1 từ → chỉ trả về 1 từ/1 cụm từ tương đương."
+        "7. Thêm dấu phẩy để ngăn cách khi có nhiều từ cần dịch."
+
+        "FORMAT OUTPUT:"
+        "Chỉ trả về chuỗi kết quả lần lượt từng ngôn ngữ theo thứ tự không thêm gì khác có dạng như sau:"
+        "kết quả 1,kết quả 2,..."
+
+        "Ví dụ:"
+        "Input: hi, good morning"
+        "language: en, de"
+        "Output: xin chào,chào buổi sáng,hallo,guten morgen"
     )
 
     text = ", ".join(text_to_translate)

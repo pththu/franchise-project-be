@@ -13,7 +13,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EarnPointsResponse {
     UUID transactionId;
-    UUID customerId;
+    UUID userId;
     Integer pointsEarned;
     Integer currentBalance;
     String newTierName;

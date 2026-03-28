@@ -3,29 +3,32 @@ FROM python:3.10.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    HF_HOME=/app/.cache/huggingface \
-    HF_HUB_CACHE=/app/.cache/huggingface/hub \
-    TRANSFORMERS_CACHE=/app/.cache/transformers \
-    TORCH_HOME=/app/.cache/torch
+    HF_HOME=/app/.cache \
+    TRANSFORMERS_CACHE=/app/.cache \
+    TORCH_HOME=/app/.cache \
+    TOKENIZERS_PARALLELISM=false
 
 WORKDIR /app
 
-# Runtime packages for ML wheels + healthcheck.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     curl \
     tini \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
-RUN pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
+COPY requirements.txt .
 
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r requirements.txt 
+
+# Preload model 
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('intfloat/multilingual-e5-base')" \
+    && rm -rf /root/.cache/pip
+
+# Copy source sau cùng
 COPY . .
 
-# Preload embedding model at build-time to avoid first-request download latency.
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('intfloat/multilingual-e5-base')"
-
-# Ensure runtime write paths exist and are writable by non-root user.
 RUN useradd --create-home --uid 10001 appuser \
     && mkdir -p /app/log /app/models/recommend /app/Vector /app/config /app/.cache \
     && chown -R appuser:appuser /app
