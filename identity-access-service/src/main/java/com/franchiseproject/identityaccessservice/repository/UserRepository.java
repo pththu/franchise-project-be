@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.awt.*;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,6 +29,13 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByRoleName(String roleName);
 
     Page<User> findAll(Pageable pageable);
+
+    @Query("""
+        SELECT u FROM User u
+        WHERE LOWER(u.role.name) LIKE LOWER(CAST(:roleName AS string))
+            AND u.status = 'ACTIVE'
+    """)
+    Page<User> findByRole(@Param("roleName") String roleName, Pageable pageable);
 
     @Query("""
         SELECT u FROM User u

@@ -24,4 +24,5 @@ public interface UserService {
     Page<UserResponse> search(SeachUsersRequest request);
     StatsCountUserResponse countUsers();
     List<User> getUsersByIds(List<UUID> ids);
+    Page<UserResponse> getStaffByFranchise(UUID franchiseId, int page);
 }
