@@ -38,5 +38,14 @@ public interface CustomerFranchiseRepository extends JpaRepository<CustomerFranc
 
     boolean existsByUserIdAndFranchiseId(UUID userId, UUID franchiseId);
 
-    Optional<CustomerFranchise> findByUserIdAndFranchiseId(UUID userId, UUID franchiseId);
+    @Query("""
+        SELECT c FROM CustomerFranchise c
+        WHERE c.franchiseId = :franchiseId
+            AND c.userId = :userId
+            AND c.status = 'ACTIVE'
+
+    """)
+    Optional<CustomerFranchise> findByUserIdAndFranchiseId(
+            @Param("userId") UUID userId,
+            @Param("franchiseId") UUID franchiseId);
 }

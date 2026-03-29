@@ -25,7 +25,7 @@ import java.util.UUID;
 public class FranchiseClient {
     final RestTemplate restTemplate;
 
-    @Value("${application.feign.franchise-service.url:http://localhost:3002}")
+    @Value("${application.feign.franchise-service.url:http://localhost:3013}")
     String franchiseServiceBaseUrl;
 
     public List<FranchiseResponse> getFranchisesByIds(List<UUID> franchiseIds) {
@@ -42,6 +42,30 @@ public class FranchiseClient {
         } catch (Exception e) {
             log.error("Bulk fetch franchises failed: {}", e.getMessage());
             return Collections.emptyList();
+        }
+    }
+
+    public FranchiseResponse getFranchiseById(UUID franchiseId) {
+        if (franchiseId == null) {
+            return null;
+        }
+
+        String url = franchiseServiceBaseUrl + "/api/franchises/detail/" + franchiseId;
+
+        try {
+            log.info("Calling Franchise API: {}", url);
+            ResponseEntity<ApiResponse<FranchiseResponse>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ApiResponse<FranchiseResponse>>() {}
+            );
+
+            log.info("response: {}", response.getBody().getData().getName());
+            return response.getBody().getData();
+        } catch (Exception e) {
+            log.error("REST_CALL_ERROR | URL: {} | Error: {}", url, e.getMessage(), e);
+            return null;
         }
     }
 }

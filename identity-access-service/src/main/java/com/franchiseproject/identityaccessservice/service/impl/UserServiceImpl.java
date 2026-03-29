@@ -172,13 +172,14 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
 
+        UUID userId = UUID.fromString(cognitoSub);
         UUID assignedFranchiseId = req.getFranchiseId();
         if (role.getName().equalsIgnoreCase("CUSTOMER")) {
             assignedFranchiseId = null;
         }
 
         User user = User.builder()
-                .id(UUID.fromString(cognitoSub))
+                .id(userId)
                 .username(req.getUsername())
                 .email(req.getEmail())
                 .fullName(req.getFullName())

@@ -7,6 +7,8 @@ import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
 import com.franchiseproject.customerservice.enums.CustomerType;
 import com.franchiseproject.customerservice.entity.CustomerFranchise;
+import com.franchiseproject.customerservice.exception.AppException;
+import com.franchiseproject.customerservice.exception.ErrorCode;
 import com.franchiseproject.customerservice.service.CustomerService;
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
@@ -82,26 +84,45 @@ public class CustomerController {
                 .build();
     }
 
-    @GetMapping("/{id}")
-    public ApiResponse<CustomerFranchiseResponse> getCustomerDetail(@PathVariable UUID id) {
+    @GetMapping("/customer-franchise")
+    public ApiResponse<CustomerFranchiseResponse> getCustomerDetail(
+            @PathParam("userId") UUID userId,
+            @PathParam("franchiseId") UUID franchiseId
+    ) {
         return ApiResponse.<CustomerFranchiseResponse>builder()
                 .statusCode(200)
-                .data(customerService.getCustomerById(id))
+                .message("Get customer of franchise by customer id")
+                .data(customerService.getCustomerOfFranchiseById(userId, franchiseId))
                 .build();
     }
 
     // ================== CREATE / SYNC ==================
     // Nhân viên tạo khách tại quầy
-    @PostMapping("/franchise/{franchiseId}")
-    public ApiResponse<CustomerFranchise> createCustomerAtFranchise(
-            @PathVariable UUID franchiseId,
-            @RequestParam UUID userId,
-            @RequestParam(required = false) CustomerType type) {
+//    @PostMapping("/franchise/{franchiseId}")
+//    public ApiResponse<CustomerFranchise> createCustomerAtFranchise(
+//            @PathVariable UUID franchiseId,
+//            @RequestParam UUID userId,
+//            @RequestParam(required = false) CustomerType type) {
+//
+//        return ApiResponse.<CustomerFranchise>builder()
+//                .statusCode(201)
+//                .message("Link customer to franchise successfully")
+//                .data(customerService.createCustomerAtFranchise(userId, franchiseId, type))
+//                .build();
+//    }
+
+    public ApiResponse<CustomerFranchise> createCustormerAtFranchise(
+            @PathVariable("franchiseId") UUID franchiseId,
+            @RequestParam("customerId") UUID customerId
+    ) {
+
+        if (franchiseId == null || customerId == null) {
+            throw new AppException(ErrorCode.DATA_NULL);
+        }
 
         return ApiResponse.<CustomerFranchise>builder()
                 .statusCode(201)
-                .message("Link customer to franchise successfully")
-                .data(customerService.createCustomerAtFranchise(userId, franchiseId, type))
+                .message("Create customer of franchise")
                 .build();
     }
 

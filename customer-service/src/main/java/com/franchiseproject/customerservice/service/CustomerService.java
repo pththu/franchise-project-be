@@ -22,10 +22,13 @@ public interface CustomerService {
     // READ & SEARCH
     CustomerFranchiseResponse getCustomerById(UUID id);
 
+    CustomerFranchiseResponse getCustomerOfFranchiseById(UUID userId, UUID franchiseId);
+
     PageResponse<CustomerFranchiseResponse> searchCustomers(UUID franchiseId, CustomerStatus status, List<UUID> customerIds, Pageable pageable);
 
     // CREATE / SYNC
-    CustomerFranchise createCustomerAtFranchise(UUID customerId, UUID franchiseId, CustomerType type);
+//    CustomerFranchise createCustomerAtFranchise(UUID customerId, UUID franchiseId, CustomerType type);
+    CustomerFranchise createCustomerAtFranchise(UUID customerId, UUID franchiseId);
 
     void syncCustomerFromIdentity(UUID customerId, CustomerType type);
 

@@ -15,8 +15,8 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerFranchiseResponse {
     UUID id;
-    UUID franchiseId;
-    UserResponse userResponse;
+//    UUID franchiseId;
+    UserResponse user;
     CustomerType type;
     CustomerStatus status;
     Instant firstOrderAt;

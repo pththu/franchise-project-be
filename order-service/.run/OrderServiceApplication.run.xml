@@ -1,23 +1,21 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="OrderServiceApplication" type="SpringBootApplicationConfigurationType"
-                   factoryName="Spring Boot" nameIsGenerated="true">
-        <envs>
-            <env name="DB_PASSWORD" value="b0d0wXijbTZChwN3ipQbBmiKiHy8TwHu"/>
-            <env name="DB_URL"
-                 value="jdbc:postgresql://dpg-d6ghni1drdic73c6u9l0-a.singapore-postgres.render.com:5432/group_03?sslmode=require"/>
-            <env name="DB_USERNAME" value="group_03_user"/>
-        </envs>
-        <module name="order-service"/>
-        <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.orderservice.OrderServiceApplication"/>
-        <extension name="software.aws.toolkits.jetbrains.core.execution.JavaAwsConnectionExtension">
-            <option name="credential"/>
-            <option name="region"/>
-            <option name="useCurrentConnection" value="false"/>
-        </extension>
-        <method v="2">
-            <option name="Make" enabled="true"/>
-        </method>
-    </configuration>
+  <configuration default="false" name="OrderServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <envs>
+      <env name="DB_PASSWORD" value="b0d0wXijbTZChwN3ipQbBmiKiHy8TwHu" />
+      <env name="DB_URL" value="jdbc:postgresql://dpg-d6ghni1drdic73c6u9l0-a.singapore-postgres.render.com:5432/group_03?sslmode=require" />
+      <env name="DB_USERNAME" value="group_03_user" />
+    </envs>
+    <module name="order-service" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.orderservice.OrderServiceApplication" />
+    <extension name="software.aws.toolkits.jetbrains.core.execution.JavaAwsConnectionExtension">
+      <option name="credential" />
+      <option name="region" />
+      <option name="useCurrentConnection" value="false" />
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
   <configuration default="false" name="OrderServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
       <env name="DB_PASSWORD" value="sapassword" />
@@ -37,9 +35,9 @@
   </configuration>
   <configuration default="false" name="OrderServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
-      <env name="DB_PASSWORD" value="b0d0wXijbTZChwN3ipQbBmiKiHy8TwHu" />
-      <env name="DB_URL" value="jdbc:postgresql://dpg-d6ghni1drdic73c6u9l0-a.singapore-postgres.render.com:5432/group_03?sslmode=require" />
-      <env name="DB_USERNAME" value="group_03_user" />
+      <env name="DB_PASSWORD" value="sapassword" />
+      <env name="DB_URL" value="jdbc:postgresql://localhost:5432/franchise" />
+      <env name="DB_USERNAME" value="postgres" />
     </envs>
     <module name="order-service" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.orderservice.OrderServiceApplication" />

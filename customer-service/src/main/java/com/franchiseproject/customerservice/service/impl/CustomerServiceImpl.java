@@ -87,16 +87,46 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    public CustomerFranchise createCustomerAtFranchise(UUID userId, UUID franchiseId) {
+        boolean isExisted = customerFranchiseRepository.existsByUserIdAndFranchiseId(userId, franchiseId);
+
+        if (isExisted) {
+            throw  new AppException(ErrorCode.CUSTOMER_ALREADY_EXISTS);
+        }
+
+        CustomerFranchise customerFranchise = CustomerFranchise.builder()
+                .franchiseId(franchiseId)
+                .userId(userId)
+                .status(CustomerStatus.ACTIVE)
+                .build();
+
+        return customerFranchiseRepository.save(customerFranchise);
+    }
+
+    @Override
     public CustomerFranchiseResponse getCustomerById(UUID id) {
         CustomerFranchise cf = customerFranchiseRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
 
-        CustomerFranchiseResponse response = customerFranchiseMapper.toCustomerFranchiseResponse(cf);
+        CustomerFranchiseResponse response = customerFranchiseMapper.toCustomerFranchiseResponse(cf, identityClient, franchiseClient);
 
-        UserResponse user = identityClient.getUserById(cf.getUserId());
-        response.setUserResponse(user);
+//        UserResponse user = identityClient.getUserById(cf.getUserId());
+//        response.setUserResponse(user);
 
         return response;
+    }
+
+    @Override
+    public CustomerFranchiseResponse getCustomerOfFranchiseById(UUID userId, UUID franchiseId) {
+
+        CustomerFranchise customerFranchise = customerFranchiseRepository.findByUserIdAndFranchiseId(userId, franchiseId)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+
+        return customerFranchiseMapper.toCustomerFranchiseResponse(
+                customerFranchise,
+                identityClient,
+                franchiseClient
+        );
     }
 
     // ================== CREATE / SYNC ==================
@@ -113,22 +143,22 @@ public class CustomerServiceImpl implements CustomerService {
         customerFranchiseRepository.save(cf);
     }
 
-    @Override
-    @Transactional
-    public CustomerFranchise createCustomerAtFranchise(UUID userId, UUID franchiseId, CustomerType type) {
-        if (customerFranchiseRepository.existsByUserIdAndFranchiseId(userId, franchiseId)) {
-            throw new AppException(ErrorCode.CUSTOMER_ALREADY_EXISTS);
-        }
-
-        CustomerFranchise cf = CustomerFranchise.builder()
-                .userId(userId)
-                .franchiseId(franchiseId)
-//                .type(type != null ? type : CustomerType.WALK_IN)
-                .status(CustomerStatus.ACTIVE)
-                .build();
-
-        return customerFranchiseRepository.save(cf);
-    }
+//    @Override
+//    @Transactional
+//    public CustomerFranchise createCustomerAtFranchise(UUID userId, UUID franchiseId, CustomerType type) {
+//        if (customerFranchiseRepository.existsByUserIdAndFranchiseId(userId, franchiseId)) {
+//            throw new AppException(ErrorCode.CUSTOMER_ALREADY_EXISTS);
+//        }
+//
+//        CustomerFranchise cf = CustomerFranchise.builder()
+//                .userId(userId)
+//                .franchiseId(franchiseId)
+////                .type(type != null ? type : CustomerType.WALK_IN)
+//                .status(CustomerStatus.ACTIVE)
+//                .build();
+//
+//        return customerFranchiseRepository.save(cf);
+//    }
 
     // ================== UPDATE ==================
 
@@ -158,7 +188,7 @@ public class CustomerServiceImpl implements CustomerService {
     public void deleteCustomer(UUID id) {
         CustomerFranchise customer = customerFranchiseRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
-        customer.setStatus(CustomerStatus.DELETED);
+        customer.setStatus(CustomerStatus.INACTIVE);
         customerFranchiseRepository.save(customer);
     }
 
@@ -194,10 +224,10 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<CustomerFranchiseResponse> responses = pageResult.getContent().stream()
                 .map(cf -> {
-                    CustomerFranchiseResponse response = customerFranchiseMapper.toCustomerFranchiseResponse(cf);
+                    CustomerFranchiseResponse response = customerFranchiseMapper.toCustomerFranchiseResponse(cf, identityClient, franchiseClient);
 
                     if (cf.getUserId() != null) {
-                        response.setUserResponse(userMap.get(cf.getUserId()));
+//                        response.setUserResponse(userMap.get(cf.getUserId()));
                         response.setLoyaltyInfo(loyaltyMap.get(cf.getUserId()));
                     }
 
