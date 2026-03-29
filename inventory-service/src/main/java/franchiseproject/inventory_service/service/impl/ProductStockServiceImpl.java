@@ -1,7 +1,7 @@
 package franchiseproject.inventory_service.service.impl;
 
-import franchiseproject.inventory_service.dto.ApiResponse;
 import franchiseproject.inventory_service.dto.request.InitialStockRequest;
+import franchiseproject.inventory_service.dto.request.StockRequestItemRequest;
 import franchiseproject.inventory_service.dto.response.PageResponse;
 import franchiseproject.inventory_service.dto.response.ProductStockResponse;
 import franchiseproject.inventory_service.dto.response.ProductVariantDetailResponse;
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import franchiseproject.inventory_service.client.ProductClient;
@@ -37,10 +38,10 @@ public class ProductStockServiceImpl implements ProductStockService {
     ProductStockMapper productStockMapper;
     ProductClient productClient;
 
-    private static final Long SYSTEM_WAREHOUSE_ID = 0L; // TODO: Chuyển lại thành UUID cho Kho Tổng
+    private static final UUID SYSTEM_WAREHOUSE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     @Override
-    public PageResponse<ProductStockResponse> getStocks(Long locationId, boolean lowStock, int page, int size) {
+    public PageResponse<ProductStockResponse> getStocks(UUID locationId, boolean lowStock, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<ProductStock> productStockPage;
 
@@ -63,15 +64,15 @@ public class ProductStockServiceImpl implements ProductStockService {
                 .collect(Collectors.toList());
 
         // Enrich with product details via Bulk Feign
-        java.util.List<java.util.UUID> variantIds = responses.stream()
+        List<UUID> variantIds = responses.stream()
                 .map(ProductStockResponse::getProductVariantId)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
 
         try {
             var apiRes = productClient.getProductVariantsBulk(variantIds);
             if (apiRes != null && apiRes.getData() != null) {
-                java.util.Map<java.util.UUID, ProductVariantDetailResponse> detailMap = apiRes.getData().stream()
-                        .collect(java.util.stream.Collectors.toMap(ProductVariantDetailResponse::getId, d -> d));
+                Map<UUID, ProductVariantDetailResponse> detailMap = apiRes.getData().stream()
+                        .collect(Collectors.toMap(ProductVariantDetailResponse::getId, d -> d));
                 
                 responses.forEach(res -> {
                     var detail = detailMap.get(res.getProductVariantId());
@@ -100,7 +101,7 @@ public class ProductStockServiceImpl implements ProductStockService {
     @Override
     @Transactional
     public void addInitialStock(InitialStockRequest request) {
-        Long targetLocationId = request.getLocationId() != null ? request.getLocationId() : SYSTEM_WAREHOUSE_ID;
+        UUID targetLocationId = request.getLocationId() != null ? request.getLocationId() : SYSTEM_WAREHOUSE_ID;
         String locationType = request.getLocationId() != null ? "FRANCHISE" : "WAREHOUSE";
 
         Optional<ProductStock> existingStockOpt = productStockRepository.findByProductVariantIdAndLocationId(
@@ -139,5 +140,92 @@ public class ProductStockServiceImpl implements ProductStockService {
                 .build();
 
         inventoryTransactionRepository.save(tx);
+    }
+
+    @Override
+    public List<UUID> getInStockVariantIds(UUID locationId) {
+        if (locationId == null) {
+            return List.of();
+        }
+        return productStockRepository.findInStockVariantIds(locationId);
+    }
+
+    @Override
+    public List<UUID> findCapableBranches(List<StockRequestItemRequest> items) {
+        if (items == null || items.isEmpty()) return List.of();
+
+        List<UUID> alternativeLocationIds = new java.util.ArrayList<>();
+        List<UUID> variantIds = items.stream().map(StockRequestItemRequest::getProductVariantId).collect(Collectors.toList());
+        List<ProductStock> stocks = productStockRepository.findByProductVariantIdIn(variantIds);
+
+        Map<UUID, List<ProductStock>> locationStocks = stocks.stream()
+                .collect(Collectors.groupingBy(ProductStock::getLocationId));
+
+        for (Map.Entry<UUID, List<ProductStock>> entry : locationStocks.entrySet()) {
+            UUID locId = entry.getKey();
+            List<ProductStock> locStockList = entry.getValue();
+            boolean allMatch = true;
+
+            for (StockRequestItemRequest item : items) {
+                Optional<ProductStock> match = locStockList.stream()
+                        .filter(s -> s.getProductVariantId().equals(item.getProductVariantId()))
+                        .findFirst();
+                if (match.isEmpty() || match.get().getQuantity() < item.getQuantity()) {
+                    allMatch = false;
+                    break;
+                }
+            }
+            if (allMatch) {
+                alternativeLocationIds.add(locId);
+            }
+        }
+        return alternativeLocationIds;
+    }
+
+    @Override
+    @Transactional
+    public void reserveStock(List<StockRequestItemRequest> items, java.util.UUID locationId) {
+        for (StockRequestItemRequest item : items) {
+            ProductStock stock = productStockRepository.findByProductVariantIdAndLocationId(
+                    item.getProductVariantId(), locationId)
+                    .orElseThrow(() -> new RuntimeException("Stock not found for variant " + item.getProductVariantId()));
+
+            if (stock.getQuantity() < item.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for variant " + item.getProductVariantId());
+            }
+
+            stock.setQuantity(stock.getQuantity() - item.getQuantity());
+            stock.setReservedQuantity(stock.getReservedQuantity() + item.getQuantity());
+            productStockRepository.save(stock);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void commitStock(List<StockRequestItemRequest> items, java.util.UUID locationId) {
+        for (StockRequestItemRequest item : items) {
+            ProductStock stock = productStockRepository.findByProductVariantIdAndLocationId(
+                    item.getProductVariantId(), locationId)
+                    .orElseThrow(() -> new RuntimeException("Stock not found for variant " + item.getProductVariantId()));
+
+            if (stock.getReservedQuantity() < item.getQuantity()) {
+                throw new RuntimeException("Insufficient reserved stock for variant " + item.getProductVariantId());
+            }
+
+            int beforeQty = stock.getQuantity() + stock.getReservedQuantity(); // total on hand
+            stock.setReservedQuantity(stock.getReservedQuantity() - item.getQuantity());
+            ProductStock savedStock = productStockRepository.save(stock);
+
+            InventoryTransaction tx = InventoryTransaction.builder()
+                    .productStock(savedStock)
+                    .changeQuantity(-item.getQuantity())
+                    .beforeQuantity(beforeQty)
+                    .afterQuantity(savedStock.getQuantity() + savedStock.getReservedQuantity())
+                    .type("SALE")
+                    .status("COMPLETED")
+                    .referenceType("ORDER")
+                    .build();
+            inventoryTransactionRepository.save(tx);
+        }
     }
 }

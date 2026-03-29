@@ -2,6 +2,7 @@ package franchiseproject.product_service.controller;
 
 import franchiseproject.product_service.dto.ApiResponse;
 import franchiseproject.product_service.dto.request.CreateProductRequest;
+import franchiseproject.product_service.dto.request.FilterProductsByCustomerRequest;
 import franchiseproject.product_service.dto.request.SearchProductRequest;
 import franchiseproject.product_service.dto.request.UpdateProductRequest;
 import franchiseproject.product_service.dto.response.ProductResponse;
@@ -44,12 +45,39 @@ public class ProductController {
                 .build();
     }
 
+    @GetMapping("/filter")
+    public ApiResponse<Page<ProductResponse>> filterProductsByCustomer(@Valid @ModelAttribute FilterProductsByCustomerRequest request) {
+
+        log.info("filterByCategoryAndPrice products API called with request: {} {}", request.getFromPrice(), request.getToPrice());
+
+        if (request.getFromPrice() != null && request.getToPrice() != null) {
+            if (request.getFromPrice().compareTo(request.getToPrice()) > 0) {
+                throw new AppException(ErrorCode.INVALID_PRICE_RANGE);
+            }
+        }
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .statusCode(200)
+                .message("Filter product by category and price")
+                .data(productService.filterProductsByCustomer(request)
+                        .map(productMapper::toProductResponse))
+                .build();
+    }
+
     @GetMapping("/detail/{id}")
     public ApiResponse<ProductResponse> getDetail(@PathVariable UUID id) {
         return ApiResponse.<ProductResponse>builder()
                 .statusCode(200)
                 .message("Get product by id")
                 .data(productMapper.toProductResponse(productService.getById(id)))
+                .build();
+    }
+
+    @PostMapping("/search-by-ids")
+    public ApiResponse<java.util.List<ProductResponse>> getProductsByIds(@RequestBody java.util.List<java.util.UUID> ids) {
+        return ApiResponse.<java.util.List<ProductResponse>>builder()
+                .statusCode(200)
+                .message("Get products by ids")
+                .data(productService.getProductsByIds(ids))
                 .build();
     }
 
@@ -120,6 +148,18 @@ public class ProductController {
                 .build();
     }
 
+    @GetMapping("/franchise/{locationId}")
+    public ApiResponse<Page<ProductResponse>> getByFranchise(
+            @PathVariable UUID locationId,
+            @Valid @ModelAttribute SearchProductRequest request) {
+        
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .statusCode(200)
+                .message("Get products by franchise success")
+                .data(productService.searchByFranchise(locationId, request).map(productMapper::toProductResponse))
+                .build();
+    }
+
     @DeleteMapping("/inactive/{productId}")
     public ApiResponse<Boolean> deleteProduct(@PathVariable("productId") UUID productId) {
         Product product = productService.getById(productId);
@@ -186,145 +226,4 @@ public class ProductController {
                 .data(productService.updateProduct(id, request))
                 .build();
     }
-
-    // ✅ Backward-compatible: GET /api/products/getall
-//    @GetMapping("/getall")
-//    public List<ProductListItemResponse> findAll() {
-//        return productService.getAllAsListItem();
-//    }
-
-    // ✅ List (paging + filter + search + sort): GET /api/products
-    // Hỗ trợ cả q và name để tránh teammate lỗi khi đang dùng name
-//    @GetMapping
-//    public PageResponse<ProductListItemResponse> list(
-//            @RequestParam(required = false) String q,
-//            @RequestParam(required = false) String name,
-//            @RequestParam(required = false) String status,
-//            @RequestParam(required = false) UUID categoryId,
-//            @RequestParam(required = false) BigDecimal minPrice,
-//            @RequestParam(required = false) BigDecimal maxPrice,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size,
-//            @RequestParam(defaultValue = "createdAt,desc") String sort
-//    ) {
-//        String keyword = (q != null && !q.isBlank()) ? q : name;
-//        return productService.list(keyword, status, categoryId, minPrice, maxPrice, page, size, sort);
-//    }
-
-    // ✅ Detail: GET /api/products/{id}
-    // CHỈ GIỮ 1 mapping /{id} để tránh Ambiguous mapping
-//    @GetMapping("/{id}")
-//    public ProductDetailResponse getDetail(@PathVariable UUID id) {
-//        return productService.getDetail(id);
-//    }
-
-    // ✅ CREATE: POST /api/products?categoryId=...
-//    @PostMapping
-//    @ResponseStatus(HttpStatus.CREATED)
-//    public ProductDetailResponse create(
-//            @RequestBody Product product,
-//            @RequestParam UUID categoryId
-//    ) {
-//        Product saved = productService.create(product, categoryId);
-//        return productService.getDetail(saved.getId());
-//    }
-
-    // ✅ UPDATE: PUT /api/products/{id} (categoryId optional)
-//    @PutMapping("/{id}")
-//    public ProductDetailResponse update(
-//            @PathVariable UUID id,
-//            @RequestBody Product product,
-//            @RequestParam(required = false) UUID categoryId
-//    ) {
-//        productService.update(id, product, categoryId);
-//        return productService.getDetail(id);
-//    }
-
-    // ✅ DELETE: DELETE /api/products/{id}
-//    @DeleteMapping("/{id}")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    public void delete(@PathVariable UUID id) {
-//        productService.delete(id);
-//    }
-//
-//    // ✅ OPTIONAL: Search endpoint riêng (nếu team bạn vẫn cần)
-//    // GET /api/products/search?name=...&productType=...&status=...
-//    @GetMapping("/search")
-//    public List<Product> searchProducts(
-//            @RequestParam(required = false) String name,
-//            @RequestParam(required = false) String productType,
-//            @RequestParam(required = false) String status,
-//            @RequestParam(required = false) BigDecimal minPrice,
-//            @RequestParam(required = false) BigDecimal maxPrice,
-//            @RequestParam(required = false) UUID categoryId
-//    ) {
-//        return productService.search(
-//                name,
-//                productType,
-//                status,
-//                minPrice,
-//                maxPrice,
-//                categoryId
-//        );
-//    }
-
-//    @PostMapping("/{id}/image")
-//    public ResponseEntity<?> uploadImage(
-//            @PathVariable UUID id,
-//            @RequestParam("file") MultipartFile file
-//    ) {
-//        try {
-//            Product product = productService.uploadImage(id, file);
-//
-//            return ResponseEntity.ok().body(
-//                    Map.of(
-//                            "status", 200,
-//                            "message", "Upload thành công",
-//                            "data", product.getImageUrl()
-//                    )
-//            );
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.status(500).body(
-//                    Map.of(
-//                            "status", 500,
-//                            "message", e.getMessage()
-//                    )
-//            );
-//        }
-//    }
-
-//    @PutMapping("/{id}/image")
-//    public ResponseEntity<?> updateImage(
-//            @PathVariable UUID id,
-//            @RequestParam("file") MultipartFile file
-//    ) {
-//        try {
-//            Product product = productService.updateImage(id, file);
-//
-//            return ResponseEntity.ok().body(
-//                    Map.of(
-//                            "status", 200,
-//                            "message", "Update image thành công",
-//                            "data", product.getImageUrl()
-//                    )
-//            );
-//
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(404).body(
-//                    Map.of(
-//                            "status", 404,
-//                            "message", e.getMessage()
-//                    )
-//            );
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.status(500).body(
-//                    Map.of(
-//                            "status", 500,
-//                            "message", "Lỗi server"
-//                    )
-//            );
-//        }
-//    }
 }

@@ -55,12 +55,15 @@ class Semantic_Search:
 
         scores = w_core * score_core + w_desc * score_desc
 
+        if top_k == -1:
+            top_k = len(scores)
+
         idx = np.argpartition(-scores, top_k)[:top_k]
         idx = idx[np.argsort(-scores[idx])]
 
         return [
             {
-                "id": int(store.ids[i]),
+                "id": str(store.ids[i]),
                 "score": float(scores[i])
             }
             for i in idx
@@ -107,36 +110,121 @@ class Semantic_Search:
 
         return results
     
-    def update_vectors_store(self, db_url = "http://localhost:3000/api/products/getall"):
+    def update_vectors_store(self, db_url):
         """
-            data: list(dict(products))
-
-            return vectors_store.txt
+            Fetch paginated products and update vectors
         """
-        try:
-            respone = requests.get(db_url)
-        except:
-            return "Database không phản hồi!!! Chưa thể thực hiện Update"
-        data = respone.json()
-
         vectors_store = []
+        page = 0
+        total_pages = 1
 
-        for item in data:
+        while page < total_pages:
             try:
-                desc_txt = f"passage: {item['description']}"
-                core_txt = f"passage: {item['name']} được làm từ: {', '.join(item['categoryName'])}"
-            except:
-                return f"Lỗi: Không đủ các trường để tạo vector !!!"
-            desc_vec = self.model.encode(desc_txt, normalize_embeddings=True)
-            core_vec = self.model.encode(core_txt, normalize_embeddings=True)
+                paged_url = f"{db_url}?page={page}" if "?" not in db_url else f"{db_url}&page={page}"
+                respone = requests.get(paged_url, timeout=15)
+                respone.raise_for_status()
+                json_data = respone.json()
+            except Exception as e:
+                logger.error(f"Lỗi gọi API semantic search: {e}")
+                return "Database không phản hồi!!! Chưa thể thực hiện Update"
 
-            vector = {
-                        "id": item["id"],
-                        "v_core": core_vec,
-                        "v_desc": desc_vec
-                     }
+            data = json_data.get("data", {})
+            if isinstance(data, list):
+                content = data
+                total_pages = 1
+            else:
+                content = data.get("content", [])
+                total_pages = data.get("totalPages", 1)
 
-            vectors_store.append(vector)
+            for item in content:
+                try:
+                    name = item.get("name", "")
+                    brand = item.get("brand", "")
+                    cat = item.get("category", {})
+                    cat_name = cat.get("name", item.get("categoryName", ""))
+                    cat_desc = cat.get("description", item.get("description", ""))
+
+                    variants = item.get("variants", [])
+                    active_variants = [v for v in variants if v.get("status") == "ACTIVE"]
+                    if not active_variants:
+                        active_variants = variants
+
+                    color_map = {
+                        "black": "đen",
+                        "white": "trắng",
+                        "red": "đỏ",
+                        "blue": "xanh"
+                    }
+
+                    colors = set()
+                    sizes = set()
+                    prices = []
+
+                    for v in active_variants:
+                        c = str(v.get("color", "")).strip().lower()
+                        if c and c != "none":
+                            colors.add(color_map.get(c, c))
+                        
+                        s = str(v.get("size", "")).strip().lower()
+                        if s and s != "none":
+                            sizes.add(s)
+
+                        p = v.get("price")
+                        if p is not None:
+                            try:
+                                prices.append(float(p))
+                            except ValueError:
+                                pass
+
+                    if not prices and item.get("price") is not None:
+                        try:
+                            prices.append(float(item.get("price")))
+                        except ValueError:
+                            pass
+
+                    # Build core_txt
+                    core_parts = [f"passage: {name}.", f"Danh mục: {cat_name}."]
+                    if colors:
+                        core_parts.append(f"Màu sắc: {', '.join(sorted(colors))}.")
+                    if sizes:
+                        core_parts.append(f"Kích thước: {', '.join(sorted(sizes))}.")
+                    
+                    if prices:
+                        price_min = min(prices)
+                        price_max = max(prices)
+                        pmin_str = f"{int(price_min)}" if price_min.is_integer() else f"{price_min}"
+                        pmax_str = f"{int(price_max)}" if price_max.is_integer() else f"{price_max}"
+                        
+                        if price_min == price_max:
+                            core_parts.append(f"Giá {pmin_str}.")
+                        else:
+                            core_parts.append(f"Giá từ {pmin_str} đến {pmax_str}.")
+
+                    core_txt = "\n".join(core_parts)
+                    
+                    # Build desc_txt
+                    desc_parts = [f"passage: {cat_desc}."]
+                    if brand:
+                        desc_parts.append(f"Thương hiệu: {brand}.")
+                    desc_txt = " ".join(desc_parts)
+
+                except Exception as e:
+                    logger.warning(f"Lỗi tạo passage: {e}")
+                    continue
+                
+                desc_vec = self.model.encode(desc_txt, normalize_embeddings=True)
+                core_vec = self.model.encode(core_txt, normalize_embeddings=True)
+
+                vector = {
+                            "id": item["id"],
+                            "v_core": core_vec,
+                            "v_desc": desc_vec
+                         }
+
+                vectors_store.append(vector)
+            
+            page += 1
+
         with open("Vector/vectors.txt", "w") as f:
             f.write(str(len(vectors_store)) + "\n")
 
@@ -144,4 +232,7 @@ class Semantic_Search:
                 f.write(str(it["id"]) + "\n")
                 f.write(" ".join(str(x) for x in it["v_core"]) + "\n")
                 f.write(" ".join(str(x) for x in it["v_desc"]) + "\n")
+                
+        self.store = VectorStore("Vector/vectors.txt")
+                
         return "Đã Update Vector Store thành công !!!"

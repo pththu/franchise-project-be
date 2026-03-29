@@ -2,7 +2,6 @@ package com.franchiseproject.orderservice.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,8 +18,6 @@ import java.util.UUID;
 public class PaymentTransactionRequest {
     @NotNull(message = "orderId không được trống")
     UUID orderId;
-    @NotNull(message = "customerId không được trống")
-    UUID customerId;
-    @Positive(message = "Tiền > 0")
-    BigDecimal finalTotal;
+    @NotNull(message = "paymentMethodId không được trống")
+    UUID paymentMethodId;
 }

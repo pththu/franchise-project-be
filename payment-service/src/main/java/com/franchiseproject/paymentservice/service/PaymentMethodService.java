@@ -7,6 +7,7 @@ import com.franchiseproject.paymentservice.entity.PaymentMethod;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
 
 public interface PaymentMethodService {
     List<PaymentMethod> getAll();
@@ -18,4 +19,6 @@ public interface PaymentMethodService {
     PaymentQRResponse optionPaymentMethod(OptionPaymentMethodRequest optionPaymentMethodRequest);
 
     List<PaymentMethodResponse> getAllByActiveTrue();
+
+    String handleVnpayCallback(Map<String, String> params);
 }

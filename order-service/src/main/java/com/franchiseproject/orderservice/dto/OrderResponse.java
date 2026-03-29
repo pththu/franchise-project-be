@@ -26,11 +26,13 @@ public class OrderResponse {
     UUID promotionId;
     String transactionReference;
     String address;
+    BigDecimal totalDiscount;
     BigDecimal totalDue;
     TypeOrder typeOrder;
     OrderStatus orderStatus;
     BigDecimal priceShip;
     Instant createAt;
     Instant updateAt;
+    String customerName;
     List<OrderItemResponse> orderDetails;
 }

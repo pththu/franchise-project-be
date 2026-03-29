@@ -1,76 +1,66 @@
 package com.franchiseproject.orderservice.client;
 
-import com.franchiseproject.orderservice.dto.request.CreateOrderItemRequest;
-import com.franchiseproject.orderservice.dto.request.DiscountRequest;
+import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.response.ProductResponse;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductClient {
-    private final RestClient productRestClient;
+    private final RestClient apiProductRestClient;
 
-//    public Map<UUID, ProductResponse> getProductsByIds(List<UUID> ids) {
-//
-//        List<ProductResponse> products = productRestClient.post()
-//                .uri("/api/products/batch")
-//                .body(ids)
-//                .retrieve()
-//                .body(new ParameterizedTypeReference<>() {
-//                });
-//        if (products == null || products.isEmpty()) {
-//            throw new AppException(ErrorCode.NO_PRODUCTS);
-//        }
-//        return products.stream()
-//                .collect(Collectors.toMap(ProductResponse::getId, p -> p));
-//    }
-
-//    public BigDecimal validateAndCalculate(UUID customerId, UUID promotionId, BigDecimal totalItems) {
-//
-//        DiscountRequest request = new DiscountRequest(customerId, promotionId, totalItems);
-//
-//        BigDecimal discount = productRestClient.post()
-//                .uri("/api/promotions/validate")
-//                .body(request)
-//                .retrieve()
-//                .body(BigDecimal.class);
-//        return Optional.ofNullable(discount)
-//                .orElseThrow(() -> new AppException(ErrorCode.VALIDATION_FAILED));
-//    }
-
-    //Mock Test
-    List<ProductResponse> items = List.of(
-            new ProductResponse(UUID.fromString("11111111-aaaa-1111-1111-111111111111"), "Coffee Bean", BigDecimal.valueOf(22000.00), "ACTIVE"),
-            new ProductResponse(UUID.fromString("22222222-bbbb-2222-2222-222222222222"), "Milk", BigDecimal.valueOf(55000.00), "ACTIVE"),
-            new ProductResponse(UUID.fromString("33333333-cccc-3333-3333-333333333333"), "Orange Juice", BigDecimal.valueOf(20000.00), "ACTIVE"),
-            new ProductResponse(UUID.fromString("44444444-dddd-4444-4444-444444444444"), "Coca Cola", BigDecimal.valueOf(232000.00), "ACTIVE"),
-            new ProductResponse(UUID.fromString("55555555-eeee-5555-5555-555555555555"), "Pepsi", BigDecimal.valueOf(721000.00), "ACTIVE"),
-            new ProductResponse(UUID.fromString("66666666-ffff-6666-6666-666666666666"), "Pepsi", BigDecimal.valueOf(92000.00), "ACTIVE")
-    );
+    @org.springframework.beans.factory.annotation.Value("${application.product-service.url}")
+    private String productServiceUrl;
 
     public Map<UUID, ProductResponse> getProductsByIds(List<UUID> ids) {
         if (ids == null || ids.isEmpty()) {
             throw new AppException(ErrorCode.NO_PRODUCTS);
         }
-        List<UUID> listId = ids.stream()
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
-        // MOCK DATA
-        List<ProductResponse> products = items.stream()
-                .filter(p -> listId.contains(p.getId()))
-                .toList();
-        return products.stream()
-                .collect(Collectors.toMap(ProductResponse::getId, p -> p));
+ 
+        try {
+            var spec = RestClient.builder()
+                    .baseUrl(productServiceUrl)
+                    .build()
+                    .post()
+                    .uri("/api/products/variants/bulk")
+                    .body(ids);
+ 
+            addAuthHeaders(spec);
+ 
+            ApiResponse<List<Map<String, Object>>> response = spec.retrieve()
+                    .body(new ParameterizedTypeReference<ApiResponse<List<Map<String, Object>>>>() {});
+
+            if (response == null || response.getData() == null) {
+                throw new AppException(ErrorCode.NO_PRODUCTS);
+            }
+
+            return response.getData().stream()
+                    .map(map -> ProductResponse.builder()
+                            .id(UUID.fromString(map.get("id").toString()))
+                            .name(map.get("productName") != null ? map.get("productName").toString() : "Unknown Product")
+                            .price(map.get("price") != null ? new BigDecimal(map.get("price").toString()) : BigDecimal.ZERO)
+                            .status("ACTIVE")
+                            .build())
+                    .collect(Collectors.toMap(ProductResponse::getId, p -> p));
+
+        } catch (Exception e) {
+            log.error("Error fetching products from product-service: {}", e.getMessage());
+            throw new AppException(ErrorCode.NO_PRODUCTS);
+        }
     }
 
     public BigDecimal validateAndCalculate(UUID customerId,
@@ -81,6 +71,25 @@ public class ProductClient {
         }
         // Giả lập giảm 10%
         return totalItems.multiply(BigDecimal.valueOf(0.1));
+    }
+
+    private void addAuthHeaders(RestClient.RequestBodySpec spec) {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            String token = request.getHeader("Authorization");
+            if (token != null) {
+                spec.header("Authorization", token);
+            }
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                StringBuilder cookieBuilder = new StringBuilder();
+                for (Cookie cookie : cookies) {
+                    cookieBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append("; ");
+                }
+                spec.header("Cookie", cookieBuilder.toString());
+            }
+        }
     }
 
 }

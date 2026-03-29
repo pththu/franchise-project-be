@@ -31,11 +31,15 @@ public class StockRequestController {
     }
 
     @GetMapping
-    public ApiResponse<List<StockRequestResponse>> getAllRequests() {
+    public ApiResponse<List<StockRequestResponse>> getAllRequests(@RequestParam(required = false) UUID franchiseId) {
+        List<StockRequestResponse> data = franchiseId != null 
+                ? stockRequestService.getRequestsByFranchiseId(franchiseId) 
+                : stockRequestService.getAllRequests();
+                
         return ApiResponse.<List<StockRequestResponse>>builder()
                 .statusCode(200)
                 .message("Lấy danh sách yêu cầu nhập hàng thành công")
-                .data(stockRequestService.getAllRequests())
+                .data(data)
                 .build();
     }
 
@@ -45,6 +49,42 @@ public class StockRequestController {
                 .statusCode(200)
                 .message("Lấy thông tin yêu cầu nhập hàng thành công")
                 .data(stockRequestService.getRequestById(id))
+                .build();
+    }
+
+    @PutMapping("/{id}/approve")
+    public ApiResponse<StockRequestResponse> approveRequest(@PathVariable UUID id, @RequestParam UUID sourceLocationId, @RequestParam(required = false) UUID approvedBy) {
+        return ApiResponse.<StockRequestResponse>builder()
+                .statusCode(200)
+                .message("Phê duyệt yêu cầu nhập hàng thành công")
+                .data(stockRequestService.approveRequest(id, sourceLocationId, approvedBy))
+                .build();
+    }
+
+    @PutMapping("/{id}/ship")
+    public ApiResponse<StockRequestResponse> shipRequest(@PathVariable UUID id) {
+        return ApiResponse.<StockRequestResponse>builder()
+                .statusCode(200)
+                .message("Xuất hàng thành công")
+                .data(stockRequestService.shipRequest(id))
+                .build();
+    }
+
+    @PutMapping("/{id}/receive")
+    public ApiResponse<StockRequestResponse> receiveRequest(@PathVariable UUID id) {
+        return ApiResponse.<StockRequestResponse>builder()
+                .statusCode(200)
+                .message("Nhận hàng thành công")
+                .data(stockRequestService.receiveRequest(id))
+                .build();
+    }
+
+    @PutMapping("/{id}/reject")
+    public ApiResponse<StockRequestResponse> rejectRequest(@PathVariable UUID id, @RequestParam(required = false) String reason) {
+        return ApiResponse.<StockRequestResponse>builder()
+                .statusCode(200)
+                .message("Từ chối yêu cầu nhập hàng")
+                .data(stockRequestService.rejectRequest(id, reason))
                 .build();
     }
 }
