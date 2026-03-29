@@ -2,6 +2,7 @@ package com.franchiseproject.franchiseservice.controller;
 
 import com.franchiseproject.franchiseservice.dto.ApiResponse;
 import com.franchiseproject.franchiseservice.dto.FranchiseDTO;
+import com.franchiseproject.franchiseservice.dto.response.CheckFranchiseResponse;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
 import com.franchiseproject.franchiseservice.mapper.FranchiseMapper;
 import com.franchiseproject.franchiseservice.service.FranchiseService;
@@ -81,6 +82,24 @@ public class FranchiseController {
                 .statusCode(200)
                 .message("Get all franchise")
                 .data(franchiseService.getAllFranchises())
+                .build();
+    }
+
+    @GetMapping("/get-active")
+    public ApiResponse<List<FranchiseDTO>> getFranchiseIsActive() {
+        return ApiResponse.<List<FranchiseDTO>>builder()
+                .statusCode(200)
+                .message("Get all franchise")
+                .data(franchiseService.getFranchiseIsActive())
+                .build();
+    }
+
+    @GetMapping("/check/{franchiseId}")
+    public ApiResponse<CheckFranchiseResponse> checkStatusFranchise(@PathVariable("franchiseId") UUID id) {
+        return ApiResponse.<CheckFranchiseResponse>builder()
+                .statusCode(200)
+                .message("Check status franchise: " + id)
+                .data(franchiseService.checkFranchiseById(id))
                 .build();
     }
 }

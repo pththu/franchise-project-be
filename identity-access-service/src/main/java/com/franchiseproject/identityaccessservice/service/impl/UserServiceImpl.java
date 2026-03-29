@@ -5,6 +5,7 @@ import com.franchiseproject.identityaccessservice.dto.request.*;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.enums.FranchiseStatus;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
 import com.franchiseproject.identityaccessservice.exception.AppException;
 import com.franchiseproject.identityaccessservice.exception.ErrorCode;
@@ -88,7 +89,13 @@ public class UserServiceImpl implements UserService {
                 sort
         );
 
-        Page<User> usersPage = userRepository.searchUsers(keyword, roleName, status, request.getGender(), pageable);
+        Page<User> usersPage = userRepository.searchUsers(
+                keyword,
+                roleName,
+                status,
+                request.getGender(),
+                pageable
+        );
 
         if (usersPage.isEmpty()) {
             return Page.empty(usersPage.getPageable());
@@ -104,7 +111,7 @@ public class UserServiceImpl implements UserService {
         Map<UUID, FranchiseResponse> franchiseMap = fetchFranchisesConcurrently(franchiseIds);
 
         return usersPage.map(user -> {
-            UserResponse response = userMapper.toUserResponse(user);
+            UserResponse response = userMapper.toUserResponse(user, franchiseClient);
 
             if (user.getFranchiseId() != null) {
                 response.setFranchise(franchiseMap.get(user.getFranchiseId()));
@@ -195,7 +202,7 @@ public class UserServiceImpl implements UserService {
 
         return UserCreationResponse.builder()
                 .isCreated(true)
-                .userResponse(userMapper.toUserResponse(user))
+                .userResponse(userMapper.toUserResponse(user, franchiseClient))
                 .build();
     }
 
@@ -276,9 +283,9 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        user.setStatus(UserStatus.DELETED);
+        user.setStatus(UserStatus.INACTIVE);
         userRepository.save(user);
-        log.info("DeleteAccount: status=DELETED saved for user={}", user.getUsername());
+        log.info("DeleteAccount: status=INACTIVE saved for user={}", user.getUsername());
 
         try {
             cognitoService.disableUser(user.getUsername());
@@ -307,10 +314,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getProfile(UUID userId) {
-        return userMapper.toUserResponse(
-                userRepository.findById(userId)
-                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED))
-        );
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+//        UUID franchiseId = user.getFranchiseId();
+//        UserResponse userResponse = userMapper.toUserResponse(user, franchiseClient);
+//        if (franchiseId != null) {
+//            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
+//            if (franchiseResponse != null) {
+//                userResponse.setFranchise(franchiseResponse);
+//            }
+//        }
+
+        return userMapper.toUserResponse(user, franchiseClient);
     }
 
     @Override
@@ -338,7 +355,7 @@ public class UserServiceImpl implements UserService {
 
         return UserUpdateResponse.builder()
                 .isUpdated(changed)
-                .userResponse(userMapper.toUserResponse(user))
+                .userResponse(userMapper.toUserResponse(user, franchiseClient))
                 .build();
     }
 
@@ -365,7 +382,7 @@ public class UserServiceImpl implements UserService {
             log.info("UpdateAccountInformation: updated fullName for {}", user.getUsername());
         }
 
-        if (request.getStatus() == UserStatus.DELETED) {
+        if (request.getStatus() == UserStatus.INACTIVE) {
             changed = deleteAccountUser(userId).isDeleted();
         }
 
@@ -378,23 +395,69 @@ public class UserServiceImpl implements UserService {
 
 
         if (request.getFranchise() != null) {
-            user.setFranchiseId(request.getFranchise());
+
+            UUID franchiseId = request.getFranchise();
+            CheckFranchiseResponse response = franchiseClient.checkFranchiseById(franchiseId);
+
+            log.info("response: {} {}",response.getIsExists(), response.getStatus());
+
+            if (!response.getIsExists().booleanValue()) {
+                throw new AppException(ErrorCode.FRANCHISE_NOT_EXISTED);
+            }
+
+            if (response.getStatus() == FranchiseStatus.INACTIVE) {
+                throw new AppException(ErrorCode.FRANCHISE_INACTIVE);
+            }
+
+            user.setFranchiseId(franchiseId);
             changed = true;
         }
 
         if (changed) {
             userRepository.save(user);
         }
+//
+//        UUID franchiseId = user.getFranchiseId();
+//        UserResponse userResponse = userMapper.toUserResponse(user, franchiseClient);
+//        if (franchiseId != null) {
+//            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
+//            if (franchiseResponse != null) {
+//                userResponse.setFranchise(franchiseResponse);
+//            }
+//        }
 
         return UserUpdateResponse.builder()
                 .isUpdated(changed)
-                .userResponse(userMapper.toUserResponse(user))
+                .userResponse(userMapper.toUserResponse(user, franchiseClient))
                 .build();
     }
 
     @Override
     public List<User> getUsersByIds(List<UUID> ids) {
         return userRepository.findAllById(ids);
+    }
+
+    @Override
+    public Page<UserResponse> getStaffByFranchise(UUID franchiseId, int page) {
+
+        CheckFranchiseResponse response = franchiseClient.checkFranchiseById(franchiseId);
+
+        log.info("response: {} {}",response.getIsExists(), response.getStatus());
+
+        if (!response.getIsExists().booleanValue()) {
+            throw new AppException(ErrorCode.FRANCHISE_NOT_EXISTED);
+        }
+
+        if (response.getStatus() == FranchiseStatus.INACTIVE) {
+            throw new AppException(ErrorCode.FRANCHISE_INACTIVE);
+        }
+
+        Sort sort =  Sort.by("username").ascending();
+
+        Pageable pageable = PageRequest.of(page,10, sort);
+        Page<User> users = userRepository.findByRole("STAFF", franchiseId, pageable);
+
+        return users.map(user -> userMapper.toUserResponse(user, franchiseClient));
     }
 
     private Map<UUID, FranchiseResponse> fetchFranchisesConcurrently(Set<UUID> franchiseIds) {
@@ -416,6 +479,6 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return userMapper.toUserResponse(user);
+        return userMapper.toUserResponse(user, franchiseClient);
     }
 }

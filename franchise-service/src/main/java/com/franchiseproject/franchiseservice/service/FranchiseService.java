@@ -1,7 +1,9 @@
 package com.franchiseproject.franchiseservice.service;
 
 import com.franchiseproject.franchiseservice.dto.FranchiseDTO;
+import com.franchiseproject.franchiseservice.dto.response.CheckFranchiseResponse;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
+import com.franchiseproject.franchiseservice.model.Franchise;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,4 +17,6 @@ public interface FranchiseService {
     List<FranchiseDTO> getFranchisesByStatus(FranchiseStatus status);
     List<FranchiseDTO> getFranchisesByManagerId(Integer managerId);
     FranchiseDTO updateFranchiseStatus(UUID id, FranchiseStatus status);  // Đã sửa
+    CheckFranchiseResponse checkFranchiseById(UUID id);
+    List<FranchiseDTO> getFranchiseIsActive();
 }

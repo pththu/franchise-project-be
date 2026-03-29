@@ -91,3 +91,33 @@ For open source projects, say how it is licensed.
 
 ## Project status
 If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+
+# DB CONNECTION
+
+### IDENTITY-CUSTOMER-LOYALTY:
+````
+DB_USER: sa
+DB_PASSWORD: XSBBYPBmgdLKwrapWYDE4C29ZYVOczBX
+DB_URL: jdbc:postgresql://dpg-d6nd4iv5r7bs73cv57lg-a.singapore-postgres.render.com/auth_franchise_qyzo
+````
+
+### PRODUCT-PROMOTION-INVENTORY:
+````
+DB_USER: franchise_user
+DB_PASSWORD: FNLbwoIxRBofbo4fblMhULaUHqGbThi7
+DB_URL: jdbc:postgresql://dpg-d6fg4615pdvs739n1csg-a.singapore-postgres.render.com:5432/franchise_db_74u0?sslmode=require
+````
+
+### FRANCHISE:
+````
+DB_USER: franchise0
+DB_PASSWORD: Dn1AQ43dv4y1JB400R1v6kpxazoiGk5t
+DB_URL: jdbc:postgresql://dpg-d6tprcnfte5s73fvpctg-a.singapore-postgres.render.com:5432/franchise_oa8t
+````
+
+### ORDER - PAYMENT:
+````
+DB_USER: group_03_user
+DB_PASSWORD: b0d0wXijbTZChwN3ipQbBmiKiHy8TwHu
+DB_URL: jdbc:postgresql://dpg-d6ghni1drdic73c6u9l0-a.singapore-postgres.render.com:5432/group_03?sslmode=require
+````

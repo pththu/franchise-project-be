@@ -39,6 +39,7 @@ public class UserController {
     UserService userService;
     RoleService roleService;
     UserMapper userMapper;
+    FranchiseClient franchiseClient;
 
     @GetMapping
     public ApiResponse<Page<UserResponse>> getAll(
@@ -48,7 +49,8 @@ public class UserController {
         log.info("Username: {}", authentication.getName());
         authentication.getAuthorities().forEach(ga -> log.info(ga.getAuthority()));
 
-        Page<UserResponse> data = userService.getAll(page).map(userMapper::toUserResponse);
+        Page<UserResponse> data = userService.getAll(page)
+                .map(user -> userMapper.toUserResponse(user, franchiseClient));
 
         return ApiResponse.<Page<UserResponse>>builder()
                 .statusCode(200)
@@ -63,8 +65,6 @@ public class UserController {
 
         log.info("Search users API called with request: {}", request);
         Page<UserResponse> data = userService.search(request);
-
-        log.info("data: {}", data.getContent().get(0).getFranchise().getName());
 
         return ApiResponse.<PageResponse<UserResponse>>builder()
                 .statusCode(200)
@@ -97,6 +97,7 @@ public class UserController {
             @RequestBody @Valid UserCreationRequest request,
             @AuthenticationPrincipal Jwt jwt) {
 
+        log.info("request.getRoleName() {}", request.getRoleName());
         Role role = roleService.getByName(request.getRoleName());
         if (role == null) {
             throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
@@ -135,7 +136,7 @@ public class UserController {
         return ApiResponse.<UserResponse>builder()
                 .statusCode(200)
                 .message("Get One")
-                .data(userMapper.toUserResponse(user))
+                .data(userMapper.toUserResponse(user, franchiseClient))
                 .build();
     }
 
@@ -153,7 +154,7 @@ public class UserController {
     public ApiResponse<List<UserResponse>> getUsersByIds(@RequestBody List<UUID> ids) {
         log.info("Bulk fetching users for IDs: {}", ids);
         List<UserResponse> data = userService.getUsersByIds(ids).stream()
-                .map(userMapper::toUserResponse)
+                .map(user -> userMapper.toUserResponse(user, franchiseClient))
                 .toList();
 
         return ApiResponse.<List<UserResponse>>builder()
@@ -305,6 +306,20 @@ public class UserController {
                 .data(userService.deleteAccountUser(userId))
                 .build();
     }
+
+    // uncheck
+    @GetMapping("/franchise/staff")
+    public ApiResponse<Page<UserResponse>> getStaffByFranchise(
+            @PathParam("franchiseId") UUID franchiseId,
+            @PathParam("page") int page
+    ) {
+        return ApiResponse.<Page<UserResponse>>builder()
+                .statusCode(200)
+                .message("Get list staff")
+                .data(userService.getStaffByFranchise(franchiseId, page))
+                .build();
+    }
+
 
 //    @GetMapping("/api/auth/internal/users/{userId}")
 //    public ApiResponse<UserResponse> getUserInternal(@PathVariable UUID userId) {
