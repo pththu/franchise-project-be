@@ -23,6 +23,11 @@ public class MomoController {
 
     PaymentTransactionService paymentTransactionService;
     MomoService momoService;
+    com.franchiseproject.paymentservice.client.OrderClient orderClient;
+
+    @org.springframework.beans.factory.annotation.Value("${momo.return_url}")
+    @lombok.experimental.NonFinal
+    String feReturnUrl;
 
     /// Request từ MOMO đến payment-service để xử lý kết quả
     @PostMapping("/ipn-handler")
@@ -61,5 +66,48 @@ public class MomoController {
         }
     }
 
+    /// Synchronous Redirect from Momo
+    @org.springframework.web.bind.annotation.GetMapping("/return")
+    public void momoReturn(@org.springframework.web.bind.annotation.RequestParam java.util.Map<String, String> params, jakarta.servlet.http.HttpServletResponse response) throws Exception {
+        System.out.println("MoMo Return called: " + params);
+        String orderIdStr = params.get("orderId");
+        String typeOrder = "ONLINE";
+
+        try {
+//            boolean validSignature = momoService.verifyIpnSignature(params);
+//            if (validSignature) {
+//                String resultCodeStr = params.get("resultCode");
+//                String transIdStr = params.get("transId");
+//                String requestIdStr = params.get("requestId");
+//
+//                if (resultCodeStr != null && transIdStr != null && requestIdStr != null) {
+//                    Integer resultCode = Integer.valueOf(resultCodeStr);
+//                    Long transId = Long.valueOf(transIdStr);
+//                    java.util.UUID paymentTransactionId = java.util.UUID.fromString(requestIdStr);
+//
+//                    paymentTransactionService.handlePaymentTransaction(transId, paymentTransactionId, resultCode);
+//                }
+//            }
+//
+            if (orderIdStr != null) {
+                com.franchiseproject.paymentservice.dto.response.order.OrderResponse order = orderClient.getOrderInfoByOrderId(java.util.UUID.fromString(orderIdStr));
+                if (order != null) {
+                    typeOrder = order.getTypeOrder();
+                }
+            }
+        } catch (Exception e) {
+             e.printStackTrace();
+        }
+
+        String redirectUrl = "POS".equalsIgnoreCase(typeOrder) 
+                ? feReturnUrl.replace("/order-success", "/staff/order-success") 
+                : feReturnUrl;
+                
+        if (orderIdStr != null) {
+            redirectUrl += "?orderId=" + orderIdStr;
+        }
+        
+        response.sendRedirect(redirectUrl);
+    }
 
 }

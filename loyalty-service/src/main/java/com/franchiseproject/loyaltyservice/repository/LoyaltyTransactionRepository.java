@@ -14,11 +14,13 @@ import java.util.UUID;
 
 @Repository
 public interface LoyaltyTransactionRepository extends JpaRepository<LoyaltyTransaction, UUID> {
-    List<LoyaltyTransaction> findByCustomerIdOrderByCreatedAtDesc(UUID customerId);
+    List<LoyaltyTransaction> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
     @Query("SELECT COALESCE(SUM(lt.points), 0) FROM LoyaltyTransaction lt WHERE lt.type = :type")
     Long sumPointsByType(@Param("type") LoyaltyTransactionType type);
 
     @Query("SELECT COUNT(lt) FROM LoyaltyTransaction lt WHERE lt.type = :type")
     Long countTransactionsByType(@Param("type") LoyaltyTransactionType type);
+
+    boolean existsByUserIdAndPromotionIdAndType(UUID userId, UUID promotionId, LoyaltyTransactionType type);
 }

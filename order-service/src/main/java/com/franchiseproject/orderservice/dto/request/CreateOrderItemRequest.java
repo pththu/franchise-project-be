@@ -4,8 +4,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -18,6 +16,8 @@ public class CreateOrderItemRequest {
 
     @NotNull(message = "Không để trống id sản phẩm")
     UUID productId;
+
+    UUID variantId;
 
     @Positive(message = "số lượng sản phẩm không âm")
     Integer quantity;

@@ -1,14 +1,19 @@
 package com.franchiseproject.franchiseservice.service.impl;
 
 import com.franchiseproject.franchiseservice.dto.FranchiseDTO;
+import com.franchiseproject.franchiseservice.dto.response.CheckFranchiseResponse;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
+import com.franchiseproject.franchiseservice.exception.AppException;
 import com.franchiseproject.franchiseservice.exception.BadRequestException;
+import com.franchiseproject.franchiseservice.exception.ErrorCode;
 import com.franchiseproject.franchiseservice.exception.ResourceNotFoundException;
 import com.franchiseproject.franchiseservice.mapper.FranchiseMapper;
 import com.franchiseproject.franchiseservice.model.Franchise;
 import com.franchiseproject.franchiseservice.repository.FranchiseRepository;
 import com.franchiseproject.franchiseservice.service.FranchiseService;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +25,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FranchiseServiceImpl implements FranchiseService {
 
-    private final FranchiseRepository franchiseRepository;
-    private final FranchiseMapper franchiseMapper;
+    FranchiseRepository franchiseRepository;
+    FranchiseMapper franchiseMapper;
 
     @Override
     public List<FranchiseDTO> getAllFranchises() {
@@ -92,11 +98,16 @@ public class FranchiseServiceImpl implements FranchiseService {
     @Override
     @Transactional
     public void deleteFranchise(UUID id) {  // Đã sửa thành UUID
-        if (!franchiseRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Franchise not found with id: " + id);
-        }
+//        if (!franchiseRepository.existsById(id)) {
+//            throw new ResourceNotFoundException("Franchise not found with id: " + id);
+//        }
+//
+//        franchiseRepository.deleteById(id);
+        Franchise existingFranchise = franchiseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + id));
 
-        franchiseRepository.deleteById(id);
+        existingFranchise.setStatus(FranchiseStatus.DELETED);
+        franchiseRepository.save(existingFranchise);
         log.info("Franchise deleted with id: {}", id);
     }
 
@@ -127,5 +138,22 @@ public class FranchiseServiceImpl implements FranchiseService {
         log.info("Franchise {} status updated to: {}", id, status);
 
         return franchiseMapper.toDTO(updatedFranchise);
+    }
+
+    @Override
+    public CheckFranchiseResponse checkFranchiseById(UUID id) {
+        Franchise franchise = franchiseRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+
+        return CheckFranchiseResponse.builder()
+                .isExists(franchise == null ? false : true)
+                .status(franchise == null ? null : franchise.getStatus())
+                .build();
+    }
+
+    @Override
+    public List<FranchiseDTO> getFranchiseIsActive() {
+        return franchiseRepository.findByStatus(FranchiseStatus.ACTIVE)
+                .stream().map(franchiseMapper::toDTO).collect(Collectors.toList());
     }
 }

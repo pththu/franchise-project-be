@@ -12,7 +12,7 @@ class VectorStore:
             print(f"[VectorStore] items={num_items}")
 
             for idx in range(num_items):
-                _id = int(f.readline())
+                _id = f.readline().strip()
 
                 v_core_str = f.readline()
                 v_core = np.fromstring(v_core_str, sep=' ')

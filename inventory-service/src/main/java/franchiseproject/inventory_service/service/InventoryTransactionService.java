@@ -6,5 +6,5 @@ import franchiseproject.inventory_service.dto.response.InventoryTransactionRespo
 import java.time.Instant;
 
 public interface InventoryTransactionService {
-    PageResponse<InventoryTransactionResponse> getTransactions(Instant from, Instant to, int page, int size);
+    PageResponse<InventoryTransactionResponse> getTransactions(java.util.UUID locationId, java.time.Instant from, java.time.Instant to, int page, int size);
 }

@@ -21,6 +21,7 @@ public class InventoryTransactionController {
 
     @GetMapping
     public ApiResponse<PageResponse<InventoryTransactionResponse>> getTransactions(
+            @RequestParam(required = false) java.util.UUID locationId,
             @RequestParam(required = false) Instant from,
             @RequestParam(required = false) Instant to,
             @RequestParam(defaultValue = "0") int page,
@@ -29,7 +30,7 @@ public class InventoryTransactionController {
         return ApiResponse.<PageResponse<InventoryTransactionResponse>>builder()
                 .statusCode(200)
                 .message("Lấy lịch sử giao dịch thành công")
-                .data(service.getTransactions(from, to, page, size))
+                .data(service.getTransactions(locationId, from, to, page, size))
                 .build();
     }
 }

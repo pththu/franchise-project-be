@@ -13,10 +13,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateStockTransferRequest {
-    Long fromLocationId;
-    Long toLocationId;
+    UUID fromLocationId;
+    UUID toLocationId;
     String type; // WAREHOUSE_TO_FRANCHISE etc.
     String notes;
     UUID createdBy;
+    UUID referenceRequestId;
     List<StockTransferItemRequest> items;
 }

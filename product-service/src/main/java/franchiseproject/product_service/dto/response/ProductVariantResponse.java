@@ -9,6 +9,8 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Setter
@@ -21,5 +23,5 @@ public class ProductVariantResponse {
     BigDecimal price;
     ProductVariantStatus status;
     int quantity;
-    String imageUrl;
+    Map<String, String> images;
 }

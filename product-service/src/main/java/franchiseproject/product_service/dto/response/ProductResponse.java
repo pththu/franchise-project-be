@@ -1,6 +1,7 @@
 package franchiseproject.product_service.dto.response;
 
 import franchiseproject.product_service.enums.ProductStatus;
+import jakarta.persistence.Column;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,6 +22,13 @@ public class ProductResponse {
     String unit;
     ProductStatus status;
     String brand;
+    String nameEn;
+    String nameJa;
+    String description;
+    String descriptionEn;
+    String descriptionJa;
+    String brandEn;
+    String brandJa;
     CategoryResponse category;
     Instant createdAt;
     Instant updatedAt;

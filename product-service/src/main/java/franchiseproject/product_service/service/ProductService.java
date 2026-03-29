@@ -1,6 +1,7 @@
 package franchiseproject.product_service.service;
 
 import franchiseproject.product_service.dto.request.CreateProductRequest;
+import franchiseproject.product_service.dto.request.FilterProductsByCustomerRequest;
 import franchiseproject.product_service.dto.request.SearchProductRequest;
 import franchiseproject.product_service.dto.request.UpdateProductRequest;
 import franchiseproject.product_service.dto.response.ProductResponse;
@@ -13,12 +14,16 @@ import java.util.UUID;
 
 public interface ProductService {
 
+
     Page<Product> getAll(int page);
     Product getById(UUID id);
+    List<ProductResponse> getProductsByIds(List<UUID> ids);
     ProductVariant getProductVariantById (UUID id);
     List<ProductVariant> getProductVariantsByIds(List<UUID> ids);
 
+    Page<Product> filterProductsByCustomer(FilterProductsByCustomerRequest request);
     Page<Product> search(SearchProductRequest request);
+    Page<Product> searchByFranchise(UUID locationId, SearchProductRequest request);
     boolean delete(Product product);
     boolean deleteVariant(ProductVariant variant);
 

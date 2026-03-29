@@ -11,8 +11,7 @@ public enum ErrorCode {
     NOT_FOUND(404, "No Resource Found"),
 
     // --- CUSTOMER & FRANCHISE ---
-    CUSTOMER_PROFILE_NOT_FOUND(4041, "Customer loyalty profile not found for this franchise"),
-    CUSTOMER_NOT_FOUND(4042, "Customer not found"),
+    LOYALTY_WALLET_NOT_FOUND(4041, "Loyalty wallet not found for this customer in this franchise"),
     FRANCHISE_ID_REQUIRED(4006, "Franchise ID is required"),
     CUSTOMER_ID_REQUIRED(4007, "Customer ID is required"),
 
@@ -24,7 +23,9 @@ public enum ErrorCode {
     ORDER_AMOUNT_TOO_SMALL(4004, "Order amount is too small to earn points"),
     ORDER_AMOUNT_IS_REQUIRED(4005, "Order amount is required"),
 
-    // --- MANUAL ADJUSTMENT ---
+    // --- REFUND POINTS ---
+    ORDER_ALREADY_REFUNDED(4014, "Order points have already been refunded"),
+
     POINTS_IS_REQUIRED(4009, "Points amount is required"),
     POINTS_CANNOT_BE_ZERO(4010, "Adjustment points cannot be zero"),
 

@@ -15,4 +15,5 @@ public class StockTransferItemResponse {
     UUID productVariantId;
     String productVariantName;
     Integer quantity;
+    Integer currentQuantity;
 }

@@ -50,7 +50,7 @@ public class PromotionController {
     ) {
         return service.getAvailablePromotions(userId, franchiseId, orderValue);
     }
-    @PostMapping("/confirm")
+    @PostMapping("/trace")
     public void confirm(
             @RequestParam UUID orderId,
             @RequestParam String status
@@ -59,7 +59,7 @@ public class PromotionController {
     }
 
     // 🔥 APPLY DISCOUNT
-    @PostMapping("/apply")
+    @PostMapping("/reserve")
     public Object apply(@RequestBody ApplyDiscountRequest req) {
         return service.applyDiscount(req);
     }

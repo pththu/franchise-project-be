@@ -1,5 +1,6 @@
 package com.franchiseproject.orderservice.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
@@ -8,12 +9,14 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> handleJsonError(
@@ -34,7 +37,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ec.getHttpStatus()).body(body);
     }
 
-//    // Bean Validation (@Valid) trên @RequestBody
+    //    // Bean Validation (@Valid) trên @RequestBody
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, List<String>> errors = ex.getBindingResult().getFieldErrors().stream()

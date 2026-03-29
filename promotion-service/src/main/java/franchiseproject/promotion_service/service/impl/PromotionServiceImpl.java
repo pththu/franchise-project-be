@@ -103,11 +103,10 @@ public class PromotionServiceImpl implements PromotionService {
     }
 
 
-
     @Override
-    public List<Promotion> getAvailablePromotions(UUID userId, UUID franchiseId, BigDecimal orderValue) {
+    public List<Promotion> getAvailablePromotions(UUID customerId, UUID franchiseId, BigDecimal orderValue) {
 
-        String rankStr = loyaltyClient.getRank(userId, franchiseId);
+        String rankStr = loyaltyClient.getRank(customerId, franchiseId);
 
         if (rankStr == null || rankStr.isBlank()) {
             rankStr = "BRONZE";
@@ -118,18 +117,16 @@ public class PromotionServiceImpl implements PromotionService {
         return repo.findAll().stream()
                 .filter(p -> p.getStatus() == PromotionStatus.ACTIVE)
                 .filter(p -> p.getExpiryDate() == null || p.getExpiryDate().isAfter(LocalDateTime.now()))
-                .filter(p -> orderValue.compareTo(p.getMinOrderValue()) >= 0)
+                .filter(p -> p.getMinOrderValue() == null
+                        || orderValue.compareTo(p.getMinOrderValue()) >= 0)
                 .filter(p -> p.getRequiredRank() == null
                         || rank.ordinal() >= p.getRequiredRank().ordinal())
                 .filter(p -> p.getUsageLimit() == null || p.getUsedCount() < p.getUsageLimit())
                 .toList();
     }
+
     @Override
     public PromotionDiscountResponse applyDiscount(ApplyDiscountRequest req) {
-
-        if (req.getPromotionId() != null && req.getPointsToUse() != null) {
-            throw new RuntimeException("Chỉ được chọn 1 loại");
-        }
 
         if (req.getPromotionId() == null) {
             throw new RuntimeException("Không có promotion");
@@ -153,7 +150,7 @@ public class PromotionServiceImpl implements PromotionService {
         }
 
         // 👉 check rank
-        String rankStr = loyaltyClient.getRank(req.getUserId(), req.getFranchiseId());
+        String rankStr = loyaltyClient.getRank(req.getCustomerId(), req.getFranchiseId());
         if (rankStr == null || rankStr.isBlank()) {
             rankStr = "BRONZE";
         }
@@ -174,7 +171,7 @@ public class PromotionServiceImpl implements PromotionService {
         if (p.getPerUserLimit() != null) {
 
             UserPromotionUsage usage = userPromotionUsageRepo
-                    .findByUserIdAndPromotionId(req.getUserId(), p.getId())
+                    .findByUserIdAndPromotionId(req.getCustomerId(), p.getId())
                     .orElse(null);
 
             int used = (usage == null) ? 0 : usage.getUsedCount();
@@ -188,7 +185,7 @@ public class PromotionServiceImpl implements PromotionService {
         PromotionUsage usage = PromotionUsage.builder()
                 .id(UUID.randomUUID())
                 .promotionId(p.getId())
-                .userId(req.getUserId())
+                .userId(req.getCustomerId())
                 .orderId(req.getOrderId())
                 .status(PromotionUsageStatus.PENDING)
                 .createdAt(LocalDateTime.now())
@@ -201,20 +198,20 @@ public class PromotionServiceImpl implements PromotionService {
         return new PromotionDiscountResponse(
                 usage.getId(),
                 p.getDiscountValue(),
+                p.getMaxDiscountValue(),
                 p.getDiscountType()
         );
     }
 
 
-
     @Override
-    public void confirmOrder(UUID orderId, String status){
+    public void confirmOrder(UUID orderId, String status) {
 
         PromotionUsage usage = usageRepo.findByOrderId(orderId)
                 .orElseThrow(() -> new RuntimeException("Usage not found"));
 
         // ❗ chống duplicate
-        if(usage.getStatus() == PromotionUsageStatus.SUCCESS){
+        if (usage.getStatus() == PromotionUsageStatus.SUCCESS) {
             return;
         }
 
@@ -250,8 +247,9 @@ public class PromotionServiceImpl implements PromotionService {
 
         usageRepo.save(usage);
     }
+
     @Scheduled(fixedRate = 60000)
-    public void autoExpire(){
+    public void autoExpire() {
 
         List<PromotionUsage> list = usageRepo
                 .findByStatusAndExpiresAtBefore(
@@ -259,12 +257,13 @@ public class PromotionServiceImpl implements PromotionService {
                         LocalDateTime.now()
                 );
 
-        for(PromotionUsage u : list){
+        for (PromotionUsage u : list) {
             u.setStatus(PromotionUsageStatus.EXPIRED);
         }
 
         usageRepo.saveAll(list);
     }
+
     @Scheduled(fixedRate = 60000) // cứ 60s check 1 lần
     public void autoExpirePromotions() {
 
