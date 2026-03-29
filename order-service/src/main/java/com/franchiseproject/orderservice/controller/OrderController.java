@@ -243,3 +243,9 @@ public class OrderController {
                 .build();
     }
 }
+// Spring Boot example
+//@GetMapping("/reverse-geocode")
+//public ResponseEntity<?> reverse(@RequestParam double lat, @RequestParam double lng) {
+//    String url = "https://api.geoapify.com/v1/geocode/reverse?lat=" + lat + "&lon=" + lng + "&apiKey=YOUR_KEY";
+//    return restTemplate.getForEntity(url, String.class);
+//}

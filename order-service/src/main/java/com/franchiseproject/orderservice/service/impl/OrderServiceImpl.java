@@ -1,6 +1,7 @@
 package com.franchiseproject.orderservice.service.impl;
 
 import com.franchiseproject.orderservice.client.*;
+import com.franchiseproject.orderservice.config.OrderProducer;
 import com.franchiseproject.orderservice.dto.*;
 import com.franchiseproject.orderservice.dto.request.*;
 import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
@@ -55,6 +56,7 @@ public class OrderServiceImpl implements OrderService {
     LoyaltyClient loyaltyClient;
     PaymentClient paymentClient;
     InventoryClient inventoryClient;
+    OrderProducer  orderProducer;
 
     @Override
     public List<OrderResponse> getAll() {
