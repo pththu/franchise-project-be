@@ -1,6 +1,5 @@
 package com.franchiseproject.customerservice.dto.response;
 
-import com.franchiseproject.customerservice.enums.LoyaltyTier;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,10 +10,16 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LoyaltyInfoResponse {
-    UUID id;
+public class CustomerTierResponse {
+//    UUID userId;
+//    UUID franchiseId;
+//    String currentTier;
+//    Integer currentPoints;
+//    Integer totalPoints;
+
+    UUID userId;
     UUID franchiseId;
-    LoyaltyTier loyaltyTier;
-    int loyaltyCurrentPoint;
-    int loyaltyTotalPoint;
+    String loyaltyTier;
+    Integer currentPoint;
+    Integer totalPoint;
 }

@@ -1,7 +1,8 @@
 package com.franchiseproject.franchiseservice.enums;
 
 public enum FranchiseStatus {
-    NEW,    // Chữ hoa - sẽ map với 'new' trong DB
+    NEW,
     ACTIVE,
-    INACTIVE
+    INACTIVE,
+    DELETED //soft delete
 }

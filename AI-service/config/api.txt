@@ -1,2 +1,2 @@
-PRODUCT_API=http://localhost:3000/api/products/get-all
-ORDER_API=http://localhost:3007/api/orders
+PRODUCT_API=http://host.docker.internal:3000/api/products/get-all?page=0
+ORDER_API=http://host.docker.internal:3007/api/orders

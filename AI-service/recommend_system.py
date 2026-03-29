@@ -65,7 +65,7 @@ class RecommendationSystem:
         self.als_regularization = als_regularization
         self.candidate_k = candidate_k
 
-        # Active snapshot (serves predictions)
+        # Active snapshot
         self._snapshot: Optional[ModelSnapshot] = None
         self._is_training = False
         self._lock = threading.Lock()
@@ -420,7 +420,12 @@ class RecommendationSystem:
                 "favorite_category": "UNKNOWN",
             }])
 
-        p_feat = product_features_df[product_features_df["product_id"].isin(product_ids)].copy()
+        # Deduplicate by product_id to keep a stable 1 row / product pair.
+        p_feat = (
+            product_features_df[product_features_df["product_id"].isin(product_ids)]
+            .drop_duplicates(subset=["product_id"], keep="first")
+            .copy()
+        )
         pairs = p_feat.assign(customer_id=user_id).merge(u_feat, on="customer_id", how="left")
 
         bought_products = set(
@@ -464,7 +469,7 @@ class RecommendationSystem:
     def _train_lgbm(self, products_df, interactions_df, user_features_df,
                      product_features_df, als_model, user_encoder,
                      product_encoder, category_encoder):
-        all_product_ids = products_df["product_id"].tolist()
+        all_product_ids = list(dict.fromkeys(products_df["product_id"].tolist()))
         all_users = interactions_df["customer_id"].unique().tolist()
 
         all_categories = list(products_df["categoryName"].dropna().unique()) + ["UNKNOWN"]
@@ -479,14 +484,20 @@ class RecommendationSystem:
             sample_neg = [p for p in all_product_ids if p not in bought]
             if len(sample_neg) > len(bought) * 3:
                 sample_neg = list(np.random.choice(sample_neg, size=len(bought) * 3, replace=False))
-            candidate_pids = list(bought) + sample_neg
-            labels = [1] * len(bought) + [0] * len(sample_neg)
+            candidate_pids = list(dict.fromkeys(list(bought) + sample_neg))
+            label_map = {pid: 1 for pid in bought}
+            for pid in sample_neg:
+                label_map.setdefault(pid, 0)
 
             pair_df = self._build_pair_features(
                 uid, candidate_pids, user_features_df, product_features_df,
                 interactions_df, products_df, als_model, user_encoder, product_encoder,
             )
-            pair_df["label"] = labels[:len(pair_df)]
+            if pair_df.empty:
+                continue
+
+            # Assign labels by product_id to avoid length mismatch when rows are duplicated/dropped.
+            pair_df["label"] = pair_df["product_id"].map(label_map).astype(int)
             rows.append(pair_df)
             group_sizes.append(len(pair_df))
 

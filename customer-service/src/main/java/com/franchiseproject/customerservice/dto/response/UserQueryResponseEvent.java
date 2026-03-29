@@ -14,5 +14,5 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserQueryResponseEvent {
     String correlationId;
-    List<CustomerResponse> customers;
+    List<CustomerFranchiseResponse> customers;
 }

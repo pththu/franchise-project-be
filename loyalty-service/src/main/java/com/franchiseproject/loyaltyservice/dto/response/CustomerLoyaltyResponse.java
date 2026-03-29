@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerLoyaltyResponse {
-    UUID customerId;
+    UUID userId;
     UUID franchiseId;
     CustomerLoyaltyTier customerLoyaltyTier;
     int loyaltyCurrentPoint;

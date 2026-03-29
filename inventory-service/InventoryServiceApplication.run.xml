@@ -2,7 +2,7 @@
   <configuration default="false" name="InventoryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
       <env name="DB_PASSWORD" value="FNLbwoIxRBofbo4fblMhULaUHqGbThi7" />
-      <env name="DB_URL" value="jdbc:postgresql://dpg-d6fg4615pdvs739n1csg-a.singapore-postgres.render.com:5432/franchise_db_74u0?sslmode\=require" />
+      <env name="DB_URL" value="jdbc:postgresql://dpg-d6fg4615pdvs739n1csg-a.singapore-postgres.render.com:5432/franchise_db_74u0?sslmode=require" />
       <env name="DB_USERNAME" value="franchise_user" />
     </envs>
     <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />

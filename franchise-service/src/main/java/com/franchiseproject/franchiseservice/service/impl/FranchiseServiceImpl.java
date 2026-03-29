@@ -1,8 +1,11 @@
 package com.franchiseproject.franchiseservice.service.impl;
 
 import com.franchiseproject.franchiseservice.dto.FranchiseDTO;
+import com.franchiseproject.franchiseservice.dto.response.CheckStatusFranchiseResponse;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
+import com.franchiseproject.franchiseservice.exception.AppException;
 import com.franchiseproject.franchiseservice.exception.BadRequestException;
+import com.franchiseproject.franchiseservice.exception.ErrorCode;
 import com.franchiseproject.franchiseservice.exception.ResourceNotFoundException;
 import com.franchiseproject.franchiseservice.mapper.FranchiseMapper;
 import com.franchiseproject.franchiseservice.model.Franchise;
@@ -92,11 +95,16 @@ public class FranchiseServiceImpl implements FranchiseService {
     @Override
     @Transactional
     public void deleteFranchise(UUID id) {  // Đã sửa thành UUID
-        if (!franchiseRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Franchise not found with id: " + id);
-        }
+//        if (!franchiseRepository.existsById(id)) {
+//            throw new ResourceNotFoundException("Franchise not found with id: " + id);
+//        }
+//
+//        franchiseRepository.deleteById(id);
+        Franchise existingFranchise = franchiseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + id));
 
-        franchiseRepository.deleteById(id);
+        existingFranchise.setStatus(FranchiseStatus.DELETED);
+        franchiseRepository.save(existingFranchise);
         log.info("Franchise deleted with id: {}", id);
     }
 
@@ -127,5 +135,16 @@ public class FranchiseServiceImpl implements FranchiseService {
         log.info("Franchise {} status updated to: {}", id, status);
 
         return franchiseMapper.toDTO(updatedFranchise);
+    }
+
+    @Override
+    public CheckStatusFranchiseResponse checkFranchiseById(UUID id) {
+        Franchise franchise = franchiseRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+
+        return CheckStatusFranchiseResponse.builder()
+                .isExists(franchise == null ? false : true)
+                .status(franchise == null ? null : franchise.getStatus())
+                .build();
     }
 }
