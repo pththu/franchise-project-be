@@ -1,5 +1,6 @@
 package com.franchiseproject.identityaccessservice.controller;
 
+import com.franchiseproject.identityaccessservice.client.FranchiseClient;
 import com.franchiseproject.identityaccessservice.dto.ApiResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
@@ -28,6 +29,7 @@ public class InternalPermissionController {
     UserMapper userMapper;
     UserService userService;
     RoleRepository roleRepository;
+    FranchiseClient franchiseClient;
     AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     @GetMapping("/permissions/check")
@@ -73,7 +75,7 @@ public class InternalPermissionController {
         return ApiResponse.<UserResponse>builder()
                 .statusCode(200)
                 .message("Get One")
-                .data(userMapper.toUserResponse(user))
+                .data(userMapper.toUserResponse(user, franchiseClient))
                 .build();
     }
 
@@ -82,7 +84,7 @@ public class InternalPermissionController {
         var users = userService.getUsersByIds(userIds);
 
         List<UserResponse> userResponses = users.stream()
-                .map(userMapper::toUserResponse)
+                .map(user -> userMapper.toUserResponse(user, franchiseClient))
                 .toList();
 
         return ApiResponse.<List<UserResponse>>builder()

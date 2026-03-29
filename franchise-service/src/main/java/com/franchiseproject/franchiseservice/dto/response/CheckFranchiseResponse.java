@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CheckStatusFranchiseResponse {
+public class CheckFranchiseResponse {
     Boolean isExists;
     FranchiseStatus status;
 }
