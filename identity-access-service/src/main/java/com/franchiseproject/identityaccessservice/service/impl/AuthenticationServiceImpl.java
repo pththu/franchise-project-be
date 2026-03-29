@@ -168,7 +168,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             if (user.getStatus() == UserStatus.SUSPENDED) {
                 throw new AppException(ErrorCode.USER_lOCKED);
             }
-            if (user.getStatus() == UserStatus.DELETED) {
+            if (user.getStatus() == UserStatus.INACTIVE) {
                 throw new AppException(ErrorCode.USER_NOT_EXISTED);
             }
         });
@@ -215,7 +215,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (user.getStatus() == UserStatus.SUSPENDED) {
             throw new AppException(ErrorCode.USER_lOCKED);
         }
-        if (user.getStatus() == UserStatus.DELETED) {
+        if (user.getStatus() == UserStatus.INACTIVE) {
             throw new AppException(ErrorCode.USER_NOT_EXISTED);
         }
 

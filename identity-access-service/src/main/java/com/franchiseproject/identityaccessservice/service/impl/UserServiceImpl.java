@@ -283,9 +283,9 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        user.setStatus(UserStatus.DELETED);
+        user.setStatus(UserStatus.INACTIVE);
         userRepository.save(user);
-        log.info("DeleteAccount: status=DELETED saved for user={}", user.getUsername());
+        log.info("DeleteAccount: status=INACTIVE saved for user={}", user.getUsername());
 
         try {
             cognitoService.disableUser(user.getUsername());
@@ -382,7 +382,7 @@ public class UserServiceImpl implements UserService {
             log.info("UpdateAccountInformation: updated fullName for {}", user.getUsername());
         }
 
-        if (request.getStatus() == UserStatus.DELETED) {
+        if (request.getStatus() == UserStatus.INACTIVE) {
             changed = deleteAccountUser(userId).isDeleted();
         }
 

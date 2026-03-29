@@ -85,6 +85,15 @@ public class FranchiseController {
                 .build();
     }
 
+    @GetMapping("/get-active")
+    public ApiResponse<List<FranchiseDTO>> getFranchiseIsActive() {
+        return ApiResponse.<List<FranchiseDTO>>builder()
+                .statusCode(200)
+                .message("Get all franchise")
+                .data(franchiseService.getFranchiseIsActive())
+                .build();
+    }
+
     @GetMapping("/check/{franchiseId}")
     public ApiResponse<CheckFranchiseResponse> checkStatusFranchise(@PathVariable("franchiseId") UUID id) {
         return ApiResponse.<CheckFranchiseResponse>builder()

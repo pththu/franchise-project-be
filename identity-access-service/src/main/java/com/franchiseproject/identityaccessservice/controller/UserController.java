@@ -97,6 +97,7 @@ public class UserController {
             @RequestBody @Valid UserCreationRequest request,
             @AuthenticationPrincipal Jwt jwt) {
 
+        log.info("request.getRoleName() {}", request.getRoleName());
         Role role = roleService.getByName(request.getRoleName());
         if (role == null) {
             throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
