@@ -1,15 +1,14 @@
 package com.franchiseproject.identityaccessservice.dto.response;
 
 import com.franchiseproject.identityaccessservice.enums.FranchiseStatus;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Setter
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CheckFranchiseResponse {
     Boolean isExists;
