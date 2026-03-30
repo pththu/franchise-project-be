@@ -11,20 +11,23 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "customer_franchise")
+@Table(name = "loyalty_wallets")
 @Setter
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CustomerFranchise {
+public class LoyaltyWallet {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(unique = true, nullable = false)
     UUID id;
 
-    @Column(name = "franchise_id")
+    @Column(name = "user_id", columnDefinition = "UUID", nullable = false)
+    UUID userId;
+
+    @Column(name = "franchise_id", columnDefinition = "UUID", nullable = false)
     UUID franchiseId;
 
     @Enumerated(EnumType.STRING)
@@ -36,16 +39,7 @@ public class CustomerFranchise {
     @Column(name = "loyalty_total_point")
     int loyaltyTotalPoint;
 
-    @Column(name = "first_order_at")
-    Instant firstOrderAt;
-
-    @Column(name = "last_order_at")
-    Instant lastOrderAt;
-
     @CreationTimestamp
     @Column(name = "created_at")
     Instant createdAt;
-
-    @Column(name = "customer_id", columnDefinition = "UUID")
-    UUID customerId;
 }

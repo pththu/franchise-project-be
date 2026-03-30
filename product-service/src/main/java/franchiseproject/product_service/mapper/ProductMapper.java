@@ -21,27 +21,11 @@ public interface ProductMapper {
     // ===== VARIANT =====
     @Mapping(target = "status", source = "status")
     @Mapping(target = "price", source = "salePrice")
-
-    // 🔥 FIX QUAN TRỌNG NHẤT (JSON → LIST)
-//    @Mapping(target = "imageUrls", expression = "java(parseJsonToList(productVariant.getImageUrl()))")
-
     @Mapping(target = "images", expression = "java(parseJsonToImageMap(productVariant.getImageUrl()))")
     ProductVariantResponse toProductVariantResponse(ProductVariant productVariant);
 
     // ===== LIST VARIANTS =====
     List<ProductVariantResponse> toProductVariantResponseList(List<ProductVariant> variants);
-
-    // ===== HELPER =====
-//    default List<String> parseJsonToList(String json) {
-//        try {
-//            if (json == null || json.isEmpty())
-//                return List.of();
-//            return new com.fasterxml.jackson.databind.ObjectMapper()
-//                    .readValue(json, List.class);
-//        } catch (Exception e) {
-//            return List.of();
-//        }
-//    }
 
     default Map<String, String> parseJsonToImageMap(String json) {
         Map<String, String> imageMap = new HashMap<>();

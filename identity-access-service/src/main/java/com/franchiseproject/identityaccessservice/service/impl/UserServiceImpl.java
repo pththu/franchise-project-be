@@ -1,16 +1,16 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
-import com.franchiseproject.identityaccessservice.dto.request.ChangePasswordRequest;
-import com.franchiseproject.identityaccessservice.dto.request.SeachUsersRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
-import com.franchiseproject.identityaccessservice.dto.request.UserUpdateRequest;
+import com.franchiseproject.identityaccessservice.client.FranchiseClient;
+import com.franchiseproject.identityaccessservice.dto.request.*;
 import com.franchiseproject.identityaccessservice.dto.response.*;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
+import com.franchiseproject.identityaccessservice.enums.FranchiseStatus;
 import com.franchiseproject.identityaccessservice.enums.UserStatus;
 import com.franchiseproject.identityaccessservice.exception.AppException;
 import com.franchiseproject.identityaccessservice.exception.ErrorCode;
 import com.franchiseproject.identityaccessservice.mapper.UserMapper;
+import com.franchiseproject.identityaccessservice.repository.RoleRepository;
 import com.franchiseproject.identityaccessservice.repository.UserRepository;
 import com.franchiseproject.identityaccessservice.service.CognitoService;
 import com.franchiseproject.identityaccessservice.service.UserService;
@@ -27,9 +27,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -38,8 +38,10 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     CognitoService cognitoService;
+    RoleRepository roleRepository;
     UserRepository userRepository;
     UserMapper userMapper;
+    FranchiseClient franchiseClient;
     PasswordEncoder passwordEncoder;
 
     static final int DEFAULT_PAGE_SIZE = 20;
@@ -61,7 +63,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<User> search(SeachUsersRequest request) {
+    public Page<UserResponse> search(SeachUsersRequest request) {
 
         String keyword = (request.getKeyword() != null && !request.getKeyword().trim().isEmpty())
                 ? request.getKeyword().trim() : null;
@@ -86,7 +88,37 @@ public class UserServiceImpl implements UserService {
                 request.getSize().intValue(),
                 sort
         );
-        return userRepository.searchUsers(keyword, roleName, status, request.getGender(), pageable);
+
+        Page<User> usersPage = userRepository.searchUsers(
+                keyword,
+                roleName,
+                status,
+                request.getGender(),
+                pageable
+        );
+
+        if (usersPage.isEmpty()) {
+            return Page.empty(usersPage.getPageable());
+        }
+
+        Set<UUID> franchiseIds = usersPage.getContent().stream()
+                .map(User::getFranchiseId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        log.info("franchiseIds {}", franchiseIds);
+
+        Map<UUID, FranchiseResponse> franchiseMap = fetchFranchisesConcurrently(franchiseIds);
+
+        return usersPage.map(user -> {
+            UserResponse response = userMapper.toUserResponse(user, franchiseClient);
+
+            if (user.getFranchiseId() != null) {
+                response.setFranchise(franchiseMap.get(user.getFranchiseId()));
+            }
+
+            return response;
+        });
     }
 
     @Override
@@ -140,6 +172,11 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
 
+        UUID assignedFranchiseId = req.getFranchiseId();
+        if (role.getName().equalsIgnoreCase("CUSTOMER")) {
+            assignedFranchiseId = null;
+        }
+
         User user = User.builder()
                 .id(UUID.fromString(cognitoSub))
                 .username(req.getUsername())
@@ -149,24 +186,23 @@ public class UserServiceImpl implements UserService {
                 .verifyEmail(false)
                 .gender(req.isGender())
                 .role(role)
+                .franchiseId(assignedFranchiseId)
                 .status(UserStatus.ACTIVE)
                 .build();
 
         userRepository.save(user);
 
-        // Add vào Cognito group theo roleName được chỉ định trong request
         try {
             cognitoService.addUserToGroup(user.getUsername(), role.getName());
             log.info("CreateUser: added {} to Cognito group '{}'", user.getUsername(), role.getName());
         } catch (Exception e) {
-            // Log warning nhưng không rollback — Cognito group có thể sync lại sau
             log.warn("CreateUser: failed to add {} to Cognito group '{}': {}",
                     user.getUsername(), role.getName(), e.getMessage());
         }
 
         return UserCreationResponse.builder()
                 .isCreated(true)
-                .userResponse(userMapper.toUserResponse(user))
+                .userResponse(userMapper.toUserResponse(user, franchiseClient))
                 .build();
     }
 
@@ -186,7 +222,6 @@ public class UserServiceImpl implements UserService {
         String oldRoleName = user.getRole() != null ? user.getRole().getName() : null;
         String newRoleName = newRole.getName();
 
-        // Không cần làm gì nếu role không đổi
         if (newRoleName.equals(oldRoleName)) {
             log.info("AssignRole: user {} already has role '{}', skipping", user.getUsername(), newRoleName);
             return AssignRoleResponse.builder()
@@ -194,7 +229,6 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
-        // 1. Xóa khỏi Cognito group cũ
         if (oldRoleName != null) {
             try {
                 cognitoService.removeUserFromGroup(user.getUsername(), oldRoleName);
@@ -205,7 +239,6 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        // 2. Add vào Cognito group mới
         try {
             cognitoService.addUserToGroup(user.getUsername(), newRoleName);
             log.info("AssignRole: added {} to Cognito group '{}'", user.getUsername(), newRoleName);
@@ -215,7 +248,6 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
 
-        // 3. Cập nhật DB
         user.setRole(newRole);
         userRepository.save(user);
 
@@ -251,12 +283,10 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        // 1. Cập nhật status DB
-        user.setStatus(UserStatus.DELETED);
+        user.setStatus(UserStatus.INACTIVE);
         userRepository.save(user);
-        log.info("DeleteAccount: status=DELETED saved for user={}", user.getUsername());
+        log.info("DeleteAccount: status=INACTIVE saved for user={}", user.getUsername());
 
-        // 2. Disable trên Cognito
         try {
             cognitoService.disableUser(user.getUsername());
         } catch (Exception e) {
@@ -268,10 +298,6 @@ public class UserServiceImpl implements UserService {
                 .isDeleted(true)
                 .build();
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // USER SELF-SERVICE
-    // ─────────────────────────────────────────────────────────────
 
     @Override
     public boolean changePassword(ChangePasswordRequest request, UUID userId) {
@@ -288,33 +314,64 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getProfile(UUID userId) {
-        return userMapper.toUserResponse(
-                userRepository.findById(userId)
-                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED))
-        );
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+//        UUID franchiseId = user.getFranchiseId();
+//        UserResponse userResponse = userMapper.toUserResponse(user, franchiseClient);
+//        if (franchiseId != null) {
+//            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
+//            if (franchiseResponse != null) {
+//                userResponse.setFranchise(franchiseResponse);
+//            }
+//        }
+
+        return userMapper.toUserResponse(user, franchiseClient);
+    }
+
+    @Override
+    public UserUpdateResponse updateProfile(UUID subject, UpdateProfileRequest request) {
+
+        User user = userRepository.findById(subject)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        boolean changed = false;
+
+        String fullName = request.getFullName();
+        if (fullName != null && !fullName.isBlank() && !user.getFullName().equals(fullName)) {
+            user.setFullName(fullName);
+            changed = true;
+        }
+
+        if (request.getGender() != null && request.getGender().booleanValue() != user.isGender()) {
+            user.setGender(request.getGender().booleanValue());
+            changed = true;
+        }
+
+        if (changed) {
+            userRepository.save(user);
+        }
+
+        return UserUpdateResponse.builder()
+                .isUpdated(changed)
+                .userResponse(userMapper.toUserResponse(user, franchiseClient))
+                .build();
     }
 
     /**
      * Cập nhật thông tin cá nhân (fullName, phone, gender).
      * Chỉ update field nào có giá trị mới khác giá trị hiện tại.
-     *
+     * <p>
      * subject: JWT sub — có thể là UUID (từ Cognito access token) hoặc username.
      */
     @Override
     @Transactional
-    public UserUpdateResponse updateAccountInformation(String subject, UserUpdateRequest request) {
-        log.info("UpdateAccountInformation: subject={}, request={}", subject, request);
+    public UserUpdateResponse updateAccountInformation(UUID userId, UserUpdateRequest request) {
+        log.info("UpdateAccountInformation: subject={}, request={}", userId, request);
 
-        // Tìm user theo UUID (JWT sub) trước, fallback sang username
-        User user;
-        try {
-            UUID userId = UUID.fromString(subject);
-            user = userRepository.findById(userId)
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        } catch (IllegalArgumentException e) {
-            user = userRepository.findByUsername(subject)
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         boolean changed = false;
 
@@ -325,36 +382,103 @@ public class UserServiceImpl implements UserService {
             log.info("UpdateAccountInformation: updated fullName for {}", user.getUsername());
         }
 
-        String phone = request.getPhone();
-        if (phone != null && !phone.isBlank() && !phone.equals(user.getPhone())) {
-            user.setPhone(phone);
-            changed = true;
-            log.info("UpdateAccountInformation: updated phone for {}", user.getUsername());
+        if (request.getStatus() == UserStatus.INACTIVE) {
+            changed = deleteAccountUser(userId).isDeleted();
         }
 
-        String gender = request.getGender();
-        if (gender != null && !gender.isBlank()) {
-            // Boolean.parseBoolean handles "true"/"false" case-insensitively; getBoolean reads system property
-            boolean newGender = Boolean.parseBoolean(gender);
-            if (user.isGender() != newGender) {
-                user.setGender(newGender);
-                changed = true;
-                log.info("UpdateAccountInformation: updated gender for {}", user.getUsername());
+        if (request.getRoleName() != null) {
+            Role role = roleRepository.findByName(request.getRoleName())
+                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+
+            changed = assignRole(role, user).isAssigned();
+        }
+
+
+        if (request.getFranchise() != null) {
+
+            UUID franchiseId = request.getFranchise();
+            CheckFranchiseResponse response = franchiseClient.checkFranchiseById(franchiseId);
+
+            log.info("response: {} {}",response.getIsExists(), response.getStatus());
+
+            if (!response.getIsExists().booleanValue()) {
+                throw new AppException(ErrorCode.FRANCHISE_NOT_EXISTED);
             }
+
+            if (response.getStatus() == FranchiseStatus.INACTIVE) {
+                throw new AppException(ErrorCode.FRANCHISE_INACTIVE);
+            }
+
+            user.setFranchiseId(franchiseId);
+            changed = true;
         }
 
         if (changed) {
             userRepository.save(user);
         }
+//
+//        UUID franchiseId = user.getFranchiseId();
+//        UserResponse userResponse = userMapper.toUserResponse(user, franchiseClient);
+//        if (franchiseId != null) {
+//            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
+//            if (franchiseResponse != null) {
+//                userResponse.setFranchise(franchiseResponse);
+//            }
+//        }
 
         return UserUpdateResponse.builder()
                 .isUpdated(changed)
-                .userResponse(userMapper.toUserResponse(user))
+                .userResponse(userMapper.toUserResponse(user, franchiseClient))
                 .build();
     }
 
     @Override
     public List<User> getUsersByIds(List<UUID> ids) {
         return userRepository.findAllById(ids);
+    }
+
+    @Override
+    public Page<UserResponse> getStaffByFranchise(UUID franchiseId, int page) {
+
+        CheckFranchiseResponse response = franchiseClient.checkFranchiseById(franchiseId);
+
+        log.info("response: {} {}",response.getIsExists(), response.getStatus());
+
+        if (!response.getIsExists().booleanValue()) {
+            throw new AppException(ErrorCode.FRANCHISE_NOT_EXISTED);
+        }
+
+        if (response.getStatus() == FranchiseStatus.INACTIVE) {
+            throw new AppException(ErrorCode.FRANCHISE_INACTIVE);
+        }
+
+        Sort sort =  Sort.by("username").ascending();
+
+        Pageable pageable = PageRequest.of(page,10, sort);
+        Page<User> users = userRepository.findByRole("STAFF", franchiseId, pageable);
+
+        return users.map(user -> userMapper.toUserResponse(user, franchiseClient));
+    }
+
+    private Map<UUID, FranchiseResponse> fetchFranchisesConcurrently(Set<UUID> franchiseIds) {
+        if (franchiseIds.isEmpty()) return Collections.emptyMap();
+
+        List<CompletableFuture<AbstractMap.SimpleEntry<UUID, FranchiseResponse>>> futures = franchiseIds.stream()
+                .map(id -> CompletableFuture.supplyAsync(() -> {
+                    FranchiseResponse franchise = franchiseClient.getFranchiseById(id);
+                    return new AbstractMap.SimpleEntry<>(id, franchise);
+                }))
+                .toList();
+        return futures.stream()
+                .map(CompletableFuture::join)
+                .filter(entry -> entry.getValue() != null)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    public UserResponse getUserById(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.toUserResponse(user, franchiseClient);
     }
 }

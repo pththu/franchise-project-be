@@ -49,4 +49,16 @@ public class PaymentClient {
             throw new AppException(ErrorCode.PAYMENT_INIT_FAILED);
         }
     }
+
+    public void deleteTransactionByOrderId(UUID orderId) {
+        try {
+            apiPaymentRestClient.delete()
+                    .uri("/api/payments/internal/transactions/order/{orderId}", orderId)
+                    .retrieve()
+                    .toBodilessEntity();
+            log.info("Requested deletion of transaction for order {}", orderId);
+        } catch (Exception e) {
+            log.warn("Failed to delete transaction for order {}: {}", orderId, e.getMessage());
+        }
+    }
 }

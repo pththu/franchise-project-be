@@ -24,6 +24,7 @@ public class ProductResponse {
     String brand;
     String nameEn;
     String nameJa;
+    String description;
     String descriptionEn;
     String descriptionJa;
     String brandEn;

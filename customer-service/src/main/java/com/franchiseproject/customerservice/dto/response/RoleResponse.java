@@ -3,14 +3,16 @@ package com.franchiseproject.customerservice.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
+import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CustomerDetailResponse {
-    CustomerFranchiseResponse customer;
-    List<LoyaltyInfoResponse> loyaltyInfos;
+public class RoleResponse {
+    UUID id;
+    String name;
+    String description;
 }

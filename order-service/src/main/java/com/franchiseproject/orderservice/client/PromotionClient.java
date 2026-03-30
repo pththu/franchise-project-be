@@ -54,27 +54,19 @@ public class PromotionClient {
     /// Method traceback cho promotion khi order bị failed
     public void apiPromotionTraceBack(UUID orderId, OrderStatus orderStatus) {
         try {
-            PromotionTraceBackRequest request = new PromotionTraceBackRequest(orderId, orderStatus);
             apiPromotionRestClient.post()
-                    .uri("/api/promotions/trace")
-                    .body(request)
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/promotions/trace")
+                            .queryParam("orderId", orderId)
+                            .queryParam("status", orderStatus.name())
+                            .build())
                     .retrieve()
                     .toBodilessEntity();
             log.info("Promotion rollback success: customerId={}", orderId);
+        } catch (org.springframework.web.client.ResourceAccessException e) {
+            log.warn("Promotion service connectivity issue (traceback skipped): {}", e.getMessage());
         } catch (Exception e) {
-            log.error("Promotion traceback failed", e);
+            log.error("Promotion traceback failed: {}", e.getMessage());
         }
     }
-
-
-    /// Mocktest
-    //    public BigDecimal validateAndCalculate(UUID customerId,
-//                                           UUID promotionId,
-//                                           BigDecimal totalItems) {
-//        if (promotionId == null) {
-//            return BigDecimal.ZERO;
-//        }
-//        // Giả lập giảm 10%
-//        return totalItems.multiply(BigDecimal.valueOf(0.1));
-//    }
 }

@@ -1,5 +1,4 @@
 <component name="ProjectRunConfigurationManager">
-<<<<<<< Updated upstream
   <configuration default="false" name="IdentityAccessServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
       <env name="DB_URL" value="jdbc:postgresql://dpg-d644ehfpm1nc738hbvrg-a.singapore-postgres.render.com/auth_franchise_heoe" />
@@ -46,52 +45,50 @@
       <option name="Make" enabled="true" />
     </method>
   </configuration>
-=======
-    <configuration default="false" name="IdentityAccessServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-        <envs>
-            <env name="DB_URL" value="jdbc:postgresql://dpg-d644ehfpm1nc738hbvrg-a.singapore-postgres.render.com/auth_franchise_heoe" />
-            <env name="DB_USERNAME" value="sa" />
-            <env name="DB_PASSWORD" value="1IywPMOfBdPLn1E8FZfqkA2LBfnVwR9E" />
-        </envs>
-        <module name="identity-access-service" />
-        <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.identityaccessservice.IdentityAccessServiceApplication" />
-        <extension name="coverage">
-            <pattern>
-                <option name="PATTERN" value="com.franchiseproject.identityaccessservice.*" />
-                <option name="ENABLED" value="true" />
-            </pattern>
-        </extension>
-        <method v="2">
-            <option name="Make" enabled="true" />
-        </method>
-    </configuration>
-    <configuration default="false" name="IdentityAccessServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-        <envs>
-            <env name="ACCESS_KEY_ID" value="AKIAYRAKBS3AFTVOCHV5" />
-            <env name="ATTRIBUTE" value="username" />
-            <env name="CLIENT_ID" value="2uss9kc6ivur5kdsknq994op0k" />
-            <env name="CLIENT_SECRET" value="qeg5nbgmqhgh11fkbjif0d5enlb63fjequ639mqicoqa8u4hh12" />
-            <env name="DB_PASSWORD" value="XSBBYPBmgdLKwrapWYDE4C29ZYVOczBX" />
-            <env name="DB_URL" value="jdbc:postgresql://dpg-d6nd4iv5r7bs73cv57lg-a.singapore-postgres.render.com/auth_franchise_qyzo" />
-            <env name="DB_USERNAME" value="sa" />
-            <env name="issuerURI" value="https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_bXpfambW9" />
-            <env name="REGION" value="ap-southeast-1" />
-            <env name="SECRET_ACCESS_KEY" value="IlQ00gdT4IMVucqwNheWacq6mPhhQuwCFABhsj0b" />
-            <env name="SECRET_KEY" value="61c3ff015c1b45e77967fc1f2a8f99f04df33433e777373a314f1b6d3aa31b25" />
-            <env name="USER_POOL_ID" value="ap-southeast-1_bXpfambW9" />
-        </envs>
-        <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
-        <module name="identity-access-service" />
-        <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.identityaccessservice.IdentityAccessServiceApplication" />
-        <extension name="coverage">
-            <pattern>
-                <option name="PATTERN" value="com.franchiseproject.identityaccessservice.*" />
-                <option name="ENABLED" value="true" />
-            </pattern>
-        </extension>
-        <method v="2">
-            <option name="Make" enabled="true" />
-        </method>
-    </configuration>
->>>>>>> Stashed changes
+  <configuration default="false" name="IdentityAccessServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <envs>
+      <env name="DB_URL" value="jdbc:postgresql://dpg-d644ehfpm1nc738hbvrg-a.singapore-postgres.render.com/auth_franchise_heoe" />
+      <env name="DB_USERNAME" value="sa" />
+      <env name="DB_PASSWORD" value="1IywPMOfBdPLn1E8FZfqkA2LBfnVwR9E" />
+    </envs>
+    <module name="identity-access-service" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.identityaccessservice.IdentityAccessServiceApplication" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.franchiseproject.identityaccessservice.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+  <configuration default="false" name="IdentityAccessServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <envs>
+      <env name="ACCESS_KEY_ID" value="AKIAYRAKBS3AFTVOCHV5" />
+      <env name="ATTRIBUTE" value="username" />
+      <env name="CLIENT_ID" value="2uss9kc6ivur5kdsknq994op0k" />
+      <env name="CLIENT_SECRET" value="qeg5nbgmqhgh11fkbjif0d5enlb63fjequ639mqicoqa8u4hh12" />
+      <env name="DB_PASSWORD" value="XSBBYPBmgdLKwrapWYDE4C29ZYVOczBX" />
+      <env name="DB_URL" value="jdbc:postgresql://dpg-d6nd4iv5r7bs73cv57lg-a.singapore-postgres.render.com/auth_franchise_qyzo" />
+      <env name="DB_USERNAME" value="sa" />
+      <env name="issuerURI" value="https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_bXpfambW9" />
+      <env name="REGION" value="ap-southeast-1" />
+      <env name="SECRET_ACCESS_KEY" value="IlQ00gdT4IMVucqwNheWacq6mPhhQuwCFABhsj0b" />
+      <env name="SECRET_KEY" value="61c3ff015c1b45e77967fc1f2a8f99f04df33433e777373a314f1b6d3aa31b25" />
+      <env name="USER_POOL_ID" value="ap-southeast-1_bXpfambW9" />
+    </envs>
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+    <module name="identity-access-service" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.identityaccessservice.IdentityAccessServiceApplication" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.franchiseproject.identityaccessservice.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
 </component>

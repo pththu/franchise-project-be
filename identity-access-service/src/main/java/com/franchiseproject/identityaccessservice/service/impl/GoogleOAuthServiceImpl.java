@@ -1,5 +1,6 @@
 package com.franchiseproject.identityaccessservice.service.impl;
 
+import com.franchiseproject.identityaccessservice.client.FranchiseClient;
 import com.franchiseproject.identityaccessservice.dto.response.TokenResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
@@ -38,6 +39,7 @@ public class GoogleOAuthServiceImpl implements GoogleOAuthService {
     final CognitoService cognitoService;
     final UserMapper userMapper;
     final RestTemplate restTemplate;
+    final FranchiseClient franchiseClient;
 
     @Value("${aws.cognito.domain}")
     private String cognitoDomain;       // https://your-domain.auth.ap-southeast-1.amazoncognito.com
@@ -92,7 +94,7 @@ public class GoogleOAuthServiceImpl implements GoogleOAuthService {
                 .refreshToken(refreshToken)
                 .expiresIn(expiresIn != null ? expiresIn : 3600)
                 .tokenType(tokenType != null ? tokenType : "Bearer")
-                .user(userMapper.toUserResponse(user))
+                .user(userMapper.toUserResponse(user, franchiseClient))
                 .build();
     }
 
@@ -229,7 +231,7 @@ public class GoogleOAuthServiceImpl implements GoogleOAuthService {
         if (user.getStatus() == UserStatus.SUSPENDED) {
             throw new AppException(ErrorCode.USER_lOCKED);
         }
-        if (user.getStatus() == UserStatus.DELETED) {
+        if (user.getStatus() == UserStatus.INACTIVE) {
             throw new AppException(ErrorCode.USER_NOT_EXISTED);
         }
     }

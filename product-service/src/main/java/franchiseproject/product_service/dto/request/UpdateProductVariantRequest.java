@@ -19,22 +19,15 @@ public class UpdateProductVariantRequest {
     // ===== Identify (quan trọng nhất) =====
     UUID id; // null → create mới, có id → update
 
-
     // ===== Variant Info =====
     String sku;
-
     @Min(value = 0, message = "Giá phải >= 0")
     BigDecimal price;
-
     String color; // sẽ convert sang enum trong service
-
     String size;
-
     @Min(value = 0, message = "Stock phải >= 0")
     Integer stock;
-
     List<String> imageUrls;
-
 
     // ===== Status =====
     String status; // ACTIVE / INACTIVE
