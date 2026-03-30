@@ -14,13 +14,17 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LoyaltyTraceBackRequest {
+public class LoyaltyDeductRequest {
     @NotNull(message = "customerId không được trống")
     UUID customerId;
+
     @NotNull(message = "franchiseId không được trống")
     UUID franchiseId;
+
     @NotNull(message = "orderId không được trống")
     UUID orderId;
+
     @PositiveOrZero(message = "Điểm không được âm")
-    Integer pointsToRefund;//điểm của khách hàng để trừ vào order
+    Integer pointsToDeduct;
+
 }

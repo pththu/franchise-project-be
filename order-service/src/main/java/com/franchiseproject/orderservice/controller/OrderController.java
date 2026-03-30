@@ -45,13 +45,12 @@ public class OrderController {
 
     /// createOrder cho staff tại các POS
     @PostMapping("/create-order")
-    public ApiResponse<PaymentQRResponse> createOrder(
+    public ApiResponse<Void> createOrder(
             @RequestBody @Valid CreateOrderRequest request
     ) {
-        PaymentQRResponse paymentQRResponse = orderService.createOrder(request);
-        return ApiResponse.<PaymentQRResponse>builder()
+        orderService.createOrder(request);
+        return ApiResponse.<Void>builder()
                 .message("Tạo thành công!")
-                .data(paymentQRResponse)
                 .statusCode(200)
                 .errors(null)
                 .build();

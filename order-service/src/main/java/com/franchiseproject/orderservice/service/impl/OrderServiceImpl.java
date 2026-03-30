@@ -56,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
     LoyaltyClient loyaltyClient;
     PaymentClient paymentClient;
     InventoryClient inventoryClient;
-    OrderProducer  orderProducer;
+    OrderProducer orderProducer;
 
     @Override
     public List<OrderResponse> getAll() {
@@ -96,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
 
     /// Client gửi request tạo order
     @Override
-    public PaymentQRResponse createOrder(CreateOrderRequest request) {
+    public void createOrder(CreateOrderRequest request) {
         Order order = buildOrder(request);
         try {
             Map<UUID, ProductResponse> apiProducts = orderDetailService.fetchProducts(request.getItems());
@@ -105,7 +105,7 @@ public class OrderServiceImpl implements OrderService {
             BigDecimal totalItems = orderDetailService.calculateTotal(details);
             order.setTotalDue(totalItems);//tổng hóa đơn khi chưa trừ
             orderRepository.save(order); // save lần một lấy orderId
-            return handleReserve(order, request, totalItems);
+            handleReserve(order, request, totalItems);
         } catch (Exception e) {
             log.error("Create order failed at initial step", e);
             order.setOrderStatus(OrderStatus.FAILED_ORDER);
@@ -116,7 +116,7 @@ public class OrderServiceImpl implements OrderService {
 
     /// call promotion-service và loyalty-service để giữ chỗ
     @Override
-    public PaymentQRResponse handleReserve(Order order, CreateOrderRequest request, BigDecimal totalItems) {
+    public void handleReserve(Order order, CreateOrderRequest request, BigDecimal totalItems) {
         boolean usedLoyalty = false;
         boolean usedPromotion = false;
         try {
@@ -124,8 +124,8 @@ public class OrderServiceImpl implements OrderService {
             BigDecimal maxDiscountValue = BigDecimal.ZERO;
             DiscountType discountType = null;
             if (request.getPoint() != null) {
-                discount = loyaltyClient.apiLoyaltyReserve(request.getCustomerId(), request.getPoint());
-                usedLoyalty = discount.compareTo(BigDecimal.ZERO) > 0;
+                loyaltyClient.apiLoyaltyDeduct(request.getCustomerId(), request.getFranchiseId(), order.getId(), request.getPoint());
+                usedLoyalty = request.getPoint() > 0;
             } else if (request.getPromotionId() != null) {
                 PromotionDiscountResponse promotion = promotionClient.apiPromotionReserve(request.getPromotionId(),
                         request.getFranchiseId(), request.getCustomerId(), order.getId(), totalItems);
@@ -145,7 +145,7 @@ public class OrderServiceImpl implements OrderService {
             if (request.getTypeOrder() != null && "Online".equalsIgnoreCase(request.getTypeOrder().name())) {
                 inventoryClient.notifyNewOrder(order.getFranchiseId());
             }
-            return handlePayment(order, request);
+            sendPayment(order, request);
         } catch (AppException a) {
             log.error("Create order failed", a);
             safeRollback(request.getCustomerId(), request.getFranchiseId(),
@@ -156,20 +156,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public PaymentQRResponse handlePayment(Order order, CreateOrderRequest request) {
+    public void sendPayment(Order order, CreateOrderRequest request) {
         try {
-            PaymentQRResponse res = paymentClient.createTransaction(order.getId(), request.getPaymentMethodId());
-            if (res != null) {
-                log.info("createTransaction returned paymentTransactionId: {}", res.getPaymentTransactionId());
-            }
-            if (res == null) {
-                res = PaymentQRResponse.builder().build();
-            } else if (res.getPaymentTransactionId() != null) {
-                order.setPaymentTransactionId(res.getPaymentTransactionId());
-                orderRepository.save(order);
-            }
-            res.setOrderId(order.getId());
-            return res;
+            orderProducer.sendCreatePaymentEvent(order, request);
         } catch (Exception e) {
             log.error("Payment init failed", e);
             order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
@@ -186,7 +175,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentTransactionId(result.getPaymentTransactionId());
         if (result.getStatus() == StatusTransaction.SUCCESS) {
             order.setOrderStatus(order.getTypeOrder() == TypeOrder.POS ? OrderStatus.COMPLETED : OrderStatus.PAID);
-            
+
             // Trigger inventory commit for POS immediately
             if (order.getTypeOrder() == TypeOrder.POS) {
                 commitInventory(order);
@@ -481,7 +470,7 @@ public class OrderServiceImpl implements OrderService {
 
         try {
             if (usedLoyalty) {
-                loyaltyClient.apiLoyaltyTraceBackPoints(customerId, franchiseId, orderId, pointsToRefund);
+//                loyaltyClient.apiLoyaltyTraceBackPoints(customerId, franchiseId, orderId, pointsToRefund);
             }
         } catch (Exception e) {
             log.error("Loyalty rollback failed", e);
@@ -496,7 +485,7 @@ public class OrderServiceImpl implements OrderService {
                         .quantity(d.getQuantity())
                         .build())
                 .toList();
-                
+
         InventoryReserveRequest reserveReq = InventoryReserveRequest.builder()
                 .locationId(order.getFranchiseId())
                 .items(items)

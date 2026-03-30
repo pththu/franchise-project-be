@@ -21,11 +21,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface OrderService {
-    PaymentQRResponse createOrder(CreateOrderRequest request);
+    void createOrder(CreateOrderRequest request);
 
-    PaymentQRResponse handleReserve(Order order, CreateOrderRequest request, BigDecimal totalItems);
+    void handleReserve(Order order, CreateOrderRequest request, BigDecimal totalItems);
 
-    PaymentQRResponse handlePayment(Order order, CreateOrderRequest request);
+    void sendPayment(Order order, CreateOrderRequest request);
 
     void handlePaymentResult(PaymentResultRequest paymentResultRequest);
 
