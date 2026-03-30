@@ -48,10 +48,10 @@ public class OrderController {
     public ApiResponse<PaymentQRResponse> createOrder(
             @RequestBody @Valid CreateOrderRequest request
     ) {
-        PaymentQRResponse paymentQRResponse = orderService.createOrder(request);
+        PaymentQRResponse response = orderService.createOrder(request);
         return ApiResponse.<PaymentQRResponse>builder()
                 .message("Tạo thành công!")
-                .data(paymentQRResponse)
+                .data(response)
                 .statusCode(200)
                 .errors(null)
                 .build();
@@ -239,3 +239,9 @@ public class OrderController {
                 .build();
     }
 }
+// Spring Boot example
+//@GetMapping("/reverse-geocode")
+//public ResponseEntity<?> reverse(@RequestParam double lat, @RequestParam double lng) {
+//    String url = "https://api.geoapify.com/v1/geocode/reverse?lat=" + lat + "&lon=" + lng + "&apiKey=YOUR_KEY";
+//    return restTemplate.getForEntity(url, String.class);
+//}

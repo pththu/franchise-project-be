@@ -1,6 +1,7 @@
 package com.franchiseproject.orderservice.service.impl;
 
 import com.franchiseproject.orderservice.client.*;
+import com.franchiseproject.orderservice.config.OrderProducer;
 import com.franchiseproject.orderservice.dto.*;
 import com.franchiseproject.orderservice.dto.request.*;
 import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
@@ -55,6 +56,7 @@ public class OrderServiceImpl implements OrderService {
     LoyaltyClient loyaltyClient;
     PaymentClient paymentClient;
     InventoryClient inventoryClient;
+    OrderProducer orderProducer;
     ProductClient productClient;
 
     @Override
@@ -190,7 +192,7 @@ public class OrderServiceImpl implements OrderService {
     public void handlePaymentResult(PaymentResultRequest result) {
         Order order = orderRepository.findById(result.getOrderId())
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-        
+
         // Idempotency check: if order is already finalized, skip processing
         if (order.getOrderStatus() == OrderStatus.COMPLETED || order.getOrderStatus() == OrderStatus.PAID) {
             log.info("Order {} already finalized with status {}. Skipping payment result processing.", order.getId(), order.getOrderStatus());
@@ -205,28 +207,29 @@ public class OrderServiceImpl implements OrderService {
         } else if (result.getStatus() == StatusTransaction.FAILED
                 || result.getStatus() == StatusTransaction.CANCELLED
                 || result.getStatus() == StatusTransaction.EXPIRED) {
-            
+
             // POS Success-Only policy: If POS and not success, rollback and DELETE
             if (order.getTypeOrder() == TypeOrder.POS) {
                 log.info("POS Payment result NOT SUCCESS for order {}. Rolling back and deleting.", order.getId());
-                
+
                 // Rollback loyalty and promotion if applicable
                 // Note: We need points for rollback. Order doesn't store points directly, but we can check the request if we had it.
                 // However, safeRollback is designed to handle this.
                 // We'll use a simplified rollback or fetch relevant data.
-                
+
                 // For now, trigger cancel notifications to other services
                 inventoryClient.notifyOrderStatus(order.getId(), "CANCELLED");
-                
+
                 // Actually, the most reliable way to rollback is to use the order details
                 // since we are about to delete it.
                 promotionClient.apiPromotionTraceBack(order.getId(), OrderStatus.FAILED_ORDER);
-                
+
                 deleteOrderPermanently(order.getId());
             } else {
                 // Online order (Customer): just set to FAILED_PAYMENT
                 order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
                 orderRepository.save(order);
+                promotionClient.apiPromotionTraceBack(order.getId(), OrderStatus.FAILED_ORDER);
                 inventoryClient.notifyOrderStatus(order.getId(), "FAILED_PAYMENT");
             }
         }
@@ -316,13 +319,6 @@ public class OrderServiceImpl implements OrderService {
             inventoryClient.reserveStock(reserveReq);
         } else if (newStatus == OrderStatus.COMPLETED) {
             commitInventory(order);
-            // Earn points for customer
-            if (order.getCustomerId() != null) {
-                CustomerResponse customer = customerClient.getCustomerById(order.getCustomerId());
-                if (customer != null && customer.getUserId() != null) {
-                    loyaltyClient.apiLoyaltyEarn(customer.getUserId(), order.getFranchiseId(), order.getTotalDue().doubleValue());
-                }
-            }
         }
 
         order.setOrderStatus(newStatus);
@@ -508,7 +504,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         BigDecimal discountAmount = BigDecimal.ZERO;
-        BigDecimal priceShip = BigDecimal.valueOf(distance).multiply(BigDecimal.valueOf(2000));
+        BigDecimal priceShip = BigDecimal.valueOf(distance).multiply(BigDecimal.valueOf(20000));
         BigDecimal finalAmount = totalItems.add(priceShip);
 
         if (discount == null || discount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -637,7 +633,7 @@ public class OrderServiceImpl implements OrderService {
         } catch (Exception e) {
             log.warn("Failed to notify payment-service to delete transaction for order {}: {}", orderId, e.getMessage());
         }
-        
+
         orderRepository.deleteById(orderId);
         log.info("Order {} deleted permanently.", orderId);
     }

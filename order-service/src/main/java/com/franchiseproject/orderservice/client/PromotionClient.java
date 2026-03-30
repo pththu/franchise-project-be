@@ -69,16 +69,4 @@ public class PromotionClient {
             log.error("Promotion traceback failed: {}", e.getMessage());
         }
     }
-
-
-    /// Mocktest
-    //    public BigDecimal validateAndCalculate(UUID customerId,
-//                                           UUID promotionId,
-//                                           BigDecimal totalItems) {
-//        if (promotionId == null) {
-//            return BigDecimal.ZERO;
-//        }
-//        // Giả lập giảm 10%
-//        return totalItems.multiply(BigDecimal.valueOf(0.1));
-//    }
 }
