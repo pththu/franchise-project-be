@@ -7,12 +7,17 @@ import com.franchiseproject.paymentservice.dto.response.PaymentQRResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
+import com.franchiseproject.paymentservice.exception.AppException;
+import com.franchiseproject.paymentservice.exception.ErrorCode;
 import com.franchiseproject.paymentservice.service.PaymentMethodService;
 import com.franchiseproject.paymentservice.service.PaymentTransactionService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
@@ -22,12 +27,13 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @RequestMapping("/api/payments")
+@Slf4j
 public class PaymentController {
     PaymentMethodService paymentMethodService;
     PaymentTransactionService paymentTransactionService;
 
-    @org.springframework.beans.factory.annotation.Value("${momo.return_url}")
-    @lombok.experimental.NonFinal
+    @Value("${momo.return_url}")
+    @NonFinal
     String feReturnUrl;
 
     @GetMapping("/getAll")
@@ -63,8 +69,8 @@ public class PaymentController {
                     .statusCode(200)
                     .errors(null)
                     .build();
-        } catch (com.franchiseproject.paymentservice.exception.AppException e) {
-            if (e.getErrorCode() == com.franchiseproject.paymentservice.exception.ErrorCode.NOT_FOUND_TRANSACTION) {
+        } catch (AppException e) {
+            if (e.getErrorCode() == ErrorCode.NOT_FOUND_TRANSACTION) {
                 return ApiResponse.<PaymentTransactionResponse>builder()
                         .message("No online transaction for this order")
                         .data(null)
@@ -90,30 +96,73 @@ public class PaymentController {
     /// Lấy trạng thái của giao dịch theo orderId
     @GetMapping("/status/{orderId}")
     public ApiResponse<StatusTransaction> checkStatus(@PathVariable UUID orderId) {
-        return ApiResponse.<StatusTransaction>builder()
-                .message("Lấy trạng thái Transaction thành công!")
-                .data(paymentTransactionService.getPaymentTransactionByOrderId(orderId).getStatus())
-                .statusCode(200)
-                .build();
+        try {
+            return ApiResponse.<StatusTransaction>builder()
+                    .message("Lấy trạng thái Transaction thành công!")
+                    .data(paymentTransactionService.getPaymentTransactionByOrderId(orderId).getStatus())
+                    .statusCode(200)
+                    .build();
+        } catch (com.franchiseproject.paymentservice.exception.AppException e) {
+            if (e.getErrorCode() == ErrorCode.NOT_FOUND_TRANSACTION) {
+                return ApiResponse.<StatusTransaction>builder()
+                        .message("Transaction not found or deleted")
+                        .data(StatusTransaction.CANCELLED)
+                        .statusCode(200)
+                        .build();
+            }
+            throw e;
+        }
     }
 
-    /// Callback VNPAY
     @GetMapping("/vnpay-return")
     public void vnpayReturn(@RequestParam Map<String, String> params, jakarta.servlet.http.HttpServletResponse response) throws Exception {
-        String result = paymentMethodService.handleVnpayCallback(params);
+        String result = null;
+        try {
+            result = paymentMethodService.handleVnpayCallback(params);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+            log.info("VNPay callback optimistic locking conflict (already processed).");
+            // Try to recover basic info from params if possible
+            String txnRef = params.get("vnp_TxnRef");
+            if (txnRef != null) {
+                String orderIdStr = txnRef.split("_")[0];
+                result = orderIdStr + "|POS|" + params.get("vnp_ResponseCode");
+            }
+        } catch (Exception e) {
+            log.error("VNPay callback failed", e);
+        }
+
         if (result != null && !result.isEmpty()) {
             String[] parts = result.split("\\|");
             String orderId = parts[0];
             String typeOrder = parts[1];
             
-            String redirectUrl = "POS".equalsIgnoreCase(typeOrder) 
-                    ? feReturnUrl.replace("/order-success", "/staff/order-success") 
-                    : feReturnUrl;
-                    
-            response.sendRedirect(redirectUrl + "?orderId=" + orderId);
+            String redirectUrl = feReturnUrl;
+            if ("POS".equalsIgnoreCase(typeOrder)) {
+                // Get base URL (e.g., http://localhost:5173) from feReturnUrl
+                try {
+                    java.net.URI uri = new java.net.URI(feReturnUrl);
+                    String baseUrl = uri.getScheme() + "://" + uri.getHost();
+                    if (uri.getPort() != -1) baseUrl += ":" + uri.getPort();
+                    redirectUrl = baseUrl + "/staff/order-success";
+                } catch (Exception e) {
+                    // Fallback to replace if URI parsing fails
+                    redirectUrl = feReturnUrl.replace("/order-success", "/staff/order-success");
+                }
+            }
+            
+            redirectUrl += (redirectUrl.contains("?") ? "&" : "?") + "orderId=" + orderId;
+            response.sendRedirect(redirectUrl);
         } else {
             response.sendRedirect(feReturnUrl);
         }
     }
 
+    @DeleteMapping("/internal/transactions/order/{orderId}")
+    public ApiResponse<Void> deleteTransactionByOrderId(@PathVariable UUID orderId) {
+        paymentTransactionService.deleteTransactionByOrderId(orderId);
+        return ApiResponse.<Void>builder()
+                .message("Transaction deleted")
+                .statusCode(200)
+                .build();
+    }
 }

@@ -1,10 +1,9 @@
 package com.franchiseproject.orderservice.dto.response;
 
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -12,10 +11,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ProductResponse {
-    UUID id;
-    String name;
-    BigDecimal price;
-    String status;
-    String imageUrl;
+public class EarnPointsResponse {
+    UUID transactionId;
+    UUID userId;
+    Integer pointsEarned;
+    Integer currentBalance;
+    String newTierName;
+    Instant timestamp;
 }

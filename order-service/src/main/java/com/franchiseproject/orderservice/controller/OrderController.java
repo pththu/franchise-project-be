@@ -57,16 +57,12 @@ public class OrderController {
                 .build();
     }
 
-    @PutMapping("/{orderId}/cancel")
-    public ApiResponse<OrderResponse> cancelOrder(
-            @PathVariable UUID orderId,
-            @RequestParam UUID customerId
-    ) {
-        orderService.cancelOrder(orderId, customerId);
-        return ApiResponse.<OrderResponse>builder()
-                .message("Order has been cancelled")
+    @DeleteMapping("/{orderId}/abandon")
+    public ApiResponse<Void> abandonOrder(@PathVariable UUID orderId) {
+        orderService.deleteOrderPermanently(orderId);
+        return ApiResponse.<Void>builder()
+                .message("Order has been abandoned and deleted")
                 .statusCode(200)
-                .errors(null)
                 .build();
     }
 

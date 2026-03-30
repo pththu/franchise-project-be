@@ -102,4 +102,13 @@ public class FranchiseController {
                 .data(franchiseService.checkFranchiseById(id))
                 .build();
     }
+
+    @PostMapping("/internal/search-by-ids")
+    public ApiResponse<List<FranchiseDTO>> getFranchisesByIds(@RequestBody List<UUID> ids) {
+        return ApiResponse.<List<FranchiseDTO>>builder()
+                .statusCode(200)
+                .message("Bulk fetch franchises successfully")
+                .data(franchiseService.getFranchisesByIds(ids))
+                .build();
+    }
 }

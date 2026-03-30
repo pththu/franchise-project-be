@@ -1,11 +1,15 @@
 package com.franchiseproject.orderservice.client;
 
+import com.franchiseproject.orderservice.dto.request.EarnPointsRequest;
 import com.franchiseproject.orderservice.dto.request.LoyaltyReserveRequest;
 import com.franchiseproject.orderservice.dto.request.LoyaltyTraceBackRequest;
+import com.franchiseproject.orderservice.dto.response.ApiResponse;
+import com.franchiseproject.orderservice.dto.response.EarnPointsResponse;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.*;
 
@@ -19,14 +23,21 @@ public class LoyaltyClient {
     private final RestClient apiLoyaltyRestClient;
 
     /// Method check điểm Loyalty để trừ hóa đơn cho order và giữ điểm
-    public BigDecimal apiLoyaltyReserve(UUID customerId, Integer loyaltyPoints) {
+    public BigDecimal apiLoyaltyReserve(UUID customerId, UUID franchiseId, UUID orderId, Integer loyaltyPoints) {
         try {
-            LoyaltyReserveRequest request = new LoyaltyReserveRequest(customerId, loyaltyPoints);
-            return apiLoyaltyRestClient.post()
-                    .uri("/api/loyalty/reserve")
+            LoyaltyReserveRequest request = new LoyaltyReserveRequest(customerId, franchiseId, orderId, loyaltyPoints);
+            ApiResponse<EarnPointsResponse> response = apiLoyaltyRestClient.post()
+                    .uri("/api/loyalty/deduct")
                     .body(request)
                     .retrieve()
-                    .body(BigDecimal.class);
+                    .body(new ParameterizedTypeReference<ApiResponse<EarnPointsResponse>>() {});
+
+            if (response != null && response.getData() != null) {
+                // Return discount value: points * 100
+                int pointsDeducted = Math.abs(response.getData().getPointsEarned());
+                return BigDecimal.valueOf(pointsDeducted).multiply(BigDecimal.valueOf(100));
+            }
+            return BigDecimal.ZERO;
         } catch (HttpClientErrorException e) {
             log.warn("Loyalty 4xx error: {}", e.getResponseBodyAsString());
             if (e.getStatusCode().value() == 400) {
@@ -42,6 +53,20 @@ public class LoyaltyClient {
         } catch (RestClientException e) {
             log.error("Unknown RestClient error", e);
             throw new AppException(ErrorCode.SYSTEM_ERROR);
+        }
+    }
+
+    public void apiLoyaltyEarn(UUID userId, UUID franchiseId, Double orderAmount) {
+        try {
+            EarnPointsRequest request = new EarnPointsRequest(userId, franchiseId, orderAmount);
+            apiLoyaltyRestClient.post()
+                    .uri("/api/loyalty/earn")
+                    .body(request)
+                    .retrieve()
+                    .toBodilessEntity();
+            log.info("Loyalty earn points request sent for user {}", userId);
+        } catch (Exception e) {
+            log.error("Loyalty earn points failed", e);
         }
     }
 
