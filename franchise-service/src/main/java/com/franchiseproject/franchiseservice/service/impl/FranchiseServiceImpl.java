@@ -17,8 +17,12 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
+import org.springframework.http.codec.ServerSentEvent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -31,6 +35,9 @@ public class FranchiseServiceImpl implements FranchiseService {
     FranchiseRepository franchiseRepository;
     FranchiseMapper franchiseMapper;
 
+    // ================= SSE SINK =================
+    private final Sinks.Many<Object> franchiseSink = Sinks.many().multicast().onBackpressureBuffer();
+
     @Override
     public List<FranchiseDTO> getAllFranchises() {
         return franchiseRepository.findAll()
@@ -40,7 +47,7 @@ public class FranchiseServiceImpl implements FranchiseService {
     }
 
     @Override
-    public FranchiseDTO getFranchiseById(UUID id) {  // Đã sửa thành UUID
+    public FranchiseDTO getFranchiseById(UUID id) {
         Franchise franchise = franchiseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + id));
         return franchiseMapper.toDTO(franchise);
@@ -62,12 +69,15 @@ public class FranchiseServiceImpl implements FranchiseService {
         Franchise savedFranchise = franchiseRepository.save(franchise);
         log.info("New franchise created: {} with id {}", savedFranchise.getName(), savedFranchise.getId());
 
+        // Push realtime
+        emitFranchiseEvent(Map.of("type", "FRANCHISE_CREATED", "data", franchiseMapper.toDTO(savedFranchise)));
+
         return franchiseMapper.toDTO(savedFranchise);
     }
 
     @Override
     @Transactional
-    public FranchiseDTO updateFranchise(UUID id, FranchiseDTO franchiseDTO) {  // Đã sửa thành UUID
+    public FranchiseDTO updateFranchise(UUID id, FranchiseDTO franchiseDTO) {
         Franchise existingFranchise = franchiseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + id));
 
@@ -92,23 +102,22 @@ public class FranchiseServiceImpl implements FranchiseService {
         Franchise updatedFranchise = franchiseRepository.save(existingFranchise);
         log.info("Franchise updated: {} with id {}", updatedFranchise.getName(), id);
 
+        emitFranchiseEvent(Map.of("type", "FRANCHISE_UPDATED", "data", franchiseMapper.toDTO(updatedFranchise)));
+
         return franchiseMapper.toDTO(updatedFranchise);
     }
 
     @Override
     @Transactional
-    public void deleteFranchise(UUID id) {  // Đã sửa thành UUID
-//        if (!franchiseRepository.existsById(id)) {
-//            throw new ResourceNotFoundException("Franchise not found with id: " + id);
-//        }
-//
-//        franchiseRepository.deleteById(id);
+    public void deleteFranchise(UUID id) {
         Franchise existingFranchise = franchiseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + id));
 
         existingFranchise.setStatus(FranchiseStatus.DELETED);
         franchiseRepository.save(existingFranchise);
         log.info("Franchise deleted with id: {}", id);
+
+        emitFranchiseEvent(Map.of("type", "FRANCHISE_DELETED", "franchiseId", id));
     }
 
     @Override
@@ -129,13 +138,15 @@ public class FranchiseServiceImpl implements FranchiseService {
 
     @Override
     @Transactional
-    public FranchiseDTO updateFranchiseStatus(UUID id, FranchiseStatus status) {  // Đã sửa thành UUID
+    public FranchiseDTO updateFranchiseStatus(UUID id, FranchiseStatus status) {
         Franchise franchise = franchiseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Franchise not found with id: " + id));
 
         franchise.setStatus(status);
         Franchise updatedFranchise = franchiseRepository.save(franchise);
         log.info("Franchise {} status updated to: {}", id, status);
+
+        emitFranchiseEvent(Map.of("type", "FRANCHISE_STATUS_UPDATED", "franchiseId", id, "status", status));
 
         return franchiseMapper.toDTO(updatedFranchise);
     }
@@ -146,8 +157,8 @@ public class FranchiseServiceImpl implements FranchiseService {
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
 
         return CheckFranchiseResponse.builder()
-                .isExists(franchise == null ? false : true)
-                .status(franchise == null ? null : franchise.getStatus())
+                .isExists(franchise != null)
+                .status(franchise != null ? franchise.getStatus() : null)
                 .build();
     }
 
@@ -163,5 +174,20 @@ public class FranchiseServiceImpl implements FranchiseService {
         return franchiseRepository.findAllById(ids).stream()
                 .map(franchiseMapper::toDTO)
                 .toList();
+    }
+
+    // ================= SSE METHODS =================
+    @Override
+    public Flux<ServerSentEvent<Object>> getFranchiseEvents() {
+        return franchiseSink.asFlux()
+                .map(event -> ServerSentEvent.<Object>builder()
+                        .id(UUID.randomUUID().toString())
+                        .event("franchise-update")
+                        .data(event)
+                        .build());
+    }
+
+    public void emitFranchiseEvent(Object eventData) {
+        franchiseSink.tryEmitNext(eventData);
     }
 }
