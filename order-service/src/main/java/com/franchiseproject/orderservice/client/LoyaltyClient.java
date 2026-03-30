@@ -1,11 +1,15 @@
 package com.franchiseproject.orderservice.client;
 
-import com.franchiseproject.orderservice.dto.request.LoyaltyDeductRequest;
-import com.franchiseproject.orderservice.dto.request.LoyaltyEarnRequest;
+import com.franchiseproject.orderservice.dto.request.EarnPointsRequest;
+import com.franchiseproject.orderservice.dto.request.LoyaltyReserveRequest;
+import com.franchiseproject.orderservice.dto.request.LoyaltyTraceBackRequest;
+import com.franchiseproject.orderservice.dto.response.ApiResponse;
+import com.franchiseproject.orderservice.dto.response.EarnPointsResponse;
 import com.franchiseproject.orderservice.exception.AppException;
 import com.franchiseproject.orderservice.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.*;
 
@@ -18,63 +22,66 @@ import java.util.UUID;
 public class LoyaltyClient {
     private final RestClient apiLoyaltyRestClient;
 
-    // 1. DEDUCT POINTS WHEN CUSTOMER USES THEM
-    public void apiLoyaltyDeduct(UUID customerId, UUID franchiseId, UUID orderId, Integer pointsToDeduct) {
+    /// Method check điểm Loyalty để trừ hóa đơn cho order và giữ điểm
+    public BigDecimal apiLoyaltyReserve(UUID customerId, UUID franchiseId, UUID orderId, Integer loyaltyPoints) {
         try {
-            LoyaltyDeductRequest request = new LoyaltyDeductRequest(customerId, franchiseId, orderId, pointsToDeduct);
-
-            // Call deduct API in Loyalty service
-            apiLoyaltyRestClient.post()
+            LoyaltyReserveRequest request = new LoyaltyReserveRequest(customerId, franchiseId, orderId, loyaltyPoints);
+            ApiResponse<EarnPointsResponse> response = apiLoyaltyRestClient.post()
                     .uri("/api/loyalty/deduct")
                     .body(request)
                     .retrieve()
-                    .toBodilessEntity(); // Only need to ensure success (200 OK)
+                    .body(new ParameterizedTypeReference<ApiResponse<EarnPointsResponse>>() {});
 
+            if (response != null && response.getData() != null) {
+                // Return discount value: points * 100
+                int pointsDeducted = Math.abs(response.getData().getPointsEarned());
+                return BigDecimal.valueOf(pointsDeducted).multiply(BigDecimal.valueOf(100));
+            }
+            return BigDecimal.ZERO;
         } catch (HttpClientErrorException e) {
             log.warn("Loyalty 4xx error: {}", e.getResponseBodyAsString());
-            if (e.getStatusCode().value() == 400) { // Code 400 or 404 depending on ErrorCode configuration
+            if (e.getStatusCode().value() == 400) {
                 throw new AppException(ErrorCode.INVALID_LOYALTY);
             }
+            if (e.getStatusCode().value() == 404) {
+                throw new AppException(ErrorCode.LOYALTY_NOT_FOUND);
+            }
             throw new AppException(ErrorCode.VALIDATION_FAILED);
+        } catch (HttpServerErrorException | ResourceAccessException e) {
+            log.error("Loyalty service error → fallback no discount", e);
+            return BigDecimal.ZERO;
         } catch (RestClientException e) {
             log.error("Unknown RestClient error", e);
             throw new AppException(ErrorCode.SYSTEM_ERROR);
         }
     }
 
-    // 2. EARN POINTS ON SUCCESSFUL ORDER
-    public void apiLoyaltyEarn(UUID customerId, UUID franchiseId, UUID orderId, Double orderAmount) {
+    public void apiLoyaltyEarn(UUID userId, UUID franchiseId, Double orderAmount) {
         try {
-            // Loyalty needs orderAmount to calculate points
-            LoyaltyEarnRequest request = new LoyaltyEarnRequest(customerId, franchiseId, orderId, orderAmount);
-
+            EarnPointsRequest request = new EarnPointsRequest(userId, franchiseId, orderAmount);
             apiLoyaltyRestClient.post()
                     .uri("/api/loyalty/earn")
                     .body(request)
                     .retrieve()
                     .toBodilessEntity();
-            log.info("Successfully earned points for order: {}", orderId);
+            log.info("Loyalty earn points request sent for user {}", userId);
         } catch (Exception e) {
-            // Earning points failure should not fail the order, log for admin to resolve
-            log.error("Failed to earn Loyalty points for order {}: ", orderId, e);
+            log.error("Loyalty earn points failed", e);
         }
     }
 
-    // 3. REFUND POINTS FOR FAILED/CANCELED ORDER
-//    public void apiLoyaltyTraceBackPoints(UUID customerId, UUID franchiseId, UUID orderId, Integer pointsToRefund) {
-//        try {
-//            LoyaltyTraceBackRequest request = new LoyaltyTraceBackRequest(customerId, franchiseId, orderId, pointsToRefund);
-//
-//            apiLoyaltyRestClient.post()
-//                    .uri("/api/loyalty/refund")
-//                    .body(request)
-//                    .retrieve()
-//                    .toBodilessEntity();
-//            log.info("Successfully refunded {} points for order {}", pointsToRefund, orderId);
-//        } catch (Exception e) {
-//            // Traceback failure should only be logged (or pushed to Kafka for later retry)
-//            log.error("Failed to refund points for order {}: ", orderId, e);
-//        }
-//    }
-
+    /// Method traceback điểm Loyalty sau khi order failed
+    public void apiLoyaltyTraceBackPoints(UUID customerId, UUID franchiseId, UUID orderId, Integer pointsToRefund) {
+        try {
+            LoyaltyTraceBackRequest request = new LoyaltyTraceBackRequest(customerId, franchiseId, orderId, pointsToRefund);
+            apiLoyaltyRestClient.post()
+                    .uri("/api/loyalty/refund")
+                    .body(request)
+                    .retrieve()
+                    .toBodilessEntity();
+            log.info("Loyalty trace back points request received");
+        } catch (Exception e) {
+            log.error("Loyalty traceback failed", e);
+        }
+    }
 }

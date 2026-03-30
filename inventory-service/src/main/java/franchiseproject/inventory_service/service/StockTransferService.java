@@ -12,4 +12,5 @@ public interface StockTransferService {
     StockTransferResponse getTransferById(UUID id);
     StockTransferResponse shipTransfer(UUID id);
     StockTransferResponse receiveTransfer(UUID id);
+    StockTransferResponse rejectTransfer(UUID id);
 }

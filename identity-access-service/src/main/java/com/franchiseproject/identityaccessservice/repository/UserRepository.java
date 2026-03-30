@@ -33,9 +33,13 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("""
         SELECT u FROM User u
         WHERE LOWER(u.role.name) LIKE LOWER(CAST(:roleName AS string))
-            AND u.status = 'ACTIVE'
+            AND u.status != 'DELETED'
+            AND u.franchiseId = :franchiseId
     """)
-    Page<User> findByRole(@Param("roleName") String roleName, Pageable pageable);
+    Page<User> findByRole(
+            @Param("roleName") String roleName,
+            @Param("franchiseId") UUID franchiseId,
+            Pageable pageable);
 
     @Query("""
         SELECT u FROM User u

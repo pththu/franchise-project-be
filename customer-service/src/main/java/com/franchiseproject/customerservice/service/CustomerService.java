@@ -23,6 +23,7 @@ public interface CustomerService {
     CustomerFranchiseResponse getCustomerById(UUID id);
 
     PageResponse<CustomerFranchiseResponse> searchCustomers(UUID franchiseId, CustomerStatus status, List<UUID> customerIds, Pageable pageable);
+    List<CustomerFranchiseResponse> getCustomersByIds(List<UUID> ids);
 
     // CREATE / SYNC
     CustomerFranchise createCustomerAtFranchise(UUID customerId, UUID franchiseId, CustomerType type);

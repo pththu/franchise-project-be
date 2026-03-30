@@ -50,13 +50,20 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
                 .build();
     }
 
-    ///  Dùng để set một số field và gửi kết quả giao dịch cho order-service sau khi Momo gửi inp
     @Override
     @Transactional
     public void handlePaymentTransaction(Long transId, UUID paymentTransactionId, Integer resultCode) {
-        log.info("IPN start handle transaction: {}", paymentTransactionId);
+        log.info("IPN/Return handle transaction: {} with resultCode: {}", paymentTransactionId, resultCode);
         PaymentTransaction paymentTransaction = paymentTransactionRepository.findById(paymentTransactionId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_TRANSACTION));
+        
+        // Idempotency check: if transaction is already processed, skip
+        if (paymentTransaction.getStatus() != StatusTransaction.CREATED && 
+            paymentTransaction.getStatus() != StatusTransaction.PENDING) {
+            log.info("Transaction {} already in final state: {}. Skipping.", paymentTransactionId, paymentTransaction.getStatus());
+            return;
+        }
+
         paymentTransaction.setTransactionRef(transId.toString());
         log.info("Status before: {}", paymentTransaction.getStatus());
         log.info("Status after: {}", paymentTransaction.getStatus());
@@ -179,4 +186,20 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
         );
     }
 
+    @Override
+    @Transactional
+    public void deleteTransaction(UUID id) {
+        paymentTransactionRepository.deleteById(id);
+        log.info("Payment Transaction {} deleted permanently.", id);
+    }
+
+    @Override
+    @Transactional
+    public void deleteTransactionByOrderId(UUID orderId) {
+        paymentTransactionRepository.findByOrderId(orderId)
+                .ifPresent(tx -> {
+                    paymentTransactionRepository.delete(tx);
+                    log.info("Payment Transaction for Order {} deleted permanently.", orderId);
+                });
+    }
 }

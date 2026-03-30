@@ -7,6 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 public interface VnpayService {
-    CreatePaymentResponse createPaymentUrl(CreatePaymentRequest request, HttpServletRequest httpRequest) throws Exception;
+    CreatePaymentResponse createPaymentUrl(CreatePaymentRequest request, HttpServletRequest httpRequest, java.util.UUID paymentTransactionId) throws Exception;
     boolean validateReturnData(Map<String, String> params) throws Exception;
 }

@@ -54,6 +54,7 @@ public class ProductClient {
                             .name(map.get("productName") != null ? map.get("productName").toString() : "Unknown Product")
                             .price(map.get("price") != null ? new BigDecimal(map.get("price").toString()) : BigDecimal.ZERO)
                             .status("ACTIVE")
+                            .imageUrl(map.get("imageUrl") != null ? map.get("imageUrl").toString() : null)
                             .build())
                     .collect(Collectors.toMap(ProductResponse::getId, p -> p));
 

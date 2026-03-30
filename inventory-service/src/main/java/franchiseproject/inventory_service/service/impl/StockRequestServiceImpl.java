@@ -81,20 +81,54 @@ public class StockRequestServiceImpl implements StockRequestService {
     }
 
     private void enrichRequestItems(StockRequestResponse response) {
-        UUID sourceId = null;
-        var transferOpt = stockTransferRepository.findByReferenceRequestId(response.getId());
-        if (transferOpt.isPresent()) {
-            sourceId = transferOpt.get().getFromLocationId();
-            response.setSourceLocationId(sourceId);
-        }
-        final UUID finalSourceId = sourceId;
+        enrichRequests(java.util.Collections.singletonList(response));
+    }
 
-        if (response.getItems() != null) {
-            response.getItems().forEach(item -> {
-                try {
-                    var apiRes = productClient.getProductVariant(item.getProductVariantId());
-                    if (apiRes != null && apiRes.getData() != null) {
-                        var detail = apiRes.getData();
+    private void enrichRequests(List<StockRequestResponse> responses) {
+        if (responses == null || responses.isEmpty()) return;
+
+        // Collect all variant IDs
+        List<UUID> variantIds = responses.stream()
+                .flatMap(r -> r.getItems() != null ? r.getItems().stream() : java.util.stream.Stream.empty())
+                .map(franchiseproject.inventory_service.dto.response.StockRequestItemResponse::getProductVariantId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (variantIds.isEmpty()) return;
+
+        // Bulk fetch product details
+        java.util.Map<UUID, franchiseproject.inventory_service.dto.response.ProductVariantDetailResponse> productMap = new java.util.HashMap<>();
+        try {
+            var apiRes = productClient.getProductVariantsBulk(variantIds);
+            if (apiRes != null && apiRes.getData() != null) {
+                productMap = apiRes.getData().stream()
+                        .collect(Collectors.toMap(franchiseproject.inventory_service.dto.response.ProductVariantDetailResponse::getId, d -> d));
+            }
+        } catch (Exception e) {
+            System.err.println("Feign bulk error StockRequest enrich: " + e.getMessage());
+        }
+
+        final java.util.Map<UUID, franchiseproject.inventory_service.dto.response.ProductVariantDetailResponse> finalProductMap = productMap;
+
+        // Process each response
+        responses.forEach(response -> {
+            UUID sourceId = null;
+            var transfers = stockTransferRepository.findByReferenceRequestId(response.getId());
+            var activeTransfer = transfers.stream()
+                    .filter(t -> t.getStatus() != franchiseproject.inventory_service.enums.TransferStatus.CANCELLED)
+                    .sorted((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()))
+                    .findFirst();
+            
+            if (activeTransfer.isPresent()) {
+                sourceId = activeTransfer.get().getFromLocationId();
+                response.setSourceLocationId(sourceId);
+            }
+            final UUID finalSourceId = sourceId;
+
+            if (response.getItems() != null) {
+                response.getItems().forEach(item -> {
+                    var detail = finalProductMap.get(item.getProductVariantId());
+                    if (detail != null) {
                         item.setProductName(detail.getProductName());
                         item.setSize(detail.getSize() != null ? detail.getSize() : "N/A");
                         item.setColor(detail.getColor() != null ? detail.getColor() : "N/A");
@@ -103,11 +137,9 @@ public class StockRequestServiceImpl implements StockRequestService {
                         var stockOpt = productStockRepository.findByProductVariantIdAndLocationId(item.getProductVariantId(), finalSourceId);
                         item.setCurrentQuantity(stockOpt.map(f -> f.getQuantity()).orElse(0));
                     }
-                } catch (Exception e) {
-                    System.err.println("Feign error StockRequestItem: " + e.getMessage());
-                }
-            });
-        }
+                });
+            }
+        });
     }
 
     @Override
@@ -116,7 +148,7 @@ public class StockRequestServiceImpl implements StockRequestService {
                 .map(stockRequestMapper::toResponse)
                 .collect(Collectors.toList());
 
-        responses.forEach(this::enrichRequestItems);
+        enrichRequests(responses);
         return responses;
     }
 
@@ -179,7 +211,10 @@ public class StockRequestServiceImpl implements StockRequestService {
             throw new AppException(ErrorCode.BAD_REQUEST);
         }
 
-        franchiseproject.inventory_service.entity.StockTransfer transfer = stockTransferRepository.findByReferenceRequestId(req.getId())
+        var transfers = stockTransferRepository.findByReferenceRequestId(req.getId());
+        franchiseproject.inventory_service.entity.StockTransfer transfer = transfers.stream()
+                .filter(t -> t.getStatus() != franchiseproject.inventory_service.enums.TransferStatus.CANCELLED)
+                .findFirst()
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         stockTransferService.shipTransfer(transfer.getId());
@@ -207,7 +242,10 @@ public class StockRequestServiceImpl implements StockRequestService {
             throw new AppException(ErrorCode.BAD_REQUEST);
         }
 
-        franchiseproject.inventory_service.entity.StockTransfer transfer = stockTransferRepository.findByReferenceRequestId(req.getId())
+        var transfers = stockTransferRepository.findByReferenceRequestId(req.getId());
+        franchiseproject.inventory_service.entity.StockTransfer transfer = transfers.stream()
+                .filter(t -> t.getStatus() != franchiseproject.inventory_service.enums.TransferStatus.CANCELLED)
+                .findFirst()
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
         stockTransferService.receiveTransfer(transfer.getId());
@@ -236,9 +274,12 @@ public class StockRequestServiceImpl implements StockRequestService {
         }
 
         if (req.getStatus() == StockRequestStatus.APPROVED) {
-            var transferOpt = stockTransferRepository.findByReferenceRequestId(req.getId());
-            if (transferOpt.isPresent()) {
-                var transfer = transferOpt.get();
+            var transfers = stockTransferRepository.findByReferenceRequestId(req.getId());
+            var activeTransfer = transfers.stream()
+                    .filter(t -> t.getStatus() != franchiseproject.inventory_service.enums.TransferStatus.CANCELLED)
+                    .findFirst();
+            if (activeTransfer.isPresent()) {
+                var transfer = activeTransfer.get();
                 transfer.setStatus(franchiseproject.inventory_service.enums.TransferStatus.CANCELLED);
                 stockTransferRepository.save(transfer);
             }
@@ -267,7 +308,7 @@ public class StockRequestServiceImpl implements StockRequestService {
                 .map(stockRequestMapper::toResponse)
                 .collect(Collectors.toList());
 
-        responses.forEach(this::enrichRequestItems);
+        enrichRequests(responses);
         return responses;
     }
 }

@@ -21,6 +21,7 @@ import com.franchiseproject.paymentservice.exception.AppException;
 import com.franchiseproject.paymentservice.exception.ErrorCode;
 import com.franchiseproject.paymentservice.mapper.PaymentMethodMapper;
 import com.franchiseproject.paymentservice.repository.PaymentMethodRepository;
+import com.franchiseproject.paymentservice.repository.PaymentTransactionRepository;
 import com.franchiseproject.paymentservice.service.MomoService;
 import com.franchiseproject.paymentservice.service.PaymentMethodService;
 import com.franchiseproject.paymentservice.service.PaymentTransactionService;
@@ -43,6 +44,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     PaymentMethodRepository paymentMethodRepository;
     PaymentTransactionService paymentTransactionService;
     PaymentMethodMapper paymentMethodMapper;
+    PaymentTransactionRepository paymentTransactionRepository;
     OrderClient orderClient;
     MomoService momoService;
     VnpayService vnpayService;
@@ -108,15 +110,20 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                     ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
                     HttpServletRequest httpRequest = attributes.getRequest();
                     
+                    // NEW: Create PENDING transaction for VNPay to allow expiration cleanup
+                    PaymentTransaction p = paymentTransactionService.buildPaymentTransaction(orderResponse, paymentMethod);
+                    p.changeStatus(StatusTransaction.PENDING);
+                    PaymentTransaction savedTx = paymentTransactionRepository.save(p);
+
                     CreatePaymentRequest vnpayReq = CreatePaymentRequest.builder()
                             .amount(orderResponse.getTotalDue().longValue())
                             .orderId(orderResponse.getId())
                             .build();
 
-                    CreatePaymentResponse vnpayRes = vnpayService.createPaymentUrl(vnpayReq, httpRequest);
+                    CreatePaymentResponse vnpayRes = vnpayService.createPaymentUrl(vnpayReq, httpRequest, savedTx.getId());
 
                     return PaymentQRResponse.builder()
-                            .paymentTransactionId(null)
+                            .paymentTransactionId(savedTx.getId()) // Use the saved ID
                             .method("VNPAY")
                             .paymentUrl(vnpayRes.getPaymentUrl())
                             .amount(orderResponse.getTotalDue().longValue())
@@ -138,14 +145,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                             .build();
                     PaymentTransaction saved = paymentTransactionService.createPaymentTransaction(p);
                     txId = saved.getId();
-                    
-                    orderClient.sendPaymentResult(PaymentResultRequest.builder()
-                            .orderId(orderResponse.getId())
-                            .paymentTransactionId(txId)
-                            .amount(orderResponse.getTotalDue())
-                            .paymentMethod("COD")
-                            .status(StatusTransaction.SUCCESS)
-                            .build());
+
                 } else if ("Online".equalsIgnoreCase(typeOrder)) {
                     PaymentTransaction p = PaymentTransaction.builder()
                             .amount(orderResponse.getTotalDue())
@@ -176,6 +176,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     }
 
     @Override
+    @Transactional
     public String handleVnpayCallback(Map<String, String> params) {
         try {
             if (vnpayService.validateReturnData(params)) {
@@ -184,9 +185,32 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                 if (parts.length < 2) return null;
                 
                 String orderIdStr = parts[0];
-                com.franchiseproject.paymentservice.dto.response.order.OrderResponse order = orderClient.getOrderInfoByOrderId(UUID.fromString(orderIdStr));
-                String typeOrder = order.getTypeOrder();
+                UUID orderId = UUID.fromString(orderIdStr);
+                
+                // Fetch existing transaction to check for idempotency
+                PaymentTransaction existingTx = paymentTransactionRepository.findByOrderId(orderId).orElse(null);
+                if (existingTx != null && (existingTx.getStatus() == StatusTransaction.SUCCESS || existingTx.getStatus() == StatusTransaction.FAILED)) {
+                    log.info("VNPay callback already processed for order {}. Skipping.", orderId);
+                    String typeOrder = "POS";
+                    try {
+                        com.franchiseproject.paymentservice.dto.response.order.OrderResponse order = orderClient.getOrderInfoByOrderId(orderId);
+                        if (order != null) typeOrder = order.getTypeOrder();
+                    } catch (Exception e) {
+                        log.info("Order info not found for {} (processed elsewhere).", orderId);
+                    }
+                    return orderIdStr + "|" + typeOrder + "|" + params.get("vnp_ResponseCode");
+                }
+
+                com.franchiseproject.paymentservice.dto.response.order.OrderResponse order = null;
+                try {
+                    order = orderClient.getOrderInfoByOrderId(orderId);
+                } catch (Exception e) {
+                    log.info("Order info not found for {} during VNPay callback processing.", orderId);
+                }
+                
+                String typeOrder = (order != null) ? order.getTypeOrder() : "POS";
                 String responseCode = params.get("vnp_ResponseCode");
+                final com.franchiseproject.paymentservice.dto.response.order.OrderResponse finalOrder = order;
 
                 if ("00".equals(responseCode)) {
                     BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(new BigDecimal(100));
@@ -194,21 +218,24 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                     PaymentMethod method = paymentMethodRepository.findByMethodName("VNPAY")
                             .orElseThrow(() -> new RuntimeException("Payment method VNPAY not found"));
 
-                    PaymentTransaction p = PaymentTransaction.builder()
-                            .amount(amount)
-                            .orderId(UUID.fromString(orderIdStr))
-                            .status(StatusTransaction.SUCCESS)
-                            .paymentMethod(method)
-                            .build();
-                    PaymentTransaction savedTx = paymentTransactionService.createPaymentTransaction(p);
+                    // Find existing transaction or create if missing (protective fallback)
+                    PaymentTransaction p = paymentTransactionRepository.findByOrderId(UUID.fromString(orderIdStr))
+                            .orElseGet(() -> paymentTransactionService.buildPaymentTransaction(finalOrder, method));
+                    
+                    p.setAmount(amount);
+                    p.setStatus(StatusTransaction.SUCCESS);
+                    p.setTransactionRef(params.get("vnp_TransactionNo")); // Use actual VNP transaction no
+                    PaymentTransaction savedTx = paymentTransactionRepository.save(p);
 
-                    orderClient.sendPaymentResult(com.franchiseproject.paymentservice.dto.request.PaymentResultRequest.builder()
-                            .orderId(UUID.fromString(orderIdStr))
-                            .paymentTransactionId(savedTx.getId())
-                            .amount(amount)
-                            .paymentMethod("VNPAY")
-                            .status(StatusTransaction.SUCCESS)
-                            .build());
+                    if (order != null) {
+                        orderClient.sendPaymentResult(com.franchiseproject.paymentservice.dto.request.PaymentResultRequest.builder()
+                                .orderId(UUID.fromString(orderIdStr))
+                                .paymentTransactionId(savedTx.getId())
+                                .amount(amount)
+                                .paymentMethod("VNPAY")
+                                .status(StatusTransaction.SUCCESS)
+                                .build());
+                    }
                 } else {
                     BigDecimal amount = params.get("vnp_Amount") != null 
                         ? new BigDecimal(params.get("vnp_Amount")).divide(new BigDecimal(100))
@@ -217,21 +244,23 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                     PaymentMethod method = paymentMethodRepository.findByMethodName("VNPAY")
                             .orElseThrow(() -> new RuntimeException("Payment method VNPAY not found"));
 
-                    PaymentTransaction p = PaymentTransaction.builder()
-                            .amount(amount)
-                            .orderId(UUID.fromString(orderIdStr))
-                            .status(StatusTransaction.FAILED)
-                            .paymentMethod(method)
-                            .build();
-                    PaymentTransaction savedTx = paymentTransactionService.createPaymentTransaction(p);
+                    PaymentTransaction p = paymentTransactionRepository.findByOrderId(UUID.fromString(orderIdStr))
+                            .orElseGet(() -> paymentTransactionService.buildPaymentTransaction(finalOrder, method));
+                    
+                    p.setAmount(amount);
+                    p.setStatus(StatusTransaction.FAILED);
+                    p.setTransactionRef(params.get("vnp_TransactionNo"));
+                    PaymentTransaction savedTx = paymentTransactionRepository.save(p);
 
-                    orderClient.sendPaymentResult(com.franchiseproject.paymentservice.dto.request.PaymentResultRequest.builder()
-                            .orderId(UUID.fromString(orderIdStr))
-                            .paymentTransactionId(savedTx.getId())
-                            .amount(amount)
-                            .paymentMethod("VNPAY")
-                            .status(StatusTransaction.FAILED)
-                            .build());
+                    if (order != null) {
+                        orderClient.sendPaymentResult(com.franchiseproject.paymentservice.dto.request.PaymentResultRequest.builder()
+                                .orderId(UUID.fromString(orderIdStr))
+                                .paymentTransactionId(savedTx.getId())
+                                .amount(amount)
+                                .paymentMethod("VNPAY")
+                                .status(StatusTransaction.FAILED)
+                                .build());
+                    }
                 }
 
                 return orderIdStr + "|" + typeOrder + "|" + responseCode;
