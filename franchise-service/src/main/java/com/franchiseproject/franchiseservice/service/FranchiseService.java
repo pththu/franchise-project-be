@@ -19,4 +19,5 @@ public interface FranchiseService {
     FranchiseDTO updateFranchiseStatus(UUID id, FranchiseStatus status);  // Đã sửa
     CheckFranchiseResponse checkFranchiseById(UUID id);
     List<FranchiseDTO> getFranchiseIsActive();
+    List<FranchiseDTO> getFranchisesByIds(List<UUID> ids);
 }

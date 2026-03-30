@@ -156,4 +156,12 @@ public class FranchiseServiceImpl implements FranchiseService {
         return franchiseRepository.findByStatus(FranchiseStatus.ACTIVE)
                 .stream().map(franchiseMapper::toDTO).collect(Collectors.toList());
     }
+
+    @Override
+    public List<FranchiseDTO> getFranchisesByIds(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        return franchiseRepository.findAllById(ids).stream()
+                .map(franchiseMapper::toDTO)
+                .toList();
+    }
 }
