@@ -30,7 +30,8 @@ public class LoyaltyClient {
                     .uri("/api/loyalty/deduct")
                     .body(request)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<ApiResponse<EarnPointsResponse>>() {});
+                    .body(new ParameterizedTypeReference<ApiResponse<EarnPointsResponse>>() {
+                    });
 
             if (response != null && response.getData() != null) {
                 // Return discount value: points * 100
@@ -70,18 +71,21 @@ public class LoyaltyClient {
         }
     }
 
-    /// Method traceback điểm Loyalty sau khi order failed
+    // 3. REFUND POINTS FOR FAILED/CANCELED ORDER
     public void apiLoyaltyTraceBackPoints(UUID customerId, UUID franchiseId, UUID orderId, Integer pointsToRefund) {
         try {
-            LoyaltyTraceBackRequest request = new LoyaltyTraceBackRequest(customerId, franchiseId, orderId, pointsToRefund);
+            String orderIdStr = String.valueOf(orderId);
+            LoyaltyTraceBackRequest request = new LoyaltyTraceBackRequest(customerId, franchiseId, orderIdStr, pointsToRefund);
+
             apiLoyaltyRestClient.post()
                     .uri("/api/loyalty/refund")
                     .body(request)
                     .retrieve()
                     .toBodilessEntity();
-            log.info("Loyalty trace back points request received");
+            log.info("Successfully refunded {} points for order {}", pointsToRefund, orderId);
         } catch (Exception e) {
-            log.error("Loyalty traceback failed", e);
+            // Traceback failure should only be logged (or pushed to Kafka for later retry)
+            log.error("Failed to refund points for order {}: ", orderId, e);
         }
     }
 }

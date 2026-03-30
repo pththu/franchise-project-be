@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LoyaltyDeductRequest {
+public class LoyaltyReserveRequest {
     @NotNull(message = "customerId không được trống")
     UUID customerId;
 

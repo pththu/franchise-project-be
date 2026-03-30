@@ -229,6 +229,7 @@ public class OrderServiceImpl implements OrderService {
                 // Online order (Customer): just set to FAILED_PAYMENT
                 order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
                 orderRepository.save(order);
+                promotionClient.apiPromotionTraceBack(order.getId(), OrderStatus.FAILED_ORDER);
                 inventoryClient.notifyOrderStatus(order.getId(), "FAILED_PAYMENT");
             }
         }
@@ -503,7 +504,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         BigDecimal discountAmount = BigDecimal.ZERO;
-        BigDecimal priceShip = BigDecimal.valueOf(distance).multiply(BigDecimal.valueOf(2000));
+        BigDecimal priceShip = BigDecimal.valueOf(distance).multiply(BigDecimal.valueOf(20000));
         BigDecimal finalAmount = totalItems.add(priceShip);
 
         if (discount == null || discount.compareTo(BigDecimal.ZERO) <= 0) {

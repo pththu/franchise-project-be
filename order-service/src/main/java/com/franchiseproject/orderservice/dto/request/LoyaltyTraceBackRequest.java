@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LoyaltyEarnRequest {
+public class LoyaltyTraceBackRequest {
     @NotNull(message = "customerId không được trống")
     UUID customerId;
 
@@ -22,9 +22,9 @@ public class LoyaltyEarnRequest {
     UUID franchiseId;
 
     @NotNull(message = "orderId không được trống")
-    UUID orderId;
+    String orderId;
 
-    @PositiveOrZero(message = "Số tiền đơn hàng không được âm")
-    Double orderAmount;
+    @PositiveOrZero(message = "Số điểm đơn hàng không được âm")
+    int pointsToRefund;
 
 }
