@@ -14,7 +14,9 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TransactionHistoryResponse {
     UUID id;
+    UUID userId;
     UUID franchiseId;
+    UUID orderId;
     UUID promotionId;
     int points;
     int balanceBefore;
