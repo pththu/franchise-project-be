@@ -15,11 +15,11 @@ public class LoyaltyClient {
 
     private final WebClient webClient;
 
-    public String getRank(UUID userId, UUID franchiseId) {
+    public String getRank(UUID userId) {
 
         UserLoyaltyResponse<CustomerTierResponse> res = webClient.get()
-                .uri("http://localhost:3005/api/loyalty/wallets/users/{userId}/franchises/{franchiseId}/tier-info",
-                        userId, franchiseId)
+                .uri("http://localhost:3005/api/loyalty/wallets/users/{userId}",
+                        userId)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<UserLoyaltyResponse<CustomerTierResponse>>() {})
                 .block();
