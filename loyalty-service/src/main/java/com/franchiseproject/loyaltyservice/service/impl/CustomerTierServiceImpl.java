@@ -39,7 +39,6 @@ public class CustomerTierServiceImpl implements CustomerTierService {
         return wallets.stream()
                 .map(cf -> CustomerLoyaltyResponse.builder()
                         .userId(cf.getUserId())
-                        .franchiseId(cf.getFranchiseId())
                         .customerLoyaltyTier(cf.getCustomerLoyaltyTier())
                         .loyaltyCurrentPoint(cf.getLoyaltyCurrentPoint())
                         .loyaltyTotalPoint(cf.getLoyaltyTotalPoint())
