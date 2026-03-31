@@ -19,4 +19,8 @@ public interface PaymentTransactionService {
     void expirePendingTransactions();
 
     PaymentTransaction createPaymentTransaction(PaymentTransaction paymentTransaction);
+
+    void deleteTransaction(UUID id);
+
+    void deleteTransactionByOrderId(UUID orderId);
 }

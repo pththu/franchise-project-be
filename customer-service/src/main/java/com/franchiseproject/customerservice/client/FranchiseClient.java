@@ -25,7 +25,7 @@ import java.util.UUID;
 public class FranchiseClient {
     final RestTemplate restTemplate;
 
-    @Value("${application.feign.franchise-service.url:http://localhost:3002}")
+    @Value("${application.feign.franchise-service.url:http://localhost:3013}")
     String franchiseServiceBaseUrl;
 
     public List<FranchiseResponse> getFranchisesByIds(List<UUID> franchiseIds) {

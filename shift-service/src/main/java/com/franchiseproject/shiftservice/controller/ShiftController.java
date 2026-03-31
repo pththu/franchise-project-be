@@ -8,7 +8,10 @@ import com.franchiseproject.shiftservice.dto.response.ShiftStatisticResponse;
 import com.franchiseproject.shiftservice.dto.response.StaffShiftResponse;
 import com.franchiseproject.shiftservice.service.ShiftConfigurationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,7 +26,6 @@ public class ShiftController {
     private final ShiftConfigurationService service;
 
     // ================= SHIFT CONFIGURATION =================
-
     @PostMapping
     public ShiftResponse createShift(@RequestBody CreateShiftRequest request) {
         return service.createShiftConfiguration(request);
@@ -48,7 +50,6 @@ public class ShiftController {
     }
 
     // ================= STAFF SHIFT (ASSIGNMENT) =================
-
     @PostMapping("/assignments")
     public StaffShiftResponse assignShift(@RequestBody AssignShiftRequest request) {
         return service.assignShift(request);
@@ -63,7 +64,6 @@ public class ShiftController {
     }
 
     // ================= ATTENDANCE =================
-
     @PutMapping("/assignments/{id}/check-in")
     public StaffShiftResponse checkIn(@PathVariable UUID id) {
         return service.checkIn(id);
@@ -80,18 +80,15 @@ public class ShiftController {
     }
 
     // ================= SCHEDULE =================
-
     @GetMapping("/assignments")
     public List<StaffShiftResponse> getSchedule(
             @RequestParam(required = false) UUID staffId,
             @RequestParam LocalDate date
     ) {
-            return service.getSchedule(staffId, date);
+        return service.getSchedule(staffId, date);
     }
 
     // ================= STATISTICS =================
-
-    // Manager: thống kê toàn bộ theo ngày
     @GetMapping("/statistics")
     public ShiftStatisticResponse getStatisticByDate(
             @RequestParam LocalDate date
@@ -99,7 +96,6 @@ public class ShiftController {
         return service.getStatisticByDate(date);
     }
 
-    // Staff: thống kê cá nhân
     @GetMapping("/statistics/{staffId}")
     public PersonalStatisticResponse getPersonalStatistic(
             @PathVariable UUID staffId
@@ -107,8 +103,7 @@ public class ShiftController {
         return service.getPersonalStatistic(staffId);
     }
 
-
-    // ===== ATTENDANCE REPORT (THÊM MỚI) =====
+    // ===== ATTENDANCE REPORT =====
     @GetMapping("/attendance/incomplete")
     public List<StaffShiftResponse> getIncompleteShifts(@RequestParam LocalDate date) {
         return service.getIncompleteShifts(date);
@@ -117,5 +112,11 @@ public class ShiftController {
     @GetMapping("/attendance/summary")
     public Map<String, Object> getAttendanceSummary(@RequestParam LocalDate date) {
         return service.getAttendanceSummary(date);
+    }
+
+    // ================= REAL-TIME SSE =================
+    @GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<Object>> streamShiftEvents() {
+        return service.getShiftEvents();
     }
 }

@@ -17,10 +17,14 @@ import java.util.UUID;
 public class LoyaltyTraceBackRequest {
     @NotNull(message = "customerId không được trống")
     UUID customerId;
+
     @NotNull(message = "franchiseId không được trống")
     UUID franchiseId;
+
     @NotNull(message = "orderId không được trống")
-    UUID orderId;
-    @PositiveOrZero(message = "Điểm không được âm")
-    Integer pointsToRefund;//điểm của khách hàng để trừ vào order
+    String orderId;
+
+    @PositiveOrZero(message = "Số điểm đơn hàng không được âm")
+    int pointsToRefund;
+
 }
