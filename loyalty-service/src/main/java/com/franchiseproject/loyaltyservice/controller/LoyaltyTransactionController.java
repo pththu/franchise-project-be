@@ -24,14 +24,14 @@ public class LoyaltyTransactionController {
 
     LoyaltyTransactionService loyaltyTransactionService;
 
-    @GetMapping("/transactions/{customerId}")
+    @GetMapping("/transactions/{userId}")
     public ApiResponse<List<TransactionHistoryResponse>> getTransactionHistory(
-            @PathVariable UUID customerId) {
+            @PathVariable UUID userId) {
 
         return ApiResponse.<List<TransactionHistoryResponse>>builder()
                 .statusCode(200)
                 .message("Get transaction history successfully")
-                .data(loyaltyTransactionService.getByCustomerId(customerId))
+                .data(loyaltyTransactionService.getByUserId(userId))
                 .build();
     }
 

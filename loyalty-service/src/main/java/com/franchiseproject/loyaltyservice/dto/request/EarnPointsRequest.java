@@ -13,8 +13,13 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EarnPointsRequest {
-    @NotNull(message = "CUSTOMER_ID_REQUIRED")
-    UUID customerId;
+    @NotNull(message = "USER_ID_REQUIRED")
+    UUID userId;
+
+    @NotNull(message = "ORDER_ID_REQUIRED")
+    UUID orderId;
+
+    UUID promotionId;
 
     @NotNull(message = "FRANCHISE_ID_REQUIRED")
     UUID franchiseId;
