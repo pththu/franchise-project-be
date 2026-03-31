@@ -18,12 +18,11 @@ public class LoyaltyWalletController {
 
     private final LoyaltyWalletService loyaltyWalletService;
 
-    @GetMapping("/wallets/users/{userId}/franchises/{franchiseId}/tier-info")
+    @GetMapping("/wallets/users/{userId}")
     public ApiResponse<LoyaltyWalletResponse> getUserWallet(
-            @PathVariable UUID userId,
-            @PathVariable UUID franchiseId) {
+            @PathVariable UUID userId) {
 
-        LoyaltyWalletResponse tierInfo = loyaltyWalletService.getTierInfoFromWallet(userId, franchiseId);
+        LoyaltyWalletResponse tierInfo = loyaltyWalletService.getTierInfoFromWallet(userId);
 
         return ApiResponse.<LoyaltyWalletResponse>builder()
                 .statusCode(200)

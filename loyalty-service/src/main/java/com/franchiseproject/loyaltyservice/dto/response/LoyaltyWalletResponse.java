@@ -12,7 +12,6 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LoyaltyWalletResponse {
     UUID userId;
-    UUID franchiseId;
     String currentTier;
     Integer currentPoints;
     Integer totalPoints;
