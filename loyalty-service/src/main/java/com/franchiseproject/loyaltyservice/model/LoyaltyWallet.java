@@ -27,9 +27,6 @@ public class LoyaltyWallet {
     @Column(name = "user_id", columnDefinition = "UUID", nullable = false)
     UUID userId;
 
-    @Column(name = "franchise_id", columnDefinition = "UUID", nullable = false)
-    UUID franchiseId;
-
     @Enumerated(EnumType.STRING)
     CustomerLoyaltyTier customerLoyaltyTier;
 

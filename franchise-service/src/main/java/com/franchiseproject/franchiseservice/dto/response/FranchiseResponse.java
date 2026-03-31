@@ -1,6 +1,6 @@
-package com.franchiseproject.customerservice.dto.response;
+package com.franchiseproject.franchiseservice.dto.response;
 
-import com.franchiseproject.customerservice.enums.FranchiseStatus;
+import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

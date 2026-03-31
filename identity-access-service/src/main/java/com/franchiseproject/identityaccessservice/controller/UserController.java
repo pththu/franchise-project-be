@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserController {
-
     UserService userService;
     RoleService roleService;
     UserMapper userMapper;
@@ -224,11 +223,11 @@ public class UserController {
     }
 
     /**
-     * Update trạng thái user: ACTIVE | SUSPENDED | DELETED
-     * Body: { "status": "SUSPENDED" }
+     * Update trạng thái user: ACTIVE | SUSPENDED | INACTIVE
+     * /{userId}/update-status?status=status
      *
      */
-    @PutMapping("/{userId}/status")
+    @PutMapping("/{userId}/update-status")
     public ApiResponse<UserStatusResponse> updateStatus(
             @PathVariable UUID userId,
             @RequestParam UserStatus status,
@@ -321,27 +320,4 @@ public class UserController {
     }
 
 
-//    @GetMapping("/api/auth/internal/users/{userId}")
-//    public ApiResponse<UserResponse> getUserInternal(@PathVariable UUID userId) {
-//        return ApiResponse.<UserResponse>builder()
-//                .statusCode(200)
-//                .message("Get user successfully")
-//                .data(userService.getUserById(userId))
-//                .build();
-//    }
-
-//    @PostMapping("/api/auth/internal/users/search-by-ids")
-//    public ApiResponse<List<UserResponse>> getUsersByIdsInternal(@RequestBody List<UUID> userIds) {
-//        var users = userService.getUsersByIds(userIds);
-//
-//        List<UserResponse> userResponses = users.stream()
-//                .map(userMapper::toUserResponse)
-//                .toList();
-//
-//        return ApiResponse.<List<UserResponse>>builder()
-//                .statusCode(200)
-//                .message("Get users successfully")
-//                .data(userResponses)
-//                .build();
-//    }
 }
