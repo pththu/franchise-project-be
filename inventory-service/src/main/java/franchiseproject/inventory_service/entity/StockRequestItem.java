@@ -1,6 +1,7 @@
 package franchiseproject.inventory_service.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.UuidGenerator;
@@ -30,5 +31,6 @@ public class StockRequestItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stock_request_id", nullable = false)
+    @JsonIgnore
     StockRequest stockRequest;
 }

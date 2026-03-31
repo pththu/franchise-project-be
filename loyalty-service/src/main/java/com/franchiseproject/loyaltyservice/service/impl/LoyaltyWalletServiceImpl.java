@@ -18,7 +18,7 @@ public class LoyaltyWalletServiceImpl implements LoyaltyWalletService {
 
     @Override
     public LoyaltyWalletResponse getTierInfoFromWallet(UUID userId, UUID franchiseId) {
-        LoyaltyWallet wallet = walletRepository.findByUserIdAndFranchiseId(userId, franchiseId)
+        LoyaltyWallet wallet = walletRepository.findByUserId(userId)
                 .orElse(null);
 
         if (wallet == null) {

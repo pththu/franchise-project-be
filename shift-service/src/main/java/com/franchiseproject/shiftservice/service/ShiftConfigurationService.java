@@ -6,6 +6,8 @@ import com.franchiseproject.shiftservice.dto.response.PersonalStatisticResponse;
 import com.franchiseproject.shiftservice.dto.response.ShiftResponse;
 import com.franchiseproject.shiftservice.dto.response.ShiftStatisticResponse;
 import com.franchiseproject.shiftservice.dto.response.StaffShiftResponse;
+import reactor.core.publisher.Flux;
+import org.springframework.http.codec.ServerSentEvent;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -42,4 +44,8 @@ public interface ShiftConfigurationService {
 
     Map<String, Object> getAttendanceSummary(LocalDate date);
 
+    // ================= SSE REAL-TIME =================
+    Flux<ServerSentEvent<Object>> getShiftEvents();
+
+    void emitShiftEvent(Object eventData);
 }

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface LoyaltyTransactionService {
-    List<TransactionHistoryResponse> getByCustomerId(UUID customerId);
+    List<TransactionHistoryResponse> getByUserId(UUID userId);
     EarnPointsResponse deductPoints(DeductPointsRequest request);
     EarnPointsResponse earnPoints(EarnPointsRequest request);
     EarnPointsResponse refundPoints(RefundPointsRequest request);
