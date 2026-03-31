@@ -1,6 +1,7 @@
 package com.franchiseproject.customerservice.client;
 
 import com.franchiseproject.customerservice.dto.ApiResponse;
+import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.dto.response.UserResponse;
 import com.franchiseproject.customerservice.exception.AppException;
 import com.franchiseproject.customerservice.exception.ErrorCode;
@@ -10,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -52,9 +54,47 @@ public class IdentityClient {
         try {
             HttpEntity<List<UUID>> entity = new HttpEntity<>(userIds);
             ResponseEntity<ApiResponse<List<UserResponse>>> response = restTemplate.exchange(
-                    url, HttpMethod.POST, entity,
-                    new ParameterizedTypeReference<ApiResponse<List<UserResponse>>>() {
-                    }
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    new ParameterizedTypeReference<ApiResponse<List<UserResponse>>>() {}
+            );
+            return response.getBody() != null ? response.getBody().getData() : Collections.emptyList();
+        } catch (Exception e) {
+            log.error("Bulk fetch users failed: {}", e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    public Page<UserResponse> getCustomersByRole(int page, int size) {
+        String url = identityServiceBaseUrl + "/api/users/search-by-role" +
+                "?roleName=CUSTOMER" +
+                "&page=" + page +
+                "&size=" + size;
+
+        try {
+            log.info("identityServiceBaseUrl: {}", url);
+            ResponseEntity<ApiResponse<Page<UserResponse>>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ApiResponse<Page<UserResponse>>>() {}
+            );
+            return response.getBody().getData();
+        } catch (Exception e) {
+            log.error("Failed to fetch users from Identity: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public List<UserResponse> getAllCustomer () {
+        String url = identityServiceBaseUrl + "/api/auth/internal/customers/all";
+        try {
+            ResponseEntity<ApiResponse<List<UserResponse>>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<ApiResponse<List<UserResponse>>>() {}
             );
             return response.getBody() != null ? response.getBody().getData() : Collections.emptyList();
         } catch (Exception e) {

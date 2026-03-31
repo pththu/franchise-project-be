@@ -30,9 +30,6 @@ public class CustomerFranchise {
     UUID franchiseId;
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
-//    CustomerType type;
-//    @Enumerated(EnumType.STRING)
-//    @Column(length = 20, nullable = false)
     CustomerStatus status;
     @Column(name = "first_order_at")
     Instant firstOrderAt;

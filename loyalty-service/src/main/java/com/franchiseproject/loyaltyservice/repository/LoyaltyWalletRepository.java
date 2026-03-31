@@ -4,6 +4,7 @@ import com.franchiseproject.loyaltyservice.enums.CustomerLoyaltyTier;
 import com.franchiseproject.loyaltyservice.model.LoyaltyWallet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,5 +20,6 @@ public interface LoyaltyWalletRepository extends JpaRepository<LoyaltyWallet, UU
 
     List<LoyaltyWallet> findByCustomerLoyaltyTier(CustomerLoyaltyTier tier);
 
-    List<LoyaltyWallet> findByUserIdIn(List<UUID> userIds);
+    @Query("SELECT w FROM LoyaltyWallet w WHERE w.userId IN :userIds")
+    List<LoyaltyWallet> findByUserIdIn(@Param("userIds") List<UUID> userIds);
 }

@@ -39,7 +39,6 @@ public interface UserMapper {
     User toUser(CustomerRegisterRequest request);
 
     @Mapping(target = "verifyEmail", source = "verifyEmail")
-//    @Mapping(target = "franchise", ignore = true)
     @Mapping(target = "franchise", source = "franchiseId")
     UserResponse toUserResponse(User user, @Context FranchiseClient franchiseClient);
 
