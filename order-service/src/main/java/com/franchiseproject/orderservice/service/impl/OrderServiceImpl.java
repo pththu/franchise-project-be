@@ -119,7 +119,7 @@ public class OrderServiceImpl implements OrderService {
             BigDecimal maxDiscountValue = BigDecimal.ZERO;
             DiscountType discountType = null;
             if (request.getPoint() != null && request.getPoint() > 0) {
-                discount = loyaltyClient.apiLoyaltyReserve(request.getCustomerId(), request.getFranchiseId(), null, request.getPoint());
+                discount = loyaltyClient.apiLoyaltyReserve(request.getCustomerId(), request.getFranchiseId(), order.getId(), request.getPoint());
                 discountType = DiscountType.FIXED;
                 maxDiscountValue = discount;
                 usedLoyalty = true;
@@ -250,10 +250,19 @@ public class OrderServiceImpl implements OrderService {
         }
         if (order.getCustomerId() != null) {
             try {
+                // Try to resolve userId. 
+                // In POS, customerId is already the userId if not found in customers table.
+                UUID userIdToEarn = null;
                 CustomerResponse customer = customerClient.getCustomerById(order.getCustomerId());
                 if (customer != null && customer.getUserId() != null) {
-                    log.info("Loyalty: Earning points for user {} with amount {}", customer.getUserId(), order.getTotalDue());
-                    loyaltyClient.apiLoyaltyEarn(customer.getUserId(), order.getFranchiseId(), order.getTotalDue().doubleValue());
+                    userIdToEarn = customer.getUserId();
+                } else if (order.getTypeOrder() == TypeOrder.POS) {
+                    userIdToEarn = order.getCustomerId();
+                }
+
+                if (userIdToEarn != null) {
+                    log.info("Loyalty: Earning points for user {} with amount {}", userIdToEarn, order.getTotalDue());
+                    loyaltyClient.apiLoyaltyEarn(userIdToEarn, order.getFranchiseId(), order.getId(), order.getTotalDue().doubleValue());
                 } else {
                     log.warn("Loyalty: Could not earn points for order {}. Customer info or userId missing.", order.getId());
                 }
@@ -261,7 +270,12 @@ public class OrderServiceImpl implements OrderService {
                 log.warn("Failed to earn loyalty for order {}: {}", order.getId(), e.getMessage());
             }
         }
-        promotionClient.apiPromotionTraceBack(order.getId(), order.getOrderStatus());
+        // Reverted logic: Try traceback but ignore if it fails (likely due to no promotion used)
+        try {
+            promotionClient.apiPromotionTraceBack(order.getId(), order.getOrderStatus());
+        } catch (Exception e) {
+            log.warn("Promotion traceback failed or not found for order {}: {}", order.getId(), e.getMessage());
+        }
         inventoryClient.notifyOrderStatus(order.getId(), order.getOrderStatus().name(), order.getFranchiseId());
         inventoryClient.notifyNewOrder(order.getFranchiseId());
     }

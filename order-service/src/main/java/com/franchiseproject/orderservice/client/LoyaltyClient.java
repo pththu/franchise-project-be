@@ -57,17 +57,22 @@ public class LoyaltyClient {
         }
     }
 
-    public void apiLoyaltyEarn(UUID userId, UUID franchiseId, Double orderAmount) {
+    public void apiLoyaltyEarn(UUID userId, UUID franchiseId, UUID orderId, Double orderAmount) {
         try {
-            EarnPointsRequest request = new EarnPointsRequest(userId, franchiseId, orderAmount);
+            EarnPointsRequest request = EarnPointsRequest.builder()
+                    .userId(userId)
+                    .franchiseId(franchiseId)
+                    .orderId(orderId)
+                    .orderAmount(orderAmount)
+                    .build();
             apiLoyaltyRestClient.post()
                     .uri("/api/loyalty/earn")
                     .body(request)
                     .retrieve()
                     .toBodilessEntity();
-            log.info("Loyalty earn points request sent for user {}", userId);
+            log.info("Loyalty earn points request sent for order {} user {}", orderId, userId);
         } catch (Exception e) {
-            log.error("Loyalty earn points failed", e);
+            log.error("Loyalty earn points failed for order {}", orderId, e);
         }
     }
 

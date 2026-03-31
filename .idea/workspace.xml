@@ -4,9 +4,34 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b5d3bb93-9215-46a9-a40c-1b7f944246ae" name="Changes" comment="Merge branch 'sprint04' into sprint04_team05_promotionsManagenment_haunv and resolve conflicts">
+    <list default="true" id="88986db7-6e19-4889-970c-d6f4ff1d51ce" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/aws.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/db-forest-config.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/client/LoyaltyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/client/LoyaltyClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customer-service/.run/CustomerServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/.run/CustomerServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hs_err_pid16136.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hs_err_pid21560.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/identity-access-service/.run/IdentityAccessServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/.run/IdentityAccessServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/identity-access-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/InventoryServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/InventoryServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loyalty-service/.run/LoyaltyServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/.run/LoyaltyServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/model/LoyaltyTransaction.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/model/LoyaltyTransaction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/model/LoyaltyWallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/model/LoyaltyWallet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/impl/CustomerTierServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/impl/CustomerTierServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/CustomerClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/CustomerClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/LoyaltyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/LoyaltyClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/EarnPointsRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/EarnPointsRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/LoyaltyReserveRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/LoyaltyReserveRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/entity/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/entity/Order.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/service/impl/OrderServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/service/impl/OrderServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/payment-service/.run/PaymentServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/.run/PaymentServiceApplication.run.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/replay_pid16136.log" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,21 +41,23 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectLevelVcsManager">
-    <ConfirmationsSetting value="1" id="Add" />
+  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
+  <component name="KubernetesApiProvider"><![CDATA[{
+  "isMigrated": true
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="3BiBCHMVqcmqB0OvbS4MBWWX5Ql" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Maven.api-gateway [clean].executor": "Run",
-    "Maven.api-gateway [install].executor": "Run",
     "Maven.customer-service [clean].executor": "Run",
-    "Maven.franchise-service [clean].executor": "Run",
-    "Maven.franchise-service [install].executor": "Run",
-    "Maven.identity-access-service [clean].executor": "Run",
-    "Maven.inventory-service [clean].executor": "Run",
-    "Maven.inventory-service [install].executor": "Run",
-    "Maven.loyalty-service [clean].executor": "Run",
-    "Maven.product-service [clean].executor": "Run",
+    "Maven.order-service [clean].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RequestMappingsPanelOrder0": "0",
     "RequestMappingsPanelOrder1": "1",
@@ -52,23 +79,20 @@
     "Spring Boot.PromotionServiceApplication.executor": "Run",
     "Spring Boot.ReportServiceApplication.executor": "Run",
     "Spring Boot.ShiftServiceApplication.executor": "Run",
-    "git-widget-placeholder": "sprint04__team02__coreEarnRedeem__tai"
+    "git-widget-placeholder": "sprint04__update__KNguyen",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.configurations.included.in.services": "true",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="T:\study\iuh\internship\code\FranchiseProject\sprint04\be\franchise-service\src\main\java\com\franchiseproject\franchiseservice\exception" />
-      <recent name="D:\OJT\sprint04\be\promotion-service\src\main\java\franchiseproject\promotion_service" />
-      <recent name="D:\mockproject\inventory-service\src\main\java\franchiseproject\inventory_service" />
-    </key>
-    <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="com.franchiseproject.customerservice.dto.request" />
-      <recent name="com.franchiseproject.customerservice.enums" />
-      <recent name="com.franchiseproject.identityaccessservice.dto.response" />
-      <recent name="com.franchiseproject.identityaccessservice.enums" />
-      <recent name="com.franchiseproject.franchiseservice.dto" />
-    </key>
-  </component>
   <component name="RunDashboard">
     <option name="configurationTypes">
       <set>
@@ -84,6 +108,8 @@
           <value>
             <set>
               <option value="DeliveryServiceApplication" />
+              <option value="ReportServiceApplication" />
+              <option value="ShiftServiceApplication" />
             </set>
           </value>
         </entry>
@@ -94,15 +120,14 @@
         <entry key="SpringBootApplicationConfigurationType">
           <value>
             <map>
-              <entry key="ApiGatewayApplication" value="STOPPED" />
               <entry key="CustomerServiceApplication" value="STOPPED" />
+              <entry key="DeliveryServiceApplication" value="STOPPED" />
               <entry key="FranchiseServiceApplication" value="STOPPED" />
               <entry key="IdentityAccessServiceApplication" value="STOPPED" />
               <entry key="InventoryServiceApplication" value="STOPPED" />
               <entry key="LoyaltyServiceApplication" value="STOPPED" />
+              <entry key="OrderServiceApplication" value="STOPPED" />
               <entry key="PaymentServiceApplication" value="STOPPED" />
-              <entry key="ProductServiceApplication" value="STOPPED" />
-              <entry key="PromotionServiceApplication" value="STOPPED" />
               <entry key="ReportServiceApplication" value="STOPPED" />
               <entry key="ShiftServiceApplication" value="STOPPED" />
             </map>
@@ -111,16 +136,34 @@
       </map>
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.LoyaltyServiceApplication">
+  <component name="RunManager" selected="Spring Boot.OrderServiceApplication">
     <configuration default="true" type="JetRunConfigurationType">
+      <module name="be" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="be" />
+      <option name="filePath" />
+      <method v="2" />
     </configuration>
     <configuration name="FranchiseServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="franchise-service" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.franchiseservice.FranchiseServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="OrderServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <envs>
+        <env name="DB_URL" value="jdbc:postgresql://localhost:5432/inventory" />
+        <env name="DB_PASSWORD" value="sapassword" />
+        <env name="DB_USERNAME" value="postgres" />
+      </envs>
+      <module name="order-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.orderservice.OrderServiceApplication" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -149,6 +192,7 @@
       <item itemvalue="Spring Boot.IdentityAccessServiceApplication" />
       <item itemvalue="Spring Boot.InventoryServiceApplication" />
       <item itemvalue="Spring Boot.LoyaltyServiceApplication" />
+      <item itemvalue="Spring Boot.OrderServiceApplication" />
       <item itemvalue="Spring Boot.PaymentServiceApplication" />
       <item itemvalue="Spring Boot.ProductServiceApplication" />
       <item itemvalue="Spring Boot.PromotionServiceApplication" />
@@ -159,18 +203,23 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
+        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-IU-252.23892.409" />
       </set>
     </attachedChunks>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="" />
-      <created>1774926286869</created>
+      <changelist id="88986db7-6e19-4889-970c-d6f4ff1d51ce" name="Changes" comment="" />
+      <created>1774961881836</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1774926286869</updated>
+      <updated>1774961881836</updated>
+      <workItem from="1774961884278" duration="10007000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
 </project>
