@@ -20,8 +20,6 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User implements Persistable<UUID> {
     @Id
-//    @GeneratedValue
-//    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(columnDefinition = "UUID", nullable = false, unique = true)
     UUID id;
     @Column(unique = true, nullable = false)
