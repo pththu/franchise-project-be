@@ -10,6 +10,5 @@ public interface ReportService {
 
     Mono<Map<String, Object>> getDashboard();
 
-    // ================= SSE REAL-TIME =================
     Flux<ServerSentEvent<Object>> getReportEvents();
 }

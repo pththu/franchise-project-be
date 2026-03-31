@@ -1,19 +1,17 @@
 package com.example.reportservice.service.impl;
 
-import com.example.reportservice.client.*;
+import com.example.reportservice.client.OrderServiceClient;
 import com.example.reportservice.dto.order.OrderResponse;
 import com.example.reportservice.dto.order.OrderItemResponse;
-import com.example.reportservice.dto.product.ProductResponse;
-import com.example.reportservice.dto.customer.CustomerResponse;
 import com.example.reportservice.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
-import org.springframework.http.codec.ServerSentEvent;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -22,13 +20,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ReactiveReportServiceImpl implements ReportService {
+public class    ReactiveReportServiceImpl implements ReportService {
 
     private final OrderServiceClient orderClient;
-    private final ProductServiceClient productClient;
-    private final CustomerServiceClient customerClient;
 
-    // ================= SSE SINK =================
     private final Sinks.Many<Object> reportSink = Sinks.many().multicast().onBackpressureBuffer();
 
     @Override
@@ -37,27 +32,14 @@ public class ReactiveReportServiceImpl implements ReportService {
 
         long startTime = System.currentTimeMillis();
 
-        Mono<List<OrderResponse>> ordersMono = orderClient.getAllOrders()
-                .subscribeOn(Schedulers.parallel());
+        return orderClient.getAllOrders()
+                .subscribeOn(Schedulers.parallel())
+                .map(orders -> {
+                    log.info("Received {} orders", orders.size());
 
-        Mono<List<ProductResponse>> productsMono = productClient.getAllProducts()
-                .subscribeOn(Schedulers.parallel());
-
-        Mono<List<CustomerResponse>> customersMono = customerClient.getAllCustomers()
-                .subscribeOn(Schedulers.parallel());
-
-        return Mono.zip(ordersMono, productsMono, customersMono)
-                .map(tuple -> {
-                    List<OrderResponse> orders = tuple.getT1();
-                    List<ProductResponse> products = tuple.getT2();
-                    List<CustomerResponse> customers = tuple.getT3();
-
-                    log.info("Received {} orders, {} products, {} customers",
-                            orders.size(), products.size(), customers.size());
-
-                    Map<String, Object> summary = calculateSummary(orders, products, customers);
+                    Map<String, Object> summary = calculateSummary(orders);
                     List<Map<String, Object>> topProducts = calculateTopProducts(orders);
-                    List<Map<String, Object>> topCustomers = calculateTopCustomers(orders, customers);
+                    List<Map<String, Object>> topCustomers = calculateTopCustomers(orders);
                     List<Map<String, Object>> revenueByBranch = calculateRevenueByBranch(orders);
                     Map<String, Long> orderStatusStats = calculateOrderStatusStats(orders);
 
@@ -82,7 +64,6 @@ public class ReactiveReportServiceImpl implements ReportService {
                     dashboard.put("recentOrders", recentOrders);
                     dashboard.put("generatedAt", System.currentTimeMillis());
 
-                    // Push realtime event
                     emitReportEvent(Map.of("type", "DASHBOARD_UPDATE", "data", dashboard));
 
                     return dashboard;
@@ -93,7 +74,6 @@ public class ReactiveReportServiceImpl implements ReportService {
                 });
     }
 
-    // ================= SSE METHODS =================
     @Override
     public Flux<ServerSentEvent<Object>> getReportEvents() {
         return reportSink.asFlux()
@@ -108,10 +88,7 @@ public class ReactiveReportServiceImpl implements ReportService {
         reportSink.tryEmitNext(eventData);
     }
 
-    // ================= Các method tính toán cũ (giữ nguyên) =================
-    private Map<String, Object> calculateSummary(List<OrderResponse> orders,
-                                                 List<ProductResponse> products,
-                                                 List<CustomerResponse> customers) {
+    private Map<String, Object> calculateSummary(List<OrderResponse> orders) {
         Map<String, Object> summary = new HashMap<>();
 
         summary.put("totalOrders", orders.size());
@@ -129,8 +106,21 @@ public class ReactiveReportServiceImpl implements ReportService {
                 .count();
         summary.put("activeBranches", activeBranches);
 
-        summary.put("totalProducts", products.size());
-        summary.put("totalCustomers", customers.size());
+        long totalProducts = orders.stream()
+                .filter(o -> o.getOrderDetails() != null)
+                .flatMap(o -> o.getOrderDetails().stream())
+                .map(OrderItemResponse::getProductId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .count();
+        summary.put("totalProducts", totalProducts);
+
+        long totalCustomers = orders.stream()
+                .map(OrderResponse::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .count();
+        summary.put("totalCustomers", totalCustomers);
 
         return summary;
     }
@@ -142,7 +132,11 @@ public class ReactiveReportServiceImpl implements ReportService {
             if (order.getOrderDetails() != null) {
                 for (OrderItemResponse item : order.getOrderDetails()) {
                     productSalesMap.computeIfAbsent(item.getProductId(), k -> new ProductSales())
-                            .addSale(item.getProductNameSnapshot(), item.getQuantity(), item.getCost());
+                            .addSale(
+                                    item.getProductNameSnapshot() != null ? item.getProductNameSnapshot() : "Unknown Product",
+                                    item.getQuantity(),
+                                    item.getCost()
+                            );
                 }
             }
         }
@@ -161,8 +155,7 @@ public class ReactiveReportServiceImpl implements ReportService {
                 .collect(Collectors.toList());
     }
 
-    private List<Map<String, Object>> calculateTopCustomers(List<OrderResponse> orders,
-                                                            List<CustomerResponse> customers) {
+    private List<Map<String, Object>> calculateTopCustomers(List<OrderResponse> orders) {
         Map<UUID, CustomerStats> customerStatsMap = new HashMap<>();
 
         for (OrderResponse order : orders) {
@@ -172,20 +165,13 @@ public class ReactiveReportServiceImpl implements ReportService {
             }
         }
 
-        Map<UUID, String> customerNameMap = customers.stream()
-                .collect(Collectors.toMap(
-                        c -> c.getId(),
-                        c -> c.getFullName() != null ? c.getFullName() : "Unknown",
-                        (a, b) -> a
-                ));
-
         return customerStatsMap.entrySet().stream()
                 .sorted((a, b) -> b.getValue().getTotalSpent().compareTo(a.getValue().getTotalSpent()))
                 .limit(5)
                 .map(entry -> {
                     Map<String, Object> customer = new HashMap<>();
                     customer.put("customerId", entry.getKey());
-                    customer.put("customerName", customerNameMap.getOrDefault(entry.getKey(), "Unknown"));
+                    customer.put("customerName", "Customer " + entry.getKey().toString().substring(0, 8));
                     customer.put("totalOrders", entry.getValue().getOrderCount());
                     customer.put("totalSpent", entry.getValue().getTotalSpent().doubleValue());
                     return customer;
@@ -207,7 +193,7 @@ public class ReactiveReportServiceImpl implements ReportService {
                 .map(entry -> {
                     Map<String, Object> branch = new HashMap<>();
                     branch.put("branchId", entry.getKey());
-                    branch.put("branchName", "Branch " + entry.getKey().toString().substring(0, 4));
+                    branch.put("branchName", "Branch " + entry.getKey().toString().substring(0, 8));
                     branch.put("totalOrders", entry.getValue().getOrderCount());
                     branch.put("totalRevenue", entry.getValue().getTotalRevenue().doubleValue());
                     return branch;
@@ -220,7 +206,7 @@ public class ReactiveReportServiceImpl implements ReportService {
                 .map(OrderResponse::getOrderStatus)
                 .filter(Objects::nonNull)
                 .collect(Collectors.groupingBy(
-                        status -> status.toString(),
+                        status -> status,
                         Collectors.counting()
                 ));
     }
@@ -228,7 +214,7 @@ public class ReactiveReportServiceImpl implements ReportService {
     private Map<String, Object> createErrorDashboard() {
         Map<String, Object> errorDashboard = new HashMap<>();
         errorDashboard.put("error", true);
-        errorDashboard.put("message", "Unable to fetch data from services");
+        errorDashboard.put("message", "Unable to fetch data from order service");
 
         Map<String, Object> summary = new HashMap<>();
         summary.put("totalOrders", 0);
@@ -248,7 +234,6 @@ public class ReactiveReportServiceImpl implements ReportService {
         return errorDashboard;
     }
 
-    // Inner classes (giữ nguyên)
     private static class ProductSales {
         private String productName;
         private Integer totalSold = 0;
@@ -256,8 +241,12 @@ public class ReactiveReportServiceImpl implements ReportService {
 
         void addSale(String name, Integer quantity, BigDecimal revenue) {
             this.productName = name;
-            this.totalSold += quantity;
-            this.totalRevenue = this.totalRevenue.add(revenue);
+            if (quantity != null) {
+                this.totalSold += quantity;
+            }
+            if (revenue != null) {
+                this.totalRevenue = this.totalRevenue.add(revenue);
+            }
         }
 
         public String getProductName() { return productName; }
