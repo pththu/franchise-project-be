@@ -9,6 +9,7 @@ import com.franchiseproject.paymentservice.service.PaymentTransactionService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequestMapping("/api/momo")
+@Slf4j
 public class MomoController {
 
     PaymentTransactionService paymentTransactionService;
@@ -71,40 +73,62 @@ public class MomoController {
     public void momoReturn(@org.springframework.web.bind.annotation.RequestParam java.util.Map<String, String> params, jakarta.servlet.http.HttpServletResponse response) throws Exception {
         System.out.println("MoMo Return called: " + params);
         String orderIdStr = params.get("orderId");
-        String typeOrder = "ONLINE";
+        String typeOrder = "ONLINE"; // Default to ONLINE
 
         try {
-//            boolean validSignature = momoService.verifyIpnSignature(params);
-//            if (validSignature) {
-//                String resultCodeStr = params.get("resultCode");
-//                String transIdStr = params.get("transId");
-//                String requestIdStr = params.get("requestId");
-//
-//                if (resultCodeStr != null && transIdStr != null && requestIdStr != null) {
-//                    Integer resultCode = Integer.valueOf(resultCodeStr);
-//                    Long transId = Long.valueOf(transIdStr);
-//                    java.util.UUID paymentTransactionId = java.util.UUID.fromString(requestIdStr);
-//
-//                    paymentTransactionService.handlePaymentTransaction(transId, paymentTransactionId, resultCode);
-//                }
-//            }
-//
+            String resultCodeStr = params.get("resultCode");
+            String transIdStr = params.get("transId");
+            String requestIdStr = params.get("requestId");
+
+            if (resultCodeStr != null && requestIdStr != null) {
+                Integer resultCode = Integer.valueOf(resultCodeStr);
+                Long transId = (transIdStr != null && !transIdStr.isEmpty()) ? Long.valueOf(transIdStr) : 0L;
+                java.util.UUID paymentTransactionId = java.util.UUID.fromString(requestIdStr);
+
+                // Process transaction status immediately on return
+                try {
+                    paymentTransactionService.handlePaymentTransaction(transId, paymentTransactionId, resultCode);
+                } catch (com.franchiseproject.paymentservice.exception.AppException e) {
+                    if (e.getErrorCode() == com.franchiseproject.paymentservice.exception.ErrorCode.NOT_FOUND_TRANSACTION) {
+                        log.info("Transaction {} not found in return (likely already deleted).", requestIdStr);
+                    } else {
+                        throw e;
+                    }
+                } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+                    log.info("Optimistic locking conflict in return for {} (processed elsewhere).", requestIdStr);
+                }
+            }
+
             if (orderIdStr != null) {
-                com.franchiseproject.paymentservice.dto.response.order.OrderResponse order = orderClient.getOrderInfoByOrderId(java.util.UUID.fromString(orderIdStr));
-                if (order != null) {
-                    typeOrder = order.getTypeOrder();
+                try {
+                    com.franchiseproject.paymentservice.dto.response.order.OrderResponse order = orderClient.getOrderInfoByOrderId(java.util.UUID.fromString(orderIdStr));
+                    if (order != null) {
+                        typeOrder = order.getTypeOrder();
+                    }
+                } catch (Exception e) {
+                    // If order is not found, it is likely an online order that was already deleted on failure
+                    log.info("Order info not found for {} - likely already processed and deleted. Staying with ONLINE default.", orderIdStr);
+                    // We keep typeOrder as "ONLINE" (the default) to ensure correct redirect to customer success page
                 }
             }
         } catch (Exception e) {
-             e.printStackTrace();
+            log.error("Error processing Momo return", e);
         }
 
-        String redirectUrl = "POS".equalsIgnoreCase(typeOrder) 
-                ? feReturnUrl.replace("/order-success", "/staff/order-success") 
-                : feReturnUrl;
+        String redirectUrl = feReturnUrl;
+        if ("POS".equalsIgnoreCase(typeOrder)) {
+            try {
+                java.net.URI uri = new java.net.URI(feReturnUrl);
+                String baseUrl = uri.getScheme() + "://" + uri.getHost();
+                if (uri.getPort() != -1) baseUrl += ":" + uri.getPort();
+                redirectUrl = baseUrl + "/staff/order-success";
+            } catch (Exception e) {
+                redirectUrl = feReturnUrl.replace("/order-success", "/staff/order-success");
+            }
+        }
                 
         if (orderIdStr != null) {
-            redirectUrl += "?orderId=" + orderIdStr;
+            redirectUrl += (redirectUrl.contains("?") ? "&" : "?") + "orderId=" + orderIdStr;
         }
         
         response.sendRedirect(redirectUrl);

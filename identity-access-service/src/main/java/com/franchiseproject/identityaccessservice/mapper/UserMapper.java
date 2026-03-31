@@ -1,12 +1,17 @@
 package com.franchiseproject.identityaccessservice.mapper;
 
+import com.franchiseproject.identityaccessservice.client.FranchiseClient;
 import com.franchiseproject.identityaccessservice.dto.request.CustomerRegisterRequest;
+import com.franchiseproject.identityaccessservice.dto.request.RoleCreationRequest;
 import com.franchiseproject.identityaccessservice.dto.request.UserCreationRequest;
+import com.franchiseproject.identityaccessservice.dto.response.FranchiseResponse;
+import com.franchiseproject.identityaccessservice.dto.response.RoleResponse;
 import com.franchiseproject.identityaccessservice.dto.response.UserResponse;
 import com.franchiseproject.identityaccessservice.entity.Role;
 import com.franchiseproject.identityaccessservice.entity.User;
 import com.franchiseproject.identityaccessservice.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,5 +39,16 @@ public interface UserMapper {
     User toUser(CustomerRegisterRequest request);
 
     @Mapping(target = "verifyEmail", source = "verifyEmail")
-    UserResponse toUserResponse(User user);
+    @Mapping(target = "franchise", source = "franchiseId")
+    UserResponse toUserResponse(User user, @Context FranchiseClient franchiseClient);
+
+    default FranchiseResponse mapFranchise(
+            UUID franchiseId,
+            @Context FranchiseClient franchiseClient) {
+        if (franchiseId == null) {
+            System.out.println("return null: "+ franchiseId);
+            return null;
+        };
+        return franchiseClient.getFranchiseById(franchiseId);
+    }
 }

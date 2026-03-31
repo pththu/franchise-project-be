@@ -3,6 +3,8 @@ package com.franchiseproject.franchiseservice.repository;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
 import com.franchiseproject.franchiseservice.model.Franchise;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,4 +14,7 @@ import java.util.UUID;
 public interface FranchiseRepository extends JpaRepository<Franchise, UUID> {  // Changed Long to UUID
     List<Franchise> findByStatus(FranchiseStatus status);
     boolean existsByName(String name);
+
+    @Query("SELECT f FROM Franchise f WHERE f.id IN :franchiseIds")
+    List<Franchise> findByIds(@Param("franchiseIds") List<UUID> franchiseIds);
 }

@@ -37,6 +37,25 @@ public class InventoryClient {
         }
     }
 
+    public void releaseStock(InventoryReserveRequest request) {
+        try {
+            inventoryRestClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/inventory/stocks/release")
+                            .queryParam("locationId", request.getLocationId())
+                            .build())
+                    .body(request.getItems())
+                    .retrieve()
+                    .toBodilessEntity();
+            log.info("Release stock success for location: {}", request.getLocationId());
+        } catch (HttpClientErrorException e) {
+            log.warn("Release stock 4xx error: {}", e.getResponseBodyAsString());
+            // Don't throw exception on release failure to avoid blocking rollbacks
+        } catch (Exception e) {
+            log.error("Release stock failed", e);
+        }
+    }
+
     public void commitStock(InventoryReserveRequest request) {
         try {
             inventoryRestClient.post()
@@ -69,12 +88,13 @@ public class InventoryClient {
         }
     }
 
-    public void notifyOrderStatus(java.util.UUID orderId, String status) {
+    public void notifyOrderStatus(java.util.UUID orderId, String status, java.util.UUID franchiseId) {
         try {
             inventoryRestClient.post()
                     .uri(uriBuilder -> uriBuilder
                             .path("/api/inventory/notify/order-status/" + orderId)
                             .queryParam("status", status)
+                            .queryParam("franchiseId", franchiseId)
                             .build())
                     .retrieve()
                     .toBodilessEntity();

@@ -30,8 +30,8 @@ public class UserResponse {
     String phone;
     boolean gender;
     String avatarUrl;
-    UUID franchiseId;
     UserStatus status;
+    FranchiseResponse franchise;
     RoleResponse role;
     Instant lastLogin;
     Instant createdAt;

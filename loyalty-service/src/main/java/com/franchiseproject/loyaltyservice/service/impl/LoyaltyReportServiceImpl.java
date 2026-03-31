@@ -3,7 +3,7 @@ package com.franchiseproject.loyaltyservice.service.impl;
 import com.franchiseproject.loyaltyservice.dto.response.LoyaltyReportResponse;
 import com.franchiseproject.loyaltyservice.enums.CustomerLoyaltyTier;
 import com.franchiseproject.loyaltyservice.enums.LoyaltyTransactionType;
-import com.franchiseproject.loyaltyservice.repository.CustomerFranchiseRepository;
+import com.franchiseproject.loyaltyservice.repository.LoyaltyWalletRepository;
 import com.franchiseproject.loyaltyservice.repository.LoyaltyTransactionRepository;
 import com.franchiseproject.loyaltyservice.service.LoyaltyReportService;
 import lombok.AccessLevel;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class LoyaltyReportServiceImpl implements LoyaltyReportService {
 
     LoyaltyTransactionRepository loyaltyTransactionRepository;
-    CustomerFranchiseRepository customerFranchiseRepository;
+    LoyaltyWalletRepository loyaltyWalletRepository;
 
     @Override
     public LoyaltyReportResponse getLoyaltyReport() {
@@ -30,7 +30,7 @@ public class LoyaltyReportServiceImpl implements LoyaltyReportService {
         Long earnCount = loyaltyTransactionRepository.countTransactionsByType(LoyaltyTransactionType.EARN);
         Long redeemCount = loyaltyTransactionRepository.countTransactionsByType(LoyaltyTransactionType.REDEEM);
 
-        List<Object[]> tierData = customerFranchiseRepository.countCustomersByTier();
+        List<Object[]> tierData = loyaltyWalletRepository.countCustomersByTier();
         Map<String, Long> customersByTier = new HashMap<>();
 
         for (Object[] row : tierData) {

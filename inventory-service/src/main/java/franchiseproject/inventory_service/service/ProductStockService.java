@@ -16,6 +16,7 @@ public interface ProductStockService {
     List<UUID> findCapableBranches(List<StockRequestItemRequest> items);
 
     void reserveStock(List<StockRequestItemRequest> items, UUID locationId);
+    void releaseStock(List<StockRequestItemRequest> items, UUID locationId);
 
     void commitStock(List<StockRequestItemRequest> items, UUID locationId);
 }

@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.awt.*;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,9 +27,27 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByUsernameOrEmail(String username, String email);
 
-    Optional<User> findByRoleName(String roleName);
+    @Query("SELECT u FROM User u WHERE u.role.name = 'CUSTOMER' AND u.status = 'ACTIVE'")
+    List<User> getAllCustomer();
+
+    @Query("""
+        SELECT u FROM User u
+        WHERE u.role.name = CAST(:roleName AS string) AND u.status = 'ACTIVE'
+    """)
+    Page<User> findByRoleName(@Param("roleName") String roleName, Pageable pageable );
 
     Page<User> findAll(Pageable pageable);
+
+    @Query("""
+        SELECT u FROM User u
+        WHERE LOWER(u.role.name) LIKE LOWER(CAST(:roleName AS string))
+            AND u.status != 'DELETED'
+            AND u.franchiseId = :franchiseId
+    """)
+    Page<User> findByRoleAndFranchiseId(
+            @Param("roleName") String roleName,
+            @Param("franchiseId") UUID franchiseId,
+            Pageable pageable);
 
     @Query("""
         SELECT u FROM User u

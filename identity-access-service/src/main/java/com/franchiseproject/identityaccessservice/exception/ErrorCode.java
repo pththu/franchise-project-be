@@ -20,6 +20,8 @@ public enum ErrorCode {
     NOT_FOUND(404, "No Resource Found"),
     USER_NOT_EXISTED(404, "User is not existed"),
     ROLE_NOT_EXISTED(404, "Role is not existed"),
+    FRANCHISE_NOT_EXISTED(404, "Franchise is not existed"),
+    FRANCHISE_INACTIVE(404, "Franchise inactive"),
     ACCOUNT_VERIFIED(409, "Account is already verified"),
     ROLE_EXISTED(409, "Role is existed"),
     USERNAME_EXISTED(409, "Username is existed"),

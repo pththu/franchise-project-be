@@ -170,7 +170,7 @@ public class ProductStockServiceImpl implements ProductStockService {
                 Optional<ProductStock> match = locStockList.stream()
                         .filter(s -> s.getProductVariantId().equals(item.getProductVariantId()))
                         .findFirst();
-                if (match.isEmpty() || match.get().getQuantity() < item.getQuantity()) {
+                if (match.isEmpty() || (match.get().getQuantity() - match.get().getReservedQuantity()) < item.getQuantity()) {
                     allMatch = false;
                     break;
                 }
@@ -190,12 +190,29 @@ public class ProductStockServiceImpl implements ProductStockService {
                     item.getProductVariantId(), locationId)
                     .orElseThrow(() -> new RuntimeException("Stock not found for variant " + item.getProductVariantId()));
 
-            if (stock.getQuantity() < item.getQuantity()) {
-                throw new RuntimeException("Insufficient stock for variant " + item.getProductVariantId());
+            if ((stock.getQuantity() - stock.getReservedQuantity()) < item.getQuantity()) {
+                throw new RuntimeException("Insufficient available stock for variant " + item.getProductVariantId());
             }
 
-            stock.setQuantity(stock.getQuantity() - item.getQuantity());
             stock.setReservedQuantity(stock.getReservedQuantity() + item.getQuantity());
+            productStockRepository.save(stock);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void releaseStock(List<StockRequestItemRequest> items, java.util.UUID locationId) {
+        for (StockRequestItemRequest item : items) {
+            ProductStock stock = productStockRepository.findByProductVariantIdAndLocationId(
+                    item.getProductVariantId(), locationId)
+                    .orElseThrow(() -> new RuntimeException("Stock not found for variant " + item.getProductVariantId()));
+
+            if (stock.getReservedQuantity() < item.getQuantity()) {
+                System.err.println("Warning: Insufficient reserved stock to release for variant " + item.getProductVariantId());
+                continue;
+            }
+
+            stock.setReservedQuantity(stock.getReservedQuantity() - item.getQuantity());
             productStockRepository.save(stock);
         }
     }
@@ -212,7 +229,8 @@ public class ProductStockServiceImpl implements ProductStockService {
                 throw new RuntimeException("Insufficient reserved stock for variant " + item.getProductVariantId());
             }
 
-            int beforeQty = stock.getQuantity() + stock.getReservedQuantity(); // total on hand
+            int beforeQty = stock.getQuantity(); // Physical stock before deduction
+            stock.setQuantity(stock.getQuantity() - item.getQuantity());
             stock.setReservedQuantity(stock.getReservedQuantity() - item.getQuantity());
             ProductStock savedStock = productStockRepository.save(stock);
 
@@ -220,7 +238,7 @@ public class ProductStockServiceImpl implements ProductStockService {
                     .productStock(savedStock)
                     .changeQuantity(-item.getQuantity())
                     .beforeQuantity(beforeQty)
-                    .afterQuantity(savedStock.getQuantity() + savedStock.getReservedQuantity())
+                    .afterQuantity(savedStock.getQuantity())
                     .type("SALE")
                     .status("COMPLETED")
                     .referenceType("ORDER")

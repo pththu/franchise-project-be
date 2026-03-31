@@ -5,9 +5,7 @@ import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.request.PaymentResultRequest;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
-import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
 import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
-import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
 import com.franchiseproject.orderservice.service.OrderService;
@@ -48,33 +46,30 @@ public class OrderController {
     public ApiResponse<PaymentQRResponse> createOrder(
             @RequestBody @Valid CreateOrderRequest request
     ) {
-        PaymentQRResponse paymentQRResponse = orderService.createOrder(request);
+        PaymentQRResponse response = orderService.createOrder(request);
         return ApiResponse.<PaymentQRResponse>builder()
                 .message("Tạo thành công!")
-                .data(paymentQRResponse)
+                .data(response)
                 .statusCode(200)
                 .errors(null)
                 .build();
     }
 
-    @PutMapping("/{orderId}/cancel")
-    public ApiResponse<OrderResponse> cancelOrder(
-            @PathVariable UUID orderId,
-            @RequestParam UUID customerId
-    ) {
-        orderService.cancelOrder(orderId, customerId);
-        return ApiResponse.<OrderResponse>builder()
-                .message("Order has been cancelled")
+    @DeleteMapping("/{orderId}/abandon")
+    public ApiResponse<Void> abandonOrder(@PathVariable UUID orderId) {
+        orderService.deleteOrderPermanently(orderId);
+        return ApiResponse.<Void>builder()
+                .message("Order has been abandoned and deleted")
                 .statusCode(200)
-                .errors(null)
                 .build();
     }
 
     @PatchMapping("/{orderId}/status")
     public ApiResponse<Void> updateOrderStatus(
             @PathVariable UUID orderId,
-            @RequestParam OrderStatus status) {
-        orderService.updateOrderStatus(orderId, status);
+            @RequestParam OrderStatus status,
+            @RequestParam(required = false) UUID staffId) {
+        orderService.updateOrderStatus(orderId, status, staffId);
         return ApiResponse.<Void>builder()
                 .message("Cập nhật trạng thái đơn hàng thành công")
                 .statusCode(200)
@@ -243,3 +238,9 @@ public class OrderController {
                 .build();
     }
 }
+// Spring Boot example
+//@GetMapping("/reverse-geocode")
+//public ResponseEntity<?> reverse(@RequestParam double lat, @RequestParam double lng) {
+//    String url = "https://api.geoapify.com/v1/geocode/reverse?lat=" + lat + "&lon=" + lng + "&apiKey=YOUR_KEY";
+//    return restTemplate.getForEntity(url, String.class);
+//}

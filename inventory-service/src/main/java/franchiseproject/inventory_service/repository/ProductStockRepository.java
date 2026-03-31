@@ -17,15 +17,15 @@ public interface ProductStockRepository extends JpaRepository<ProductStock, UUID
     
     Page<ProductStock> findByLocationId(UUID locationId, Pageable pageable);
     
-    @Query("SELECT ps FROM ProductStock ps WHERE ps.quantity <= ps.minStock")
+    @Query("SELECT ps FROM ProductStock ps WHERE (ps.quantity - ps.reservedQuantity) <= ps.minStock")
     Page<ProductStock> findLowStock(Pageable pageable);
     
-    @Query("SELECT ps FROM ProductStock ps WHERE ps.locationId = :locationId AND ps.quantity <= ps.minStock")
+    @Query("SELECT ps FROM ProductStock ps WHERE ps.locationId = :locationId AND (ps.quantity - ps.reservedQuantity) <= ps.minStock")
     Page<ProductStock> findLowStockByLocation(@Param("locationId") UUID locationId, Pageable pageable);
 
     Optional<ProductStock> findByProductVariantIdAndLocationId(UUID productVariantId, UUID locationId);
 
-    @Query("SELECT ps.productVariantId FROM ProductStock ps WHERE ps.locationId = :locationId AND ps.quantity > 0")
+    @Query("SELECT ps.productVariantId FROM ProductStock ps WHERE ps.locationId = :locationId AND (ps.quantity - ps.reservedQuantity) > 0")
     List<UUID> findInStockVariantIds(@Param("locationId") UUID locationId);
 
     @Query("SELECT ps FROM ProductStock ps WHERE ps.productVariantId IN :variantIds")

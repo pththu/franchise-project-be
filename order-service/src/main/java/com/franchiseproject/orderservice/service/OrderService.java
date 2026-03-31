@@ -31,7 +31,7 @@ public interface OrderService {
 
     void cancelOrder(UUID orderId, UUID customerId);
 
-    void updateOrderStatus(UUID orderId, OrderStatus newStatus);
+    void updateOrderStatus(UUID orderId, OrderStatus newStatus, UUID staffId);
 
     List<OrderResponse> getOrderByCustomerId(UUID customerId);
 
@@ -65,4 +65,6 @@ public interface OrderService {
     Page<OrderResponse> getOrdersByCustomerIdAndStatus(UUID customerId, OrderStatus status, int page, int size);
 
     OrderResponse getOrderById(UUID orderId);
+
+    void deleteOrderPermanently(UUID orderId);
 }

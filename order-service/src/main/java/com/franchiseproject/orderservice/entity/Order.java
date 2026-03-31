@@ -48,7 +48,7 @@ public class Order {
     @Column(length = 20, nullable = false)
     TypeOrder typeOrder;
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
+    @Column(length = 50, nullable = false)
     OrderStatus orderStatus;
     @Column(name = "price_ship", precision = 12, scale = 2)
     BigDecimal priceShip;
