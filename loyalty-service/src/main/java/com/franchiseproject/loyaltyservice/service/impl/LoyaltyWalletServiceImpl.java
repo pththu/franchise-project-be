@@ -17,14 +17,13 @@ public class LoyaltyWalletServiceImpl implements LoyaltyWalletService {
     private final LoyaltyWalletRepository walletRepository;
 
     @Override
-    public LoyaltyWalletResponse getTierInfoFromWallet(UUID userId, UUID franchiseId) {
+    public LoyaltyWalletResponse getTierInfoFromWallet(UUID userId) {
         LoyaltyWallet wallet = walletRepository.findByUserId(userId)
                 .orElse(null);
 
         if (wallet == null) {
             return LoyaltyWalletResponse.builder()
                     .userId(userId)
-                    .franchiseId(franchiseId)
                     .currentTier(CustomerLoyaltyTier.BRONZE.name())
                     .currentPoints(0)
                     .totalPoints(0)
@@ -36,7 +35,6 @@ public class LoyaltyWalletServiceImpl implements LoyaltyWalletService {
 
         return LoyaltyWalletResponse.builder()
                 .userId(userId)
-                .franchiseId(franchiseId)
                 .currentTier(tier.name())
                 .currentPoints(wallet.getLoyaltyCurrentPoint())
                 .totalPoints(wallet.getLoyaltyTotalPoint())
