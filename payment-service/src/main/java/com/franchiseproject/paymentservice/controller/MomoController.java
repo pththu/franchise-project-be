@@ -73,7 +73,7 @@ public class MomoController {
     public void momoReturn(@org.springframework.web.bind.annotation.RequestParam java.util.Map<String, String> params, jakarta.servlet.http.HttpServletResponse response) throws Exception {
         System.out.println("MoMo Return called: " + params);
         String orderIdStr = params.get("orderId");
-        String typeOrder = "ONLINE";
+        String typeOrder = "ONLINE"; // Default to ONLINE
 
         try {
             String resultCodeStr = params.get("resultCode");
@@ -106,25 +106,23 @@ public class MomoController {
                         typeOrder = order.getTypeOrder();
                     }
                 } catch (Exception e) {
-                    // If order is not found, it is likely a POS order that was deleted by the cleanup logic
-                    log.info("Order info not found for {} - likely already processed and deleted. Defaulting to POS redirect.", orderIdStr);
-                    typeOrder = "POS";
+                    // If order is not found, it is likely an online order that was already deleted on failure
+                    log.info("Order info not found for {} - likely already processed and deleted. Staying with ONLINE default.", orderIdStr);
+                    // We keep typeOrder as "ONLINE" (the default) to ensure correct redirect to customer success page
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error processing Momo return", e);
         }
 
         String redirectUrl = feReturnUrl;
         if ("POS".equalsIgnoreCase(typeOrder)) {
-            // Get base URL (e.g., http://localhost:5173) from feReturnUrl
             try {
                 java.net.URI uri = new java.net.URI(feReturnUrl);
                 String baseUrl = uri.getScheme() + "://" + uri.getHost();
                 if (uri.getPort() != -1) baseUrl += ":" + uri.getPort();
                 redirectUrl = baseUrl + "/staff/order-success";
             } catch (Exception e) {
-                // Fallback to replace if URI parsing fails
                 redirectUrl = feReturnUrl.replace("/order-success", "/staff/order-success");
             }
         }

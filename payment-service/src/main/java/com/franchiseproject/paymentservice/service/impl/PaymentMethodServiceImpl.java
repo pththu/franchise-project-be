@@ -244,21 +244,22 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                     PaymentMethod method = paymentMethodRepository.findByMethodName("VNPAY")
                             .orElseThrow(() -> new RuntimeException("Payment method VNPAY not found"));
 
-                    PaymentTransaction p = paymentTransactionRepository.findByOrderId(UUID.fromString(orderIdStr))
+                    PaymentTransaction p = paymentTransactionRepository.findByOrderId(orderId)
                             .orElseGet(() -> paymentTransactionService.buildPaymentTransaction(finalOrder, method));
                     
                     p.setAmount(amount);
-                    p.setStatus(StatusTransaction.FAILED);
+                    StatusTransaction failStatus = "24".equals(responseCode) ? StatusTransaction.CANCELLED : StatusTransaction.FAILED;
+                    p.setStatus(failStatus);
                     p.setTransactionRef(params.get("vnp_TransactionNo"));
                     PaymentTransaction savedTx = paymentTransactionRepository.save(p);
 
                     if (order != null) {
                         orderClient.sendPaymentResult(com.franchiseproject.paymentservice.dto.request.PaymentResultRequest.builder()
-                                .orderId(UUID.fromString(orderIdStr))
+                                .orderId(orderId)
                                 .paymentTransactionId(savedTx.getId())
                                 .amount(amount)
                                 .paymentMethod("VNPAY")
-                                .status(StatusTransaction.FAILED)
+                                .status(failStatus)
                                 .build());
                     }
                 }

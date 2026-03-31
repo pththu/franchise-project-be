@@ -153,7 +153,14 @@ public class PaymentController {
             redirectUrl += (redirectUrl.contains("?") ? "&" : "?") + "orderId=" + orderId;
             response.sendRedirect(redirectUrl);
         } else {
-            response.sendRedirect(feReturnUrl);
+            // Even if result is null (e.g. signature validation failed), try to extract orderId for better UX
+            String redirectUrlFallback = feReturnUrl;
+            String txnRef = params.get("vnp_TxnRef");
+            if (txnRef != null) {
+                String orderIdFallback = txnRef.split("_")[0];
+                redirectUrlFallback += (redirectUrlFallback.contains("?") ? "&" : "?") + "orderId=" + orderIdFallback;
+            }
+            response.sendRedirect(redirectUrlFallback);
         }
     }
 
