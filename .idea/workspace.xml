@@ -126,9 +126,18 @@
         <entry key="SpringBootApplicationConfigurationType">
           <value>
             <map>
+              <entry key="ApiGatewayApplication" value="STOPPED" />
               <entry key="CustomerServiceApplication" value="STOPPED" />
               <entry key="DeliveryServiceApplication" value="FAILED" />
+              <entry key="FranchiseServiceApplication" value="STOPPED" />
+              <entry key="IdentityAccessServiceApplication" value="STOPPED" />
+              <entry key="InventoryServiceApplication" value="STOPPED" />
               <entry key="LoyaltyServiceApplication" value="STOPPED" />
+              <entry key="PaymentServiceApplication" value="STOPPED" />
+              <entry key="ProductServiceApplication" value="STOPPED" />
+              <entry key="PromotionServiceApplication" value="STOPPED" />
+              <entry key="ReportServiceApplication" value="STOPPED" />
+              <entry key="ShiftServiceApplication" value="STOPPED" />
             </map>
           </value>
         </entry>
