@@ -121,6 +121,17 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
         StaffShift staffShift = getStaffShiftOrThrow(staffShiftId);
         boolean hasChanges = false;
 
+        // Thêm cập nhật staffId
+        if (request.getStaffId() != null && !request.getStaffId().equals(staffShift.getStaffId())) {
+            // Kiểm tra nhân viên mới có bị trùng ca không
+            if (staffShiftRepository.existsByStaffIdAndWorkDate(
+                    request.getStaffId(), staffShift.getWorkDate())) {
+                throw new IllegalArgumentException("Nhân viên mới đã có ca trong ngày này");
+            }
+            staffShift.setStaffId(request.getStaffId());
+            hasChanges = true;
+        }
+
         if (request.getWorkDate() != null && !request.getWorkDate().equals(staffShift.getWorkDate())) {
             validateWorkDateChange(staffShift, request.getWorkDate());
             staffShift.setWorkDate(request.getWorkDate());
