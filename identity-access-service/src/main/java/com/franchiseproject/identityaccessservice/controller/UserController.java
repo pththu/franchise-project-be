@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserController {
-
     UserService userService;
     RoleService roleService;
     UserMapper userMapper;
@@ -319,5 +318,6 @@ public class UserController {
                 .data(userService.getStaffByFranchise(franchiseId, page))
                 .build();
     }
+
 
 }

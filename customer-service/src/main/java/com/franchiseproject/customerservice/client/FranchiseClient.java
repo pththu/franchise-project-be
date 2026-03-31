@@ -31,10 +31,12 @@ public class FranchiseClient {
     public List<FranchiseResponse> getFranchisesByIds(List<UUID> franchiseIds) {
         if (franchiseIds == null || franchiseIds.isEmpty()) return Collections.emptyList();
 
-        String url = franchiseServiceBaseUrl + "/api/franchises/internal/search-by-ids";
+        String url = franchiseServiceBaseUrl + "/api/franchises/search-by-ids";
         try {
             ResponseEntity<ApiResponse<List<FranchiseResponse>>> response = restTemplate.exchange(
-                    url, HttpMethod.POST, new HttpEntity<>(franchiseIds),
+                    url,
+                    HttpMethod.POST,
+                    new HttpEntity<>(franchiseIds),
                     new ParameterizedTypeReference<ApiResponse<List<FranchiseResponse>>>() {
                     }
             );

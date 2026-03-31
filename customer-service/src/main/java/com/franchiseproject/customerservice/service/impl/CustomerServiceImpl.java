@@ -3,6 +3,7 @@ package com.franchiseproject.customerservice.service.impl;
 import com.franchiseproject.customerservice.client.FranchiseClient;
 import com.franchiseproject.customerservice.client.IdentityClient;
 import com.franchiseproject.customerservice.client.LoyaltyClient;
+import com.franchiseproject.customerservice.dto.request.SearchRequest;
 import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
 import com.franchiseproject.customerservice.dto.response.*;
 import com.franchiseproject.customerservice.entity.CustomerFranchise;
@@ -17,17 +18,15 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.apache.catalina.User;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -84,6 +83,106 @@ public class CustomerServiceImpl implements CustomerService {
                 pageable
         );
         return buildPageResponse(page);
+    }
+
+    @Override
+    public Page<CustomerSummaryResponse> searchCustomers(SearchRequest request) {
+
+        List<UserResponse> allCustomer = identityClient.getAllCustomer();
+        if (allCustomer.isEmpty()) {
+            log.warn("Identity Service returned empty customer list");
+            return Page.empty();
+        }
+
+        log.info("Loaded {} customers from Identity", allCustomer.size());
+        List<UUID> allCustomerIds = allCustomer.stream()
+                .map(UserResponse::getId)
+                .toList();
+
+        List<CustomerFranchise> allCFs = customerFranchiseRepository.findByUserIdIn(allCustomerIds);
+        Map<UUID, List<CustomerFranchise>> cfByUser = allCFs.stream()
+                .collect(Collectors.groupingBy(CustomerFranchise::getUserId));
+
+        List<UUID> allFranchiseIds = allCFs.stream()
+                .map(CustomerFranchise::getFranchiseId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<UUID, FranchiseResponse> franchiseMap = franchiseClient.getFranchisesByIds(allFranchiseIds)
+                .stream()
+                .collect(Collectors.toMap(FranchiseResponse::getId, Function.identity()));
+
+               System.out.println("franchiseMap…: " + franchiseMap.size());
+
+        List<CustomerSummaryResponse> assembled = allCustomer.stream()
+                .map(user -> {
+                    List<CustomerFranchise> userCFs = cfByUser.getOrDefault(
+                            user.getId(),
+                            Collections.emptyList()
+                    );
+
+                    List<CustomerFranchiseSummary> franchiseSummaries =
+                            userCFs.stream()
+                                    .map(cf -> CustomerFranchiseSummary.builder()
+                                            .franchise(cf.getFranchiseId() != null
+                                                    ? franchiseMap.get(cf.getFranchiseId())
+                                                    : null)
+                                            .status(cf.getStatus())
+                                            .firstOrderAt(cf.getFirstOrderAt())
+                                            .lastOrderAt(cf.getLastOrderAt())
+                                            .createdAt(cf.getCreatedAt())
+                                            .build())
+                                    .collect(Collectors.toList());
+
+                    return CustomerSummaryResponse.builder()
+                            .user(user)
+                            .purchasedFranchises(franchiseSummaries)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        List<CustomerSummaryResponse> filtered = assembled.stream()
+                .filter(summary -> matchesFilter(summary, request))
+                .toList();
+
+        log.info("After filter: {} / {} customers match", filtered.size(), assembled.size());
+
+        int page = request.getPage();
+        int size = request.getSize();
+        int totalFiltered = filtered.size();
+        int fromIndex = Math.min(page * size, totalFiltered);
+        int toIndex   = Math.min(fromIndex + size, totalFiltered);
+
+        List<CustomerSummaryResponse> pageSlice = filtered.subList(fromIndex, toIndex);
+
+        List<UUID> pageUserIds = pageSlice.stream()
+                .map(s -> s.getUser().getId())
+                .toList();
+        log.info("Requested Franchise IDs: {}", allFranchiseIds);
+        log.info("Received from Franchise Client: {}", franchiseMap.keySet());
+
+
+        Map<UUID, CustomerTierResponse> loyaltyMap = Collections.emptyMap();
+        if (!pageUserIds.isEmpty()) {
+            System.out.println("List page userid size: " + pageUserIds.size());
+            loyaltyMap = loyaltyClient.getBulkCustomerTierInfo(pageUserIds)
+                    .stream()
+                    .collect(Collectors.toMap(
+                            CustomerTierResponse::getUserId,
+                            Function.identity()));
+        }
+
+        // Gắn loyaltyInfo vào từng item trong page
+        System.out.println("loyaltyMap: " + loyaltyMap.keySet());
+        final Map<UUID, CustomerTierResponse> finalLoyaltyMap = loyaltyMap;
+        List<CustomerSummaryResponse> enriched = pageSlice.stream()
+                .peek(s -> s.setLoyaltyInfo(finalLoyaltyMap.get(s.getUser().getId())))
+                .toList();
+
+        // ── STEP 7: Wrap thành Page với totalElements chính xác ──────────────────
+        Pageable pageable = PageRequest.of(page, size);
+        return new PageImpl<>(enriched, pageable, totalFiltered);
     }
 
     @Override
@@ -228,7 +327,7 @@ public class CustomerServiceImpl implements CustomerService {
 
                     if (cf.getUserId() != null) {
 //                        response.setUserResponse(userMap.get(cf.getUserId()));
-                        response.setLoyaltyInfo(loyaltyMap.get(cf.getUserId()));
+//                        response.setLoyaltyInfo(loyaltyMap.get(cf.getUserId()));
                     }
 
                     if (cf.getFranchiseId() != null) {
@@ -246,4 +345,43 @@ public class CustomerServiceImpl implements CustomerService {
                 .totalItems(pageResult.getTotalElements())
                 .build();
     }
+
+    private boolean matchesFilter(CustomerSummaryResponse summary, SearchRequest request) {
+        UserResponse user = summary.getUser();
+
+        // ── keyword ───────────────────────────────────────────────────────────────
+        if (StringUtils.hasText(request.getKeyword())) {
+            String kw = request.getKeyword().toLowerCase();
+            boolean matchUser =
+                    (user.getUsername() != null && user.getUsername().toLowerCase().contains(kw))
+                            || (user.getFullName() != null && user.getFullName().toLowerCase().contains(kw))
+                            || (user.getEmail()    != null && user.getEmail().toLowerCase().contains(kw))
+                            || (user.getPhone()    != null && user.getPhone().toLowerCase().contains(kw));
+            if (!matchUser) return false;
+        }
+
+        // ── franchiseId ───────────────────────────────────────────────────────────
+        if (request.getFranchiseId() != null) {
+            boolean hasFranchise = summary.getPurchasedFranchises().stream()
+                    .anyMatch(f -> f.getFranchise() != null
+                            && request.getFranchiseId().equals(f.getFranchise().getId()));
+            if (!hasFranchise) return false;
+        }
+
+        // ── status ────────────────────────────────────────────────────────────────
+        if (StringUtils.hasText(request.getStatus())) {
+            try {
+                CustomerStatus target = CustomerStatus.valueOf(request.getStatus().toUpperCase());
+                boolean hasStatus = summary.getPurchasedFranchises().stream()
+                        .anyMatch(f -> target.equals(f.getStatus()));
+                if (!hasStatus) return false;
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid status filter value: '{}'", request.getStatus());
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 }

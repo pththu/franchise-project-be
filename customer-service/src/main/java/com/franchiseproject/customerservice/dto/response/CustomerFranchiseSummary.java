@@ -1,28 +1,21 @@
 package com.franchiseproject.customerservice.dto.response;
 
 import com.franchiseproject.customerservice.enums.CustomerStatus;
-import com.franchiseproject.customerservice.enums.CustomerType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
-import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CustomerFranchiseResponse {
-    UUID id;
-//    UUID franchiseId;
-//    UserResponse user;
-    CustomerType type;
-    CustomerStatus status;
+public class CustomerFranchiseSummary {
+    FranchiseResponse franchise; // tên, địa chỉ, phone… từ Franchise Service
+    CustomerStatus status;       // ACTIVE / INACTIVE / SUSPENDED tại franchise này
     Instant firstOrderAt;
     Instant lastOrderAt;
-    FranchiseResponse franchise;
     Instant createdAt;
-    Instant updatedAt;
-//    CustomerTierResponse loyaltyInfo;
 }

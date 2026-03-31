@@ -33,6 +33,7 @@ public class CustomerTierController {
 
     @PostMapping("/internal/customers/bulk-tier-info")
     public ApiResponse<List<CustomerTierResponse>> getBulkCustomerTierInfo(@RequestBody List<UUID> customerIds) {
+        System.out.println("customerIds: " + customerIds.get(0));
         return ApiResponse.<List<CustomerTierResponse>>builder()
                 .statusCode(200)
                 .message("Bulk fetch loyalty tier info success")

@@ -2,6 +2,7 @@ package com.franchiseproject.franchiseservice.service.impl;
 
 import com.franchiseproject.franchiseservice.dto.FranchiseDTO;
 import com.franchiseproject.franchiseservice.dto.response.CheckFranchiseResponse;
+import com.franchiseproject.franchiseservice.dto.response.FranchiseResponse;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
 import com.franchiseproject.franchiseservice.exception.AppException;
 import com.franchiseproject.franchiseservice.exception.BadRequestException;
@@ -155,5 +156,13 @@ public class FranchiseServiceImpl implements FranchiseService {
     public List<FranchiseDTO> getFranchiseIsActive() {
         return franchiseRepository.findByStatus(FranchiseStatus.ACTIVE)
                 .stream().map(franchiseMapper::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FranchiseResponse> searchByIds(List<UUID> ids) {
+        return franchiseRepository.findByIds(ids)
+                .stream()
+                .map(franchiseMapper::toFranchiseResponse)
+                .toList();
     }
 }

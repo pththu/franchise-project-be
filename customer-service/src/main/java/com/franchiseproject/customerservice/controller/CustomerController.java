@@ -1,8 +1,10 @@
 package com.franchiseproject.customerservice.controller;
 
 import com.franchiseproject.customerservice.dto.ApiResponse;
+import com.franchiseproject.customerservice.dto.request.SearchRequest;
 import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
 import com.franchiseproject.customerservice.dto.response.CustomerFranchiseResponse;
+import com.franchiseproject.customerservice.dto.response.CustomerSummaryResponse;
 import com.franchiseproject.customerservice.dto.response.PageResponse;
 import com.franchiseproject.customerservice.enums.CustomerStatus;
 import com.franchiseproject.customerservice.enums.CustomerType;
@@ -17,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -96,21 +99,6 @@ public class CustomerController {
                 .build();
     }
 
-    // ================== CREATE / SYNC ==================
-    // Nhân viên tạo khách tại quầy
-//    @PostMapping("/franchise/{franchiseId}")
-//    public ApiResponse<CustomerFranchise> createCustomerAtFranchise(
-//            @PathVariable UUID franchiseId,
-//            @RequestParam UUID userId,
-//            @RequestParam(required = false) CustomerType type) {
-//
-//        return ApiResponse.<CustomerFranchise>builder()
-//                .statusCode(201)
-//                .message("Link customer to franchise successfully")
-//                .data(customerService.createCustomerAtFranchise(userId, franchiseId, type))
-//                .build();
-//    }
-
     public ApiResponse<CustomerFranchise> createCustormerAtFranchise(
             @PathVariable("franchiseId") UUID franchiseId,
             @RequestParam("customerId") UUID customerId
@@ -169,6 +157,15 @@ public class CustomerController {
         return ApiResponse.<Void>builder()
                 .statusCode(200)
                 .message("Delete customer successfully")
+                .build();
+    }
+
+    @GetMapping("/searching")
+    public ApiResponse<Page<CustomerSummaryResponse>> search(@ModelAttribute @Valid SearchRequest request) {
+        return ApiResponse.<Page<CustomerSummaryResponse>>builder()
+                .statusCode(200)
+                .message("Search customer")
+                .data(customerService.searchCustomers(request))
                 .build();
     }
 }

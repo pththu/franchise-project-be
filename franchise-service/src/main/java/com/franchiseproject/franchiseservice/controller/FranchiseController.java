@@ -3,6 +3,7 @@ package com.franchiseproject.franchiseservice.controller;
 import com.franchiseproject.franchiseservice.dto.ApiResponse;
 import com.franchiseproject.franchiseservice.dto.FranchiseDTO;
 import com.franchiseproject.franchiseservice.dto.response.CheckFranchiseResponse;
+import com.franchiseproject.franchiseservice.dto.response.FranchiseResponse;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
 import com.franchiseproject.franchiseservice.mapper.FranchiseMapper;
 import com.franchiseproject.franchiseservice.service.FranchiseService;
@@ -100,6 +101,15 @@ public class FranchiseController {
                 .statusCode(200)
                 .message("Check status franchise: " + id)
                 .data(franchiseService.checkFranchiseById(id))
+                .build();
+    }
+
+    @PostMapping("/search-by-ids")
+    public ApiResponse<List<FranchiseResponse>> searchByIds(@RequestBody List<UUID> franchiseIds) {
+        return ApiResponse.<List<FranchiseResponse>>builder()
+                .statusCode(200)
+                .message("Get franchises by ids")
+                .data(franchiseService.searchByIds(franchiseIds))
                 .build();
     }
 }
