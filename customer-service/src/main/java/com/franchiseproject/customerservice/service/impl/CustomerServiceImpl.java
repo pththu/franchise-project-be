@@ -80,8 +80,8 @@ public class CustomerServiceImpl implements CustomerService {
                 .collect(Collectors.toMap(UserResponse::getId, user -> user));
 
         return franchises.stream().map(cf -> {
-            CustomerFranchiseResponse response = customerFranchiseMapper.toCustomerFranchiseResponse(cf);
-            response.setUserResponse(userMap.get(cf.getUserId()));
+            CustomerFranchiseResponse response = customerFranchiseMapper.toCustomerFranchiseResponse(cf, identityClient, franchiseClient);
+            response.setUser(userMap.get(cf.getUserId()));
             return response;
         }).toList();
     }

@@ -16,7 +16,7 @@ import java.util.UUID;
 public class CustomerFranchiseResponse {
     UUID id;
 //    UUID franchiseId;
-//    UserResponse user;
+    UserResponse user;
 //    UUID userId;
 //    UUID franchiseId;
 //    UserResponse userResponse;

@@ -16,7 +16,7 @@ import java.util.UUID;
 @Mapper(componentModel = "spring")
 public interface CustomerFranchiseMapper {
 
-//    @Mapping(target = "user", source = "userId")
+    @Mapping(target = "user", source = "userId")
     @Mapping(target = "franchise", source = "franchiseId")
     CustomerFranchiseResponse toCustomerFranchiseResponse(
             CustomerFranchise customerFranchise,

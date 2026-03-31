@@ -5,82 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.ai/mcp/mcp.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/AI-service/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/AI-service/.idea/AI-service.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/AI-service/.idea/aws.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/AI-service/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/AI-service/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/AI-service/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/delivery-service/.run/DeliveryServiceApplication.run.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/config/OrderProducer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/config/PaymentResultConsumer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/CreatePaymentEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/EarnPointsRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/OrderCreatedEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/response/EarnPointsResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/response/PaymentResultEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/config/OrderConsumer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/config/PaymentProducer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/dto/request/PaymentResultEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/dto/response/order/OrderResultEvent.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/controller/CustomerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/controller/CustomerController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/dto/response/CustomerFranchiseResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/dto/response/CustomerFranchiseResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/service/CustomerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/service/CustomerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/mapper/CustomerFranchiseMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/mapper/CustomerFranchiseMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/service/impl/CustomerServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/service/impl/CustomerServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/franchise-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/franchise-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/franchise-service/src/main/java/com/franchiseproject/franchiseservice/controller/FranchiseController.java" beforeDir="false" afterPath="$PROJECT_DIR$/franchise-service/src/main/java/com/franchiseproject/franchiseservice/controller/FranchiseController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/franchise-service/src/main/java/com/franchiseproject/franchiseservice/service/FranchiseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/franchise-service/src/main/java/com/franchiseproject/franchiseservice/service/FranchiseService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/franchise-service/src/main/java/com/franchiseproject/franchiseservice/service/impl/FranchiseServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/franchise-service/src/main/java/com/franchiseproject/franchiseservice/service/impl/FranchiseServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/franchise-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/franchise-service/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/.run/InventoryServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/.run/InventoryServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/InventoryServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/InventoryServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/controller/StockTransferController.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/controller/StockTransferController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/entity/StockRequestItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/entity/StockRequestItem.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/entity/StockTransferItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/entity/StockTransferItem.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/repository/StockTransferRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/repository/StockTransferRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/StockTransferService.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/StockTransferService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/impl/StockRequestServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/impl/StockRequestServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/impl/StockTransferServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/franchiseproject/inventory_service/service/impl/StockTransferServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/.run/OrderServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/.run/OrderServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/CustomerClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/CustomerClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/LoyaltyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/LoyaltyClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/PaymentClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/PaymentClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/ProductClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/ProductClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/PromotionClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/PromotionClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/controller/OrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/controller/OrderController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/OrderItemResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/OrderItemResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/OrderResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/OrderResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/LoyaltyReserveRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/LoyaltyReserveRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/LoyaltyTraceBackRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/LoyaltyTraceBackRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/response/CustomerResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/response/CustomerResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/response/ProductResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/response/ProductResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/mapper/OrderDetailMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/mapper/OrderDetailMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/service/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/service/OrderService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/service/impl/OrderServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/service/impl/OrderServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/.run/PaymentServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/.run/PaymentServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/controller/MomoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/controller/MomoController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/controller/PaymentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/controller/PaymentController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/PaymentTransactionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/PaymentTransactionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/VnpayService.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/VnpayService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/impl/PaymentMethodServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/impl/PaymentMethodServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/impl/PaymentTransactionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/impl/PaymentTransactionServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/impl/VnpayServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/service/impl/VnpayServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/client/LoyaltyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/client/LoyaltyClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/controller/ReportController.java" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/controller/ReportController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/service/ReportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/service/ReportService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/service/impl/ReactiveReportServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/service/impl/ReactiveReportServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shift-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/shift-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/controller/ShiftController.java" beforeDir="false" afterPath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/controller/ShiftController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/service/ShiftConfigurationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/service/ShiftConfigurationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/service/impl/ShiftConfigurationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/service/impl/ShiftConfigurationServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loyalty-service/.run/LoyaltyServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/.run/LoyaltyServiceApplication.run.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,6 +56,7 @@
     "Maven.identity-access-service [clean].executor": "Run",
     "Maven.inventory-service [clean].executor": "Run",
     "Maven.inventory-service [install].executor": "Run",
+    "Maven.loyalty-service [clean].executor": "Run",
     "Maven.product-service [clean].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RequestMappingsPanelOrder0": "0",
@@ -149,7 +79,7 @@
     "Spring Boot.PromotionServiceApplication.executor": "Run",
     "Spring Boot.ReportServiceApplication.executor": "Run",
     "Spring Boot.ShiftServiceApplication.executor": "Run",
-    "git-widget-placeholder": "Merging sprint04__team02__userManagerAll__thu",
+    "git-widget-placeholder": "sprint04__team02__userManagerAll__thu",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "T:/study/iuh/internship/code/FranchiseProject/sprint04/be/franchise-service/src/main/java/com/franchiseproject/franchiseservice/exception",
@@ -196,17 +126,9 @@
         <entry key="SpringBootApplicationConfigurationType">
           <value>
             <map>
-              <entry key="ApiGatewayApplication" value="STOPPED" />
               <entry key="CustomerServiceApplication" value="STOPPED" />
-              <entry key="FranchiseServiceApplication" value="STOPPED" />
-              <entry key="IdentityAccessServiceApplication" value="STOPPED" />
-              <entry key="InventoryServiceApplication" value="STOPPED" />
+              <entry key="DeliveryServiceApplication" value="FAILED" />
               <entry key="LoyaltyServiceApplication" value="STOPPED" />
-              <entry key="PaymentServiceApplication" value="STOPPED" />
-              <entry key="ProductServiceApplication" value="STOPPED" />
-              <entry key="PromotionServiceApplication" value="STOPPED" />
-              <entry key="ReportServiceApplication" value="STOPPED" />
-              <entry key="ShiftServiceApplication" value="STOPPED" />
             </map>
           </value>
         </entry>
@@ -258,7 +180,21 @@
       <item itemvalue="Spring Boot.PromotionServiceApplication" />
     </list>
   </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="" />
+      <created>1774926286869</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1774926286869</updated>
+    </task>
     <servers />
   </component>
 </project>
