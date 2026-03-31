@@ -76,6 +76,15 @@ public class ProductStockController {
                 .build();
     }
 
+    @PostMapping("/release")
+    public ApiResponse<Void> releaseStock(@RequestBody List<StockRequestItemRequest> items, @RequestParam UUID locationId) {
+        productStockService.releaseStock(items, locationId);
+        return ApiResponse.<Void>builder()
+                .statusCode(200)
+                .message("Giải phóng kho tạm thời thành công")
+                .build();
+    }
+
     @PostMapping("/commit")
     public ApiResponse<Void> commitStock(@RequestBody List<StockRequestItemRequest> items, @RequestParam UUID locationId) {
         productStockService.commitStock(items, locationId);

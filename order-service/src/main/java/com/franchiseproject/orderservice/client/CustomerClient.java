@@ -22,6 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CustomerClient {
 
+    @SuppressWarnings("unchecked")
     public CustomerResponse getCustomerById(UUID id) {
         if (id == null) return null;
         try {
@@ -49,30 +50,39 @@ public class CustomerClient {
                 }
                 spec = spec.header("Cookie", cookieBuilder.toString());
             }
-
+            CustomerResponse res = null;
             ApiResponse<Map<String, Object>> response = spec.retrieve()
                     .body(new ParameterizedTypeReference<ApiResponse<Map<String, Object>>>() {});
             
             if (response != null && response.getData() != null) {
                 Map<String, Object> data = response.getData();
-                CustomerResponse res = new CustomerResponse();
+                res = new CustomerResponse();
                 res.setId(UUID.fromString(data.get("id").toString()));
                 
                 // Robust parsing: check for nested userResponse OR top-level userId
                 Map<String, Object> user = (Map<String, Object>) data.get("userResponse");
-                if (user != null && user.get("id") != null) {
-                    res.setUserId(UUID.fromString(user.get("id").toString()));
-                    res.setFullName((String) user.get("fullName"));
+                if (user == null) user = (Map<String, Object>) data.get("user_response");
+
+                if (user != null && (user.get("id") != null || user.get("userId") != null)) {
+                    Object idObj = user.get("id") != null ? user.get("id") : user.get("userId");
+                    res.setUserId(UUID.fromString(idObj.toString()));
+                    
+                    String fullName = (String) user.get("fullName");
+                    if (fullName == null) fullName = (String) user.get("full_name");
+                    res.setFullName(fullName);
+                    
                     res.setEmail((String) user.get("email"));
                     res.setPhone((String) user.get("phone"));
-                } else if (data.get("userId") != null) {
-                    res.setUserId(UUID.fromString(data.get("userId").toString()));
-                    res.setFullName((String) data.get("fullName"));
+                } else if (data.get("userId") != null || data.get("user_id") != null) {
+                    Object userIdObj = data.get("userId") != null ? data.get("userId") : data.get("user_id");
+                    res.setUserId(UUID.fromString(userIdObj.toString()));
+                    
+                    String fullName = (String) data.get("fullName");
+                    if (fullName == null) fullName = (String) data.get("full_name");
+                    res.setFullName(fullName);
                 }
-                
-                return res;
             }
-            return null;
+            return res;
         } catch (Exception e) {
             log.warn("Could not fetch customer for ID {}: {}", id, e.getMessage());
             // Fallback cleanly if remote API fails or 403/404
