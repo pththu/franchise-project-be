@@ -9,8 +9,11 @@ import com.example.reportservice.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
+import org.springframework.http.codec.ServerSentEvent;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -24,7 +27,9 @@ public class ReactiveReportServiceImpl implements ReportService {
     private final OrderServiceClient orderClient;
     private final ProductServiceClient productClient;
     private final CustomerServiceClient customerClient;
-    // private final BranchServiceClient branchClient; // Thêm sau
+
+    // ================= SSE SINK =================
+    private final Sinks.Many<Object> reportSink = Sinks.many().multicast().onBackpressureBuffer();
 
     @Override
     public Mono<Map<String, Object>> getDashboard() {
@@ -32,7 +37,6 @@ public class ReactiveReportServiceImpl implements ReportService {
 
         long startTime = System.currentTimeMillis();
 
-        // Gọi song song tất cả services
         Mono<List<OrderResponse>> ordersMono = orderClient.getAllOrders()
                 .subscribeOn(Schedulers.parallel());
 
@@ -51,22 +55,12 @@ public class ReactiveReportServiceImpl implements ReportService {
                     log.info("Received {} orders, {} products, {} customers",
                             orders.size(), products.size(), customers.size());
 
-                    // 1. Tính summary
                     Map<String, Object> summary = calculateSummary(orders, products, customers);
-
-                    // 2. Tính top products
                     List<Map<String, Object>> topProducts = calculateTopProducts(orders);
-
-                    // 3. Tính top customers
                     List<Map<String, Object>> topCustomers = calculateTopCustomers(orders, customers);
-
-                    // 4. Tính revenue by branch
                     List<Map<String, Object>> revenueByBranch = calculateRevenueByBranch(orders);
-
-                    // 5. Tính order status stats
                     Map<String, Long> orderStatusStats = calculateOrderStatusStats(orders);
 
-                    // 6. Lấy recent orders (top 10)
                     List<OrderResponse> recentOrders = orders.stream()
                             .sorted((a, b) -> {
                                 if (a.getCreateAt() == null) return 1;
@@ -77,9 +71,8 @@ public class ReactiveReportServiceImpl implements ReportService {
                             .collect(Collectors.toList());
 
                     long duration = System.currentTimeMillis() - startTime;
-                    log.info(" Dashboard generated in {} ms", duration);
+                    log.info("Dashboard generated in {} ms", duration);
 
-                    // Build final response
                     Map<String, Object> dashboard = new HashMap<>();
                     dashboard.put("summary", summary);
                     dashboard.put("topProducts", topProducts);
@@ -89,6 +82,9 @@ public class ReactiveReportServiceImpl implements ReportService {
                     dashboard.put("recentOrders", recentOrders);
                     dashboard.put("generatedAt", System.currentTimeMillis());
 
+                    // Push realtime event
+                    emitReportEvent(Map.of("type", "DASHBOARD_UPDATE", "data", dashboard));
+
                     return dashboard;
                 })
                 .onErrorResume(e -> {
@@ -97,22 +93,35 @@ public class ReactiveReportServiceImpl implements ReportService {
                 });
     }
 
+    // ================= SSE METHODS =================
+    @Override
+    public Flux<ServerSentEvent<Object>> getReportEvents() {
+        return reportSink.asFlux()
+                .map(event -> ServerSentEvent.<Object>builder()
+                        .id(UUID.randomUUID().toString())
+                        .event("report-update")
+                        .data(event)
+                        .build());
+    }
+
+    public void emitReportEvent(Object eventData) {
+        reportSink.tryEmitNext(eventData);
+    }
+
+    // ================= Các method tính toán cũ (giữ nguyên) =================
     private Map<String, Object> calculateSummary(List<OrderResponse> orders,
                                                  List<ProductResponse> products,
                                                  List<CustomerResponse> customers) {
         Map<String, Object> summary = new HashMap<>();
 
-        // Tổng số đơn hàng
         summary.put("totalOrders", orders.size());
 
-        // Tổng doanh thu
         BigDecimal totalRevenue = orders.stream()
                 .map(OrderResponse::getTotalDue)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         summary.put("totalRevenue", totalRevenue.doubleValue());
 
-        // Số chi nhánh active
         long activeBranches = orders.stream()
                 .map(OrderResponse::getFranchiseId)
                 .filter(Objects::nonNull)
@@ -120,10 +129,7 @@ public class ReactiveReportServiceImpl implements ReportService {
                 .count();
         summary.put("activeBranches", activeBranches);
 
-        // Tổng số sản phẩm
         summary.put("totalProducts", products.size());
-
-        // Tổng số khách hàng
         summary.put("totalCustomers", customers.size());
 
         return summary;
@@ -201,7 +207,7 @@ public class ReactiveReportServiceImpl implements ReportService {
                 .map(entry -> {
                     Map<String, Object> branch = new HashMap<>();
                     branch.put("branchId", entry.getKey());
-                    branch.put("branchName", "Branch " + entry.getKey().toString().substring(0, 4)); // Tạm thời
+                    branch.put("branchName", "Branch " + entry.getKey().toString().substring(0, 4));
                     branch.put("totalOrders", entry.getValue().getOrderCount());
                     branch.put("totalRevenue", entry.getValue().getTotalRevenue().doubleValue());
                     return branch;
@@ -242,7 +248,7 @@ public class ReactiveReportServiceImpl implements ReportService {
         return errorDashboard;
     }
 
-    // Inner classes for calculations
+    // Inner classes (giữ nguyên)
     private static class ProductSales {
         private String productName;
         private Integer totalSold = 0;

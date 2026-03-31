@@ -69,6 +69,24 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    public List<CustomerFranchiseResponse> getCustomersByIds(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) return Collections.emptyList();
+
+        List<CustomerFranchise> franchises = customerFranchiseRepository.findAllById(ids);
+        if (franchises.isEmpty()) return Collections.emptyList();
+
+        List<UUID> userIds = franchises.stream().map(CustomerFranchise::getUserId).distinct().toList();
+        Map<UUID, UserResponse> userMap = identityClient.getUsersByIds(userIds).stream()
+                .collect(Collectors.toMap(UserResponse::getId, user -> user));
+
+        return franchises.stream().map(cf -> {
+            CustomerFranchiseResponse response = customerFranchiseMapper.toCustomerFranchiseResponse(cf);
+            response.setUserResponse(userMap.get(cf.getUserId()));
+            return response;
+        }).toList();
+    }
+
+    @Override
     public PageResponse<CustomerFranchiseResponse> searchCustomers(UUID franchiseId, CustomerStatus status, List<UUID> userIds, Pageable pageable) {
         boolean filterByUserIds = userIds != null && !userIds.isEmpty();
 

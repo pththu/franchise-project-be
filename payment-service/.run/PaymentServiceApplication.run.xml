@@ -2,9 +2,9 @@
   <configuration default="false" name="PaymentServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
       <env name="ACCESS_KEY" value="F8BBA842ECF85" />
-      <env name="DB_PASSWORD" value="sapassword" />
-      <env name="DB_URL" value="jdbc:postgresql://localhost:5432/franchise" />
-      <env name="DB_USERNAME" value="postgres" />
+      <env name="DB_PASSWORD" value="JsxqgpuCVH2J1Iw1SoQ4kJQnkb4S7yXL" />
+      <env name="DB_URL" value="jdbc:postgresql://dpg-d74tl4i4d50c73e11i8g-a.singapore-postgres.render.com:5432/group_03_x26r?sslmode=require" />
+      <env name="DB_USERNAME" value="group_03_user" />
       <env name="END_POINT" value="https://test-payment.momo.vn/v2/gateway/api" />
       <env name="HASH_SECRET" value="S5FRCTQDS9CXZSMM6RXYLXZLUSPNIUYP" />
       <env name="IPN_URL" value="https://nonpurifying-poetastric-kyrie.ngrok-free.dev/api/momo/ipn-handler" />

@@ -12,5 +12,5 @@ import java.util.UUID;
 public interface StockTransferRepository extends JpaRepository<StockTransfer, UUID> {
     Page<StockTransfer> findAll(Pageable pageable);
     Page<StockTransfer> findByFromLocationId(UUID fromLocationId, Pageable pageable);
-    java.util.Optional<StockTransfer> findByReferenceRequestId(UUID referenceRequestId);
+    java.util.List<StockTransfer> findByReferenceRequestId(UUID referenceRequestId);
 }

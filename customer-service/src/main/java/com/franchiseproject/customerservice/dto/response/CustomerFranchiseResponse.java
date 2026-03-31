@@ -17,6 +17,9 @@ public class CustomerFranchiseResponse {
     UUID id;
 //    UUID franchiseId;
 //    UserResponse user;
+//    UUID userId;
+//    UUID franchiseId;
+//    UserResponse userResponse;
     CustomerType type;
     CustomerStatus status;
     Instant firstOrderAt;

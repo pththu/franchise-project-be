@@ -63,20 +63,10 @@ public class PromotionClient {
                     .retrieve()
                     .toBodilessEntity();
             log.info("Promotion rollback success: customerId={}", orderId);
+        } catch (org.springframework.web.client.ResourceAccessException e) {
+            log.warn("Promotion service connectivity issue (traceback skipped): {}", e.getMessage());
         } catch (Exception e) {
-            log.error("Promotion traceback failed", e);
+            log.error("Promotion traceback failed: {}", e.getMessage());
         }
     }
-
-
-    /// Mocktest
-    //    public BigDecimal validateAndCalculate(UUID customerId,
-//                                           UUID promotionId,
-//                                           BigDecimal totalItems) {
-//        if (promotionId == null) {
-//            return BigDecimal.ZERO;
-//        }
-//        // Giả lập giảm 10%
-//        return totalItems.multiply(BigDecimal.valueOf(0.1));
-//    }
 }

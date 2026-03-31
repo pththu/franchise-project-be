@@ -17,6 +17,14 @@ import java.util.UUID;
 public class LoyaltyReserveRequest {
     @NotNull(message = "customerId không được trống")
     UUID customerId;
+
+    @NotNull(message = "franchiseId không được trống")
+    UUID franchiseId;
+
+    @NotNull(message = "orderId không được trống")
+    UUID orderId;
+
     @PositiveOrZero(message = "Điểm không được âm")
-    Integer point;//điểm của khách hàng để trừ vào order
+    Integer pointsToDeduct;
+
 }

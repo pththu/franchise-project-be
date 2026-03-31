@@ -87,6 +87,16 @@ public class CustomerController {
                 .build();
     }
 
+    @PostMapping("/bulk")
+    public ApiResponse<List<CustomerFranchiseResponse>> getCustomersByIds(@RequestBody List<UUID> ids) {
+        return ApiResponse.<List<CustomerFranchiseResponse>>builder()
+                .statusCode(200)
+                .message("Get customers by ids successfully")
+                .data(customerService.getCustomersByIds(ids))
+                .build();
+    }
+
+//    @GetMapping("/{id}")
     @GetMapping("/customer-franchise")
     public ApiResponse<CustomerFranchiseResponse> getCustomerDetail(
             @PathParam("userId") UUID userId,

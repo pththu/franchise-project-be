@@ -17,4 +17,5 @@ public class ProductResponse {
     String name;
     BigDecimal price;
     String status;
+    String imageUrl;
 }

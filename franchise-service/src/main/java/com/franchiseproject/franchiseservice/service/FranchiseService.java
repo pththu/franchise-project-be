@@ -5,6 +5,8 @@ import com.franchiseproject.franchiseservice.dto.response.CheckFranchiseResponse
 import com.franchiseproject.franchiseservice.dto.response.FranchiseResponse;
 import com.franchiseproject.franchiseservice.enums.FranchiseStatus;
 import com.franchiseproject.franchiseservice.model.Franchise;
+import org.springframework.http.codec.ServerSentEvent;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,4 +23,6 @@ public interface FranchiseService {
     CheckFranchiseResponse checkFranchiseById(UUID id);
     List<FranchiseDTO> getFranchiseIsActive();
     List<FranchiseResponse> searchByIds(List<UUID> ids);
+    List<FranchiseDTO> getFranchisesByIds(List<UUID> ids);
+    Flux<ServerSentEvent<Object>> getFranchiseEvents();
 }

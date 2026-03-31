@@ -28,6 +28,7 @@ public interface CustomerService {
     CustomerFranchiseResponse getCustomerOfFranchiseById(UUID userId, UUID franchiseId);
 
     PageResponse<CustomerFranchiseResponse> searchCustomers(UUID franchiseId, CustomerStatus status, List<UUID> customerIds, Pageable pageable);
+    List<CustomerFranchiseResponse> getCustomersByIds(List<UUID> ids);
 
     Page<CustomerSummaryResponse> searchCustomers(SearchRequest request);
 
