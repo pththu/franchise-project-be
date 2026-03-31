@@ -170,6 +170,7 @@ public class ProductController {
                 .build();
     }
 
+    // test
     @DeleteMapping("/{productId}/inactive-variant/{variantId}")
     public ApiResponse<Boolean> deleteProductVariant(
             @PathVariable("productId") UUID productId,

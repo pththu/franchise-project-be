@@ -308,11 +308,58 @@ public class ProductServiceImpl implements ProductService {
             product.setStatus(ProductStatus.valueOf(request.getStatus().toUpperCase()));
         }
 
-        log.info("product: {}: ", product.getNameEn());
-        applyProductTranslations(product);
+        // ✅ UPDATE VARIANTS
+        if (request.getVariants() != null && !request.getVariants().isEmpty()) {
 
+            for (var v : request.getVariants()) {
+
+                ProductVariant variant;
+
+                // 👉 CASE 1: variant đã tồn tại
+                if (v.getId() != null) {
+                    variant = productVariantRepository.findById(v.getId())
+                            .orElseThrow(() -> new AppException(ErrorCode.VARTIANT_NOT_FOUND));
+
+                    // ❗ check đúng product (rất quan trọng)
+                    if (!variant.getProduct().getId().equals(product.getId())) {
+                        throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+                    }
+
+                } else {
+                    // 👉 CASE 2: variant mới
+                    variant = new ProductVariant();
+                    variant.setProduct(product);
+                    variant.setStatus(ProductVariantStatus.ACTIVE);
+                }
+
+                // update fields
+                if (v.getPrice() != null) {
+                    variant.setPrice(v.getPrice());
+                    variant.setSalePrice(v.getPrice());
+                }
+
+                if (v.getSize() != null) {
+                    variant.setSize(ProductSize.valueOf(v.getSize()));
+                }
+
+                if (v.getColor() != null) {
+                    variant.setColor(ProductColor.valueOf(v.getColor()));
+                }
+
+                if (v.getImageUrls() != null && !v.getImageUrls().isEmpty()) {
+                    variant.setImageUrl(convertListToJson(v.getImageUrls()));
+                }
+
+                productVariantRepository.save(variant);
+            }
+        }
+
+        // ✅ STEP 1: save trước
         Product updatedProduct = productRepository.save(product);
-        log.info("updatedProduct: {}: ", updatedProduct.getNameEn());
+
+        // ✅ STEP 2: dịch sau (giống create)
+        applyProductTranslations(updatedProduct);
+
         return productMapper.toProductResponse(updatedProduct);
     }
 
@@ -335,7 +382,8 @@ public class ProductServiceImpl implements ProductService {
         if (!isValidTranslationChunk(enValues, sourceTexts.size())
                 || !isValidTranslationChunk(jaValues, sourceTexts.size())) {
             log.warn("Invalid translation payload: {}", translatedByLanguage);
-            throw new AppException(ErrorCode.TRANSLATION_FAILED);
+            log.warn("Translation failed but skip...");
+            return;
         }
 
         System.out.println("enValues.get(0): "+ enValues.get(0));

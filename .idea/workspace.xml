@@ -5,10 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="405ebf58-ce8d-4c45-815c-83d66974562e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/db-forest-config.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/db-forest-config.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/controller/ProductController.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/controller/ProductController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/dto/response/ProductResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/dto/response/ProductResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/mapper/ProductMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/mapper/ProductMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/impl/ProductServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/franchiseproject/product_service/service/impl/ProductServiceImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,25 +37,25 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitLabMergeRequestFiltersHistory">{
-        &quot;lastFilter&quot;: {
-        &quot;state&quot;: &quot;OPENED&quot;,
-        &quot;assignee&quot;: {
-        &quot;type&quot;: &quot;org.jetbrains.plugins.gitlab.mergerequest.ui.filters.GitLabMergeRequestsFiltersValue.MergeRequestsMemberFilterValue.MergeRequestsAssigneeFilterValue&quot;,
-        &quot;username&quot;: &quot;Minhlh_205&quot;,
-        &quot;fullname&quot;: &quot;Lê Hoàng Minh&quot;
-        }
-        }
-        }</component>
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPENED&quot;,
+    &quot;assignee&quot;: {
+      &quot;type&quot;: &quot;org.jetbrains.plugins.gitlab.mergerequest.ui.filters.GitLabMergeRequestsFiltersValue.MergeRequestsMemberFilterValue.MergeRequestsAssigneeFilterValue&quot;,
+      &quot;username&quot;: &quot;Minhlh_205&quot;,
+      &quot;fullname&quot;: &quot;Lê Hoàng Minh&quot;
+    }
+  }
+}</component>
   <component name="GitLabMergeRequestsSettings">{
-        &quot;selectedUrlAndAccountId&quot;: {
-        &quot;first&quot;: &quot;https://git.fsoft-academy.edu.vn/hcm26_cpl_java_03/mockproject/projectteam2/be.git&quot;,
-        &quot;second&quot;: &quot;d7fb563a-102c-4236-9e1e-9af40a816b7b&quot;
-        }
-        }</component>
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;first&quot;: &quot;https://git.fsoft-academy.edu.vn/hcm26_cpl_java_03/mockproject/projectteam2/be.git&quot;,
+    &quot;second&quot;: &quot;d7fb563a-102c-4236-9e1e-9af40a816b7b&quot;
+  }
+}</component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
-        &quot;isMigrated&quot;: true
-        }</component>
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -86,6 +88,7 @@
     "Maven.identity-access-service [clean].executor": "Run",
     "Maven.inventory-service [clean].executor": "Run",
     "Maven.inventory-service [install].executor": "Run",
+    "Maven.loyalty-service [clean].executor": "Run",
     "Maven.product-service [clean].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RequestMappingsPanelOrder0": "0",
@@ -95,6 +98,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "Spring Boot.ApiGatewayApplication.executor": "Run",
     "Spring Boot.CustomerServiceApplication.executor": "Run",
     "Spring Boot.DeliveryServiceApplication.executor": "Run",
@@ -108,10 +112,10 @@
     "Spring Boot.PromotionServiceApplication.executor": "Run",
     "Spring Boot.ReportServiceApplication.executor": "Run",
     "Spring Boot.ShiftServiceApplication.executor": "Run",
-    "git-widget-placeholder": "sprint04__team02__updateUserCustomerManager__thu",
+    "git-widget-placeholder": "sprint04__team05__manager__productsv__Phong",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "T:/study/iuh/internship/code/FranchiseProject/sprint04/be",
+    "last_opened_file_path": "D:/Phong_B",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -168,8 +172,8 @@
               <entry key="IdentityAccessServiceApplication" value="STOPPED" />
               <entry key="InventoryServiceApplication" value="STOPPED" />
               <entry key="LoyaltyServiceApplication" value="STOPPED" />
-              <entry key="OrderServiceApplication" value="STOPPED" />
-              <entry key="PaymentServiceApplication" value="STOPPED" />
+              <entry key="OrderServiceApplication" value="FAILED" />
+              <entry key="PaymentServiceApplication" value="FAILED" />
               <entry key="ProductServiceApplication" value="STOPPED" />
               <entry key="PromotionServiceApplication" value="STOPPED" />
               <entry key="ReportServiceApplication" value="STOPPED" />
@@ -180,12 +184,7 @@
       </map>
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.ProductServiceApplication">
-    <configuration default="true" type="JetRunConfigurationType">
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
+  <component name="RunManager" selected="Spring Boot.CustomerServiceApplication">
     <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
       <module name="franchiseproject" />
       <option name="filePath" />
@@ -241,7 +240,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.32098.37" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.32098.37" />
       </set>
     </attachedChunks>
   </component>
@@ -268,6 +268,14 @@
       <workItem from="1774194288171" duration="2450000" />
       <workItem from="1774244568220" duration="6245000" />
       <workItem from="1774327229873" duration="9343000" />
+      <workItem from="1774527119722" duration="1769000" />
+      <workItem from="1774533964295" duration="4620000" />
+      <workItem from="1774573825143" duration="6803000" />
+      <workItem from="1774686577726" duration="3186000" />
+      <workItem from="1774849141376" duration="9515000" />
+      <workItem from="1774880613621" duration="4735000" />
+      <workItem from="1774888317183" duration="4877000" />
+      <workItem from="1774939629196" duration="12428000" />
     </task>
     <servers />
   </component>
