@@ -312,22 +312,71 @@ public class ProductServiceImpl implements ProductService {
             product.setStatus(ProductStatus.valueOf(request.getStatus().toUpperCase()));
         }
 
-        if (request.getVariants() != null) {
-            mergeProductVariants(product, request.getVariants());
+        // ✅ UPDATE VARIANTS
+        if (request.getVariants() != null && !request.getVariants().isEmpty()) {
+//        if (request.getVariants() != null) {
+//            mergeProductVariants(product, request.getVariants());
+//        }
+//
+//        boolean needsTranslation = hasTextChanged(previousName, product.getName())
+//                || hasTextChanged(previousDescription, product.getDescription())
+//                || hasTextChanged(previousBrand, product.getBrand());
+//
+//        log.info("product: {}: ", product.getNameEn());
+//        if (needsTranslation) {
+//            applyProductTranslations(product);
+//        } else {
+//            log.info("Skip translation because name/description/brand unchanged for product {}", product.getId());
+//        }
+
+            for (var v : request.getVariants()) {
+
+                ProductVariant variant;
+
+                // 👉 CASE 1: variant đã tồn tại
+                if (v.getId() != null) {
+                    variant = productVariantRepository.findById(v.getId())
+                            .orElseThrow(() -> new AppException(ErrorCode.VARTIANT_NOT_FOUND));
+
+                    // ❗ check đúng product (rất quan trọng)
+                    if (!variant.getProduct().getId().equals(product.getId())) {
+                        throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+                    }
+
+                } else {
+                    // 👉 CASE 2: variant mới
+                    variant = new ProductVariant();
+                    variant.setProduct(product);
+                    variant.setStatus(ProductVariantStatus.ACTIVE);
+                }
+
+                // update fields
+                if (v.getPrice() != null) {
+                    variant.setPrice(v.getPrice());
+                    variant.setSalePrice(v.getPrice());
+                }
+
+                if (v.getSize() != null) {
+                    variant.setSize(ProductSize.valueOf(v.getSize()));
+                }
+
+                if (v.getColor() != null) {
+                    variant.setColor(ProductColor.valueOf(v.getColor()));
+                }
+
+                if (v.getImageUrls() != null && !v.getImageUrls().isEmpty()) {
+                    variant.setImageUrl(convertListToJson(v.getImageUrls()));
+                }
+
+                productVariantRepository.save(variant);
+            }
         }
 
-        boolean needsTranslation = hasTextChanged(previousName, product.getName())
-                || hasTextChanged(previousDescription, product.getDescription())
-                || hasTextChanged(previousBrand, product.getBrand());
-
-        log.info("product: {}: ", product.getNameEn());
-        if (needsTranslation) {
-            applyProductTranslations(product);
-        } else {
-            log.info("Skip translation because name/description/brand unchanged for product {}", product.getId());
-        }
-
+        // ✅ STEP 1: save trước
         Product updatedProduct = productRepository.save(product);
+
+        // ✅ STEP 2: dịch sau (giống create)
+        applyProductTranslations(updatedProduct);
         updatedProduct.setVariants(productVariantRepository.findAllByProductId(updatedProduct.getId()));
         log.info("updatedProduct: {}: ", updatedProduct.getNameEn());
         return productMapper.toProductResponse(updatedProduct);
@@ -447,7 +496,8 @@ public class ProductServiceImpl implements ProductService {
         if (!isValidTranslationChunk(enValues, sourceTexts.size())
                 || !isValidTranslationChunk(jaValues, sourceTexts.size())) {
             log.warn("Invalid translation payload: {}", translatedByLanguage);
-            throw new AppException(ErrorCode.TRANSLATION_FAILED);
+            log.warn("Translation failed but skip...");
+            return;
         }
 
         System.out.println("enValues.get(0): "+ enValues.get(0));

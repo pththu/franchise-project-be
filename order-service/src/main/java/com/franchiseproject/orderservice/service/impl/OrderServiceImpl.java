@@ -1,7 +1,6 @@
 package com.franchiseproject.orderservice.service.impl;
 
 import com.franchiseproject.orderservice.client.*;
-import com.franchiseproject.orderservice.config.OrderProducer;
 import com.franchiseproject.orderservice.dto.*;
 import com.franchiseproject.orderservice.dto.request.*;
 import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
@@ -56,7 +55,6 @@ public class OrderServiceImpl implements OrderService {
     LoyaltyClient loyaltyClient;
     PaymentClient paymentClient;
     InventoryClient inventoryClient;
-    OrderProducer orderProducer;
     ProductClient productClient;
 
     @Override
@@ -135,11 +133,24 @@ public class OrderServiceImpl implements OrderService {
             }
             BigDecimal finalTotal = calculateOrder(totalItems, request.getDistance(), discount, discountType, maxDiscountValue);
             order.setTotalDue(finalTotal);
-            order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
+            order.setOrderStatus(OrderStatus.WAITING_FOR_CONFIRMATION);
             orderRepository.save(order);// save lần 2 sau khi set giá cả các thứ.
             if (request.getTypeOrder() != null && "Online".equalsIgnoreCase(request.getTypeOrder().name())) {
                 inventoryClient.notifyNewOrder(order.getFranchiseId());
             }
+
+            // Reserve inventory immediately
+            List<InventoryReserveRequest.InventoryItemRequest> items = order.getOrderDetails().stream()
+                    .map(d -> InventoryReserveRequest.InventoryItemRequest.builder()
+                            .productVariantId(d.getProductId())
+                            .quantity(d.getQuantity())
+                            .build())
+                    .toList();
+            inventoryClient.reserveStock(InventoryReserveRequest.builder()
+                    .locationId(order.getFranchiseId())
+                    .items(items)
+                    .build());
+
             return handlePayment(order, request);
         } catch (AppException a) {
             log.error("Create order failed", a);
@@ -180,8 +191,9 @@ public class OrderServiceImpl implements OrderService {
                 safeRollback(request.getCustomerId(), request.getFranchiseId(), order.getId(), request.getPoint(), false, false);
                 orderRepository.delete(order);
             } else {
-                order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
-                orderRepository.save(order);
+                log.info("Online Payment init failed for order {}. Deleting permanently.", order.getId());
+                safeRollback(request.getCustomerId(), request.getFranchiseId(), order.getId(), request.getPoint(), false, false);
+                deleteOrderPermanently(order.getId());
             }
             throw new AppException(ErrorCode.PAYMENT_INIT_FAILED);
         }
@@ -193,15 +205,9 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(result.getOrderId())
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        // Idempotency check: if order is already finalized, skip processing
-        if (order.getOrderStatus() == OrderStatus.COMPLETED || order.getOrderStatus() == OrderStatus.PAID) {
-            log.info("Order {} already finalized with status {}. Skipping payment result processing.", order.getId(), order.getOrderStatus());
-            return;
-        }
-
         order.setPaymentTransactionId(result.getPaymentTransactionId());
         if (result.getStatus() == StatusTransaction.SUCCESS) {
-            order.setOrderStatus(order.getTypeOrder() == TypeOrder.POS ? OrderStatus.COMPLETED : OrderStatus.PAID);
+            order.setOrderStatus(order.getTypeOrder() == TypeOrder.POS ? OrderStatus.COMPLETED : OrderStatus.WAITING_FOR_CONFIRMATION);
             orderRepository.save(order);
             finalizeSuccessfulOrder(order);
         } else if (result.getStatus() == StatusTransaction.FAILED
@@ -218,7 +224,7 @@ public class OrderServiceImpl implements OrderService {
                 // We'll use a simplified rollback or fetch relevant data.
 
                 // For now, trigger cancel notifications to other services
-                inventoryClient.notifyOrderStatus(order.getId(), "CANCELLED");
+                inventoryClient.notifyOrderStatus(order.getId(), "CANCELLED", order.getFranchiseId());
 
                 // Actually, the most reliable way to rollback is to use the order details
                 // since we are about to delete it.
@@ -226,18 +232,22 @@ public class OrderServiceImpl implements OrderService {
 
                 deleteOrderPermanently(order.getId());
             } else {
-                // Online order (Customer): just set to FAILED_PAYMENT
-                order.setOrderStatus(OrderStatus.FAILED_PAYMENT);
-                orderRepository.save(order);
+                // Online order (Customer): if payment failed, rollback, DELETE transaction, and DELETE order
+                log.info("Online Payment result NOT SUCCESS for order {}. Rolling back, deleting transaction, and deleting order.", order.getId());
                 promotionClient.apiPromotionTraceBack(order.getId(), OrderStatus.FAILED_ORDER);
-                inventoryClient.notifyOrderStatus(order.getId(), "FAILED_PAYMENT");
+                releaseInventory(order);
+                inventoryClient.notifyOrderStatus(order.getId(), "FAILED_ORDER", order.getFranchiseId());
+                paymentClient.deleteTransactionByOrderId(order.getId());
+                deleteOrderPermanently(order.getId());
             }
         }
     }
 
     private void finalizeSuccessfulOrder(Order order) {
-        // Trigger inventory commit and loyalty earn
-        commitInventory(order);
+        // Trigger inventory commit if POS. Online orders commit at SHIPPING status.
+        if (order.getTypeOrder() == TypeOrder.POS) {
+            commitInventory(order);
+        }
         if (order.getCustomerId() != null) {
             try {
                 CustomerResponse customer = customerClient.getCustomerById(order.getCustomerId());
@@ -252,7 +262,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         promotionClient.apiPromotionTraceBack(order.getId(), order.getOrderStatus());
-        inventoryClient.notifyOrderStatus(order.getId(), order.getOrderStatus().name());
+        inventoryClient.notifyOrderStatus(order.getId(), order.getOrderStatus().name(), order.getFranchiseId());
         inventoryClient.notifyNewOrder(order.getFranchiseId());
     }
 
@@ -272,12 +282,11 @@ public class OrderServiceImpl implements OrderService {
         if (!currentStatus.canBeCancelledByCustomer()) {
             throw new AppException(ErrorCode.NO_CANCEL);
         }
-        if (currentStatus == OrderStatus.PAID) {
-            order.setOrderStatus(OrderStatus.REFUNDED);
-        } else {
-            order.setOrderStatus(OrderStatus.CANCELLED);
-        }
-        inventoryClient.notifyOrderStatus(order.getId(), order.getOrderStatus().name());
+        // If cancellation happens, we move to CANCELLED. 
+        // Note: For online orders, they were confirmed (WAITING_FOR_CONFIRMATION) or preparing.
+        order.setOrderStatus(OrderStatus.CANCELLED);
+        releaseInventory(order);
+        inventoryClient.notifyOrderStatus(order.getId(), order.getOrderStatus().name(), order.getFranchiseId());
         inventoryClient.notifyNewOrder(order.getFranchiseId());
     }
 
@@ -290,14 +299,14 @@ public class OrderServiceImpl implements OrderService {
                 .address(request.getAddress())
                 .priceShip(BigDecimal.valueOf(request.getDistance()).multiply(BigDecimal.valueOf(20000))) //1km = 20000vnd
                 .typeOrder(request.getTypeOrder())
-                .orderStatus(OrderStatus.CREATED)
+                .orderStatus(OrderStatus.WAITING_FOR_CONFIRMATION)
                 .build();
     }
 
 
     @Override
     @Transactional
-    public void updateOrderStatus(UUID orderId, OrderStatus newStatus) {
+    public void updateOrderStatus(UUID orderId, OrderStatus newStatus, UUID staffId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
         if (order.getOrderStatus() == OrderStatus.COMPLETED
@@ -306,24 +315,24 @@ public class OrderServiceImpl implements OrderService {
             throw new AppException(ErrorCode.ORDER_ALREADY_FINALIZED);
         }
         if (newStatus == OrderStatus.PREPARING) {
-            List<InventoryReserveRequest.InventoryItemRequest> items = order.getOrderDetails().stream()
-                    .map(d -> InventoryReserveRequest.InventoryItemRequest.builder()
-                            .productVariantId(d.getProductId())
-                            .quantity(d.getQuantity())
-                            .build())
-                    .toList();
-            InventoryReserveRequest reserveReq = InventoryReserveRequest.builder()
-                    .locationId(order.getFranchiseId())
-                    .items(items)
-                    .build();
-            inventoryClient.reserveStock(reserveReq);
-        } else if (newStatus == OrderStatus.COMPLETED) {
+            // Inventory is already reserved at order creation (handleReserve)
+            log.info("Order {} is now PREPARING. Inventory was already reserved.", orderId);
+        } else if (newStatus == OrderStatus.SHIPPING) {
             commitInventory(order);
+        } else if (newStatus == OrderStatus.COMPLETED) {
+            // Inventory is committed at SHIPPING for Online or at creation for POS.
+            // No additional commit needed here to avoid double-deduction.
+            log.info("Order {} is now COMPLETED.", orderId);
+        } else if (newStatus == OrderStatus.CANCELLED) {
+            releaseInventory(order);
         }
 
         order.setOrderStatus(newStatus);
+        if (staffId != null) {
+            order.setStaffId(staffId);
+        }
         orderRepository.save(order);
-        inventoryClient.notifyOrderStatus(orderId, newStatus.name());
+        inventoryClient.notifyOrderStatus(orderId, newStatus.name(), order.getFranchiseId());
         inventoryClient.notifyNewOrder(order.getFranchiseId());
     }
 
@@ -544,6 +553,8 @@ public class OrderServiceImpl implements OrderService {
             log.error("Loyalty rollback failed", e);
         }
 
+        Order order = orderRepository.findById(orderId).orElse(null);
+        releaseInventory(order);
     }
 
     private void commitInventory(Order order) {
@@ -559,15 +570,30 @@ public class OrderServiceImpl implements OrderService {
                 .items(items)
                 .build();
 
-        if (order.getTypeOrder() == TypeOrder.POS) {
-            try {
-                inventoryClient.reserveStock(reserveReq);
-            } catch (Exception e) {
-                log.error("Failed to reserve stock before commit for POS order", e);
-            }
-        }
-
+        // Stock was already reserved at order creation or status PREPARING
+        // So we just call commitStock
         inventoryClient.commitStock(reserveReq);
+    }
+
+    private void releaseInventory(Order order) {
+        if (order == null || order.getOrderDetails() == null || order.getOrderDetails().isEmpty()) return;
+
+        List<InventoryReserveRequest.InventoryItemRequest> items = order.getOrderDetails().stream()
+                .map(d -> InventoryReserveRequest.InventoryItemRequest.builder()
+                        .productVariantId(d.getProductId())
+                        .quantity(d.getQuantity())
+                        .build())
+                .toList();
+
+        try {
+            inventoryClient.releaseStock(InventoryReserveRequest.builder()
+                    .locationId(order.getFranchiseId())
+                    .items(items)
+                    .build());
+            log.info("Inventory released for order: {}", order.getId());
+        } catch (Exception e) {
+            log.error("Failed to release inventory for order: {}", order.getId(), e);
+        }
     }
 
     private OrderResponse mapToOrderResponseWithCustomer(Order order) {

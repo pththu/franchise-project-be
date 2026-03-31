@@ -94,7 +94,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Override
     @Transactional
     public void checkDuplicateTransaction(OrderResponse orderResponse) {
-        if (!orderResponse.getOrderStatus().equals("WAITING_PAYMENT")) {
+        if (!orderResponse.getOrderStatus().equals("WAITING_FOR_CONFIRMATION")) {
             throw new AppException(ErrorCode.ORDER_NOT_PAYABLE);
         }
         boolean exists = paymentTransactionRepository

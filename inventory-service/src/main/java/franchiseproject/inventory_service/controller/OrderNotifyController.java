@@ -25,9 +25,20 @@ public class OrderNotifyController {
     }
 
     @PostMapping("/order-status/{orderId}")
-    public ApiResponse<Void> notifyOrderStatus(@PathVariable UUID orderId, @RequestParam String status) {
-        // Gửi thông báo cập nhật trạng thái đơn hàng tới kênh của Order
+    public ApiResponse<Void> notifyOrderStatus(
+            @PathVariable UUID orderId,
+            @RequestParam String status,
+            @RequestParam(required = false) UUID franchiseId) {
+        // Gửi thông báo tới kênh của cá nhân đơn hàng (thường là mobile app/customer fe)
         messagingTemplate.convertAndSend("/topic/order/" + orderId, status);
+        
+        // Nếu có franchiseId, gửi tới kênh của Franchise để Staff Dashboard cập nhật list
+        if (franchiseId != null) {
+            // Chúng ta gửi "ORDER_UPDATED" để FE biết cần load lại list, 
+            // hoặc gửi chính cái status đó nếu FE muốn xử lý chuyên sâu
+            messagingTemplate.convertAndSend("/topic/franchise/" + franchiseId + "/orders", "ORDER_UPDATED");
+        }
+        
         return ApiResponse.<Void>builder()
                 .statusCode(200)
                 .message("Đã gửi thông báo cập nhật trạng thái đơn hàng")
