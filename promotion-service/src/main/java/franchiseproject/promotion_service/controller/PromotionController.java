@@ -45,10 +45,9 @@ public class PromotionController {
     @GetMapping("/available")
     public Object available(
             @RequestParam UUID userId,
-            @RequestParam UUID franchiseId,
             @RequestParam BigDecimal orderValue
     ) {
-        return service.getAvailablePromotions(userId, franchiseId, orderValue);
+        return service.getAvailablePromotions(userId, orderValue);
     }
     @PostMapping("/trace")
     public void confirm(
