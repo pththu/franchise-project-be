@@ -11,7 +11,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EarnPointsRequest {
-    UUID customerId;
+    UUID userId;
     UUID franchiseId;
     Double orderAmount;
 }

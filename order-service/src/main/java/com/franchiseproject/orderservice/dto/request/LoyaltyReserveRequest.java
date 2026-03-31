@@ -16,7 +16,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LoyaltyReserveRequest {
     @NotNull(message = "customerId không được trống")
-    UUID customerId;
+    UUID userId;
 
     @NotNull(message = "franchiseId không được trống")
     UUID franchiseId;

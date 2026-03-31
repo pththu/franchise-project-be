@@ -119,7 +119,7 @@ public class OrderServiceImpl implements OrderService {
             BigDecimal maxDiscountValue = BigDecimal.ZERO;
             DiscountType discountType = null;
             if (request.getPoint() != null && request.getPoint() > 0) {
-                discount = loyaltyClient.apiLoyaltyReserve(request.getCustomerId(), request.getFranchiseId(), null, request.getPoint());
+                discount = loyaltyClient.apiLoyaltyReserve(request.getCustomerId(), request.getFranchiseId(), order.getId(), request.getPoint());
                 discountType = DiscountType.FIXED;
                 maxDiscountValue = discount;
                 usedLoyalty = true;
