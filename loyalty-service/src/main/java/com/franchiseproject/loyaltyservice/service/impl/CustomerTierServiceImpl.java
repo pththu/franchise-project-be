@@ -52,7 +52,14 @@ public class CustomerTierServiceImpl implements CustomerTierService {
             return Collections.emptyList();
         }
 
+        List<LoyaltyWallet> all = loyaltyWalletRepository.findAll();
         List<LoyaltyWallet> wallets = loyaltyWalletRepository.findByUserIdIn(customerIds);
+
+
+        System.out.println("wallets size: " + wallets.size());
+        System.out.println("wallets getUserId: " + wallets.get(0).getUserId());
+        System.out.println("all size: " + all.size());
+        System.out.println("all getUserId: " + all.get(0).getUserId());
 
         return wallets.stream().map(wallet ->
                 CustomerTierResponse.builder()
