@@ -40,11 +40,7 @@ public class PromotionClient {
             throw new AppException(ErrorCode.VALIDATION_FAILED);
         } catch (HttpServerErrorException | ResourceAccessException e) {
             log.error("Promotion service error → fallback no discount", e);
-            return PromotionDiscountResponse.builder()
-                    .promotionUsageId(null)
-                    .discountValue(BigDecimal.ZERO)
-                    .discountType(null)
-                    .build();
+            throw new AppException(ErrorCode.PROMOTION_NOT_FOUND);
         } catch (RestClientException e) {
             log.error("Unknown RestClient error", e);
             throw new AppException(ErrorCode.SYSTEM_ERROR);

@@ -33,10 +33,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -124,11 +121,14 @@ public class OrderServiceImpl implements OrderService {
                 maxDiscountValue = discount;
                 usedLoyalty = true;
             } else if (request.getPromotionId() != null) {
+                log.info("PromotionId: {}", request.getPromotionId());
                 PromotionDiscountResponse promotion = promotionClient.apiPromotionReserve(request.getPromotionId(),
                         request.getFranchiseId(), request.getCustomerId(), order.getId(), totalItems);
-                discount = promotion.getDiscountValue();
+                discount = Optional.ofNullable(promotion.getDiscountValue())
+                        .orElse(BigDecimal.ZERO);
                 discountType = promotion.getDiscountType();
-                maxDiscountValue = promotion.getMaxDiscountValue();
+                maxDiscountValue = Optional.ofNullable(promotion.getMaxDiscountValue())
+                        .orElse(BigDecimal.ZERO);
                 usedPromotion = discount.compareTo(BigDecimal.ZERO) > 0;
             }
             BigDecimal finalTotal = calculateOrder(totalItems, request.getDistance(), discount, discountType, maxDiscountValue);
@@ -273,6 +273,12 @@ public class OrderServiceImpl implements OrderService {
         // Reverted logic: Try traceback but ignore if it fails (likely due to no promotion used)
         try {
             promotionClient.apiPromotionTraceBack(order.getId(), order.getOrderStatus());
+            loyaltyClient.apiLoyaltyEarn(order.getCustomerId(), order.getFranchiseId(), order.getId(), order.getTotalDue().doubleValue());
+            log.info("customerId: {}, franchiseId: {}, orderId: {}, totalDue: {}",
+                    order.getCustomerId(),
+                    order.getFranchiseId(),
+                    order.getId(),
+                    order.getTotalDue().doubleValue());
         } catch (Exception e) {
             log.warn("Promotion traceback failed or not found for order {}: {}", order.getId(), e.getMessage());
         }
@@ -537,7 +543,7 @@ public class OrderServiceImpl implements OrderService {
             discountAmount = totalItems
                     .multiply(discount)
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            if (maxDiscountValue != null) {
+            if (maxDiscountValue != null || maxDiscountValue.compareTo(BigDecimal.ZERO) > 0) {
                 discountAmount = discountAmount.min(maxDiscountValue);
             }
         } else if (DiscountType.FIXED.equals(discountType)) {
@@ -578,7 +584,7 @@ public class OrderServiceImpl implements OrderService {
                         .quantity(d.getQuantity())
                         .build())
                 .toList();
-                
+
         InventoryReserveRequest reserveReq = InventoryReserveRequest.builder()
                 .locationId(order.getFranchiseId())
                 .items(items)

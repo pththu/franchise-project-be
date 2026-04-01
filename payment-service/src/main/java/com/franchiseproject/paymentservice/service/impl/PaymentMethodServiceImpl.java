@@ -97,7 +97,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         switch (paymentMethod.getMethodName()) {
             case "MOMO":
                 CreateMomoResponse createMomoResponse = momoService.buildCreateMomoQR(orderResponse, paymentMethod);
-                log.info("Create Momo QR Response:" + createMomoResponse.getPayUrl());
+
                 return PaymentQRResponse.builder()
                         .paymentTransactionId(UUID.fromString(createMomoResponse.getRequestId()))
                         .method("MOMO")
@@ -150,7 +150,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                     PaymentTransaction p = PaymentTransaction.builder()
                             .amount(orderResponse.getTotalDue())
                             .orderId(orderResponse.getId())
-                            .status(StatusTransaction.PENDING)
+                            .status(StatusTransaction.SUCCESS)
                             .paymentMethod(paymentMethod)
                             .build();
                     PaymentTransaction saved = paymentTransactionService.createPaymentTransaction(p);

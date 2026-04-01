@@ -63,6 +63,7 @@ public class LoyaltyClient {
                     .franchiseId(franchiseId)
                     .orderId(orderId)
                     .orderAmount(orderAmount)
+                    .promotionId(null)
                     .build();
             apiLoyaltyRestClient.post()
                     .uri("/api/loyalty/earn")
