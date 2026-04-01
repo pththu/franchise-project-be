@@ -36,7 +36,8 @@ public class PaymentTransaction {
     StatusTransaction status;
     @Column(name = "transaction_ref", unique = true)
     String transactionRef;
-
+    @Column(name = "pay_url")
+    String url;
     @CreationTimestamp
     @Column(name = "create_at", updatable = false)
     Instant createdAt;

@@ -253,7 +253,7 @@ public class OrderServiceImpl implements OrderService {
                 CustomerResponse customer = customerClient.getCustomerById(order.getCustomerId());
                 if (customer != null && customer.getUserId() != null) {
                     log.info("Loyalty: Earning points for user {} with amount {}", customer.getUserId(), order.getTotalDue());
-                    loyaltyClient.apiLoyaltyEarn(customer.getUserId(), order.getFranchiseId(), order.getTotalDue().doubleValue());
+                    loyaltyClient.apiLoyaltyEarn(customer.getUserId(), order.getId(), order.getFranchiseId(), order.getTotalDue().doubleValue());
                 } else {
                     log.warn("Loyalty: Could not earn points for order {}. Customer info or userId missing.", order.getId());
                 }

@@ -57,9 +57,9 @@ public class LoyaltyClient {
         }
     }
 
-    public void apiLoyaltyEarn(UUID userId, UUID franchiseId, Double orderAmount) {
+    public void apiLoyaltyEarn(UUID userId, UUID orderId, UUID franchiseId, Double orderAmount) {
         try {
-            EarnPointsRequest request = new EarnPointsRequest(userId, franchiseId, orderAmount);
+            EarnPointsRequest request = new EarnPointsRequest(userId, orderId, null, franchiseId, orderAmount);
             apiLoyaltyRestClient.post()
                     .uri("/api/loyalty/earn")
                     .body(request)
