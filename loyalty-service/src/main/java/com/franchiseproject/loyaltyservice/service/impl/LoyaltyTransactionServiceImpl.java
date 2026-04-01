@@ -85,7 +85,14 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
 
         transaction = loyaltyTransactionRepository.save(transaction);
 
-        return loyaltyMapper.toEarnPointsResponse(transaction, wallet.getCustomerLoyaltyTier().name());
+        // 1. TÍNH TOÁN SỐ TIỀN ĐƯỢC GIẢM
+        java.math.BigDecimal discountValue = java.math.BigDecimal.valueOf(request.getPointsToDeduct() * 1000L);
+
+        // 2. GÁN VÀO RESPONSE VÀ TRẢ VỀ
+        EarnPointsResponse response = loyaltyMapper.toEarnPointsResponse(transaction, wallet.getCustomerLoyaltyTier().name());
+        response.setDiscountValue(discountValue);
+
+        return response;
     }
 
     @Override
