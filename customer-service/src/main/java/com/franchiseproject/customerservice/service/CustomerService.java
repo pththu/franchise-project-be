@@ -1,5 +1,6 @@
 package com.franchiseproject.customerservice.service;
 
+import com.franchiseproject.customerservice.dto.request.SaveCustomerRequest;
 import com.franchiseproject.customerservice.dto.request.SearchRequest;
 import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
 import com.franchiseproject.customerservice.dto.response.CustomerFranchiseResponse;
@@ -34,7 +35,7 @@ public interface CustomerService {
 
     // CREATE / SYNC
 //    CustomerFranchise createCustomerAtFranchise(UUID customerId, UUID franchiseId, CustomerType type);
-    CustomerFranchise createCustomerAtFranchise(UUID customerId, UUID franchiseId);
+    CustomerFranchise saveCustomerFranchise(SaveCustomerRequest request);
 
     void syncCustomerFromIdentity(UUID customerId, CustomerType type);
 

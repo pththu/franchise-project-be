@@ -33,6 +33,7 @@ public interface UserService {
 
     Page<UserResponse> search(SeachUsersRequest request);
     Page<UserResponse> searchByRoleName(String roleName, int page, int size);
+    List<UserResponse> searchByPhone(String numberPhone);
 
     StatsCountUserResponse countUsers();
 
@@ -41,6 +42,8 @@ public interface UserService {
     Page<UserResponse> getStaffByFranchise(UUID franchiseId, int page);
 
     UserResponse getUserById(UUID id);
+
+
 
 
 

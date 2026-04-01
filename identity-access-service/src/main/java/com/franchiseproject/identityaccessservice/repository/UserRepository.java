@@ -81,4 +81,13 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             """)
     Object[] countUserStats();
 
+    @Query("""
+        SELECT u FROM User u 
+        WHERE u.phone LIKE CONCAT('%', CAST(:prefix1 AS string), '%') 
+            OR u.phone LIKE CONCAT('%', CAST(:prefix2 AS string), '%')
+    """)
+    List<User> findByNumber(
+            @Param("prefix1") String prefix1,
+            @Param("prefix2") String prefix2
+    );
 }

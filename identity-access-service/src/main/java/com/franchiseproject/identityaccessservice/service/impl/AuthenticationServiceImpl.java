@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AuthenticationResultType;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Slf4j
@@ -181,10 +182,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public void confirmForgotPassword(ConfirmForgotPasswordRequest request) {
         log.info("confirmForgotPassword: username={}", request.getIdentifier());
 
-        // Kiểm tra user tồn tại trong DB
-//        userRepository.findByUsername(request.getUsername())
-//                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
         User user = userRepository.findByUsernameOrEmail(request.getIdentifier(), request.getIdentifier())
                         .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -236,14 +233,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new AppException(ErrorCode.LOGIN_FAILED);
         }
 
-//        UUID franchiseId = user.getFranchiseId();
-//        UserResponse userResponse = userMapper.toUserResponse(user);
-//        if (franchiseId != null) {
-//            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
-//            if (franchiseResponse != null) {
-//                userResponse.setFranchise(franchiseResponse);
-//            }
-//        }
+        user.setLastLogin(Instant.now());
+        userRepository.save(user);
 
         return TokenResponse.builder()
                 .accessToken(authResult.accessToken())

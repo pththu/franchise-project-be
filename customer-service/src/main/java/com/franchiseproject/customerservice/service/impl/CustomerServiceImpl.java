@@ -3,6 +3,7 @@ package com.franchiseproject.customerservice.service.impl;
 import com.franchiseproject.customerservice.client.FranchiseClient;
 import com.franchiseproject.customerservice.client.IdentityClient;
 import com.franchiseproject.customerservice.client.LoyaltyClient;
+import com.franchiseproject.customerservice.dto.request.SaveCustomerRequest;
 import com.franchiseproject.customerservice.dto.request.SearchRequest;
 import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
 import com.franchiseproject.customerservice.dto.response.*;
@@ -204,20 +205,23 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerFranchise createCustomerAtFranchise(UUID userId, UUID franchiseId) {
-        boolean isExisted = customerFranchiseRepository.existsByUserIdAndFranchiseId(userId, franchiseId);
+    public CustomerFranchise saveCustomerFranchise(SaveCustomerRequest request) {
+//        boolean isExisted = customerFranchiseRepository.existsByUserIdAndFranchiseId(userId, franchiseId);
+        CustomerFranchise cf = customerFranchiseRepository.findByCustomerIdAndFranchiseId(request.getCustomerId(), request.getFranchiseId());
 
-        if (isExisted) {
-            throw  new AppException(ErrorCode.CUSTOMER_ALREADY_EXISTS);
+        if (cf != null) {
+            cf.setLastOrderAt(Instant.now());
+        } else {
+            cf = CustomerFranchise.builder()
+                    .franchiseId(request.getFranchiseId())
+                    .userId(request.getCustomerId())
+                    .status(CustomerStatus.ACTIVE)
+                    .firstOrderAt(Instant.now())
+                    .lastOrderAt(Instant.now())
+                    .build();
         }
 
-        CustomerFranchise customerFranchise = CustomerFranchise.builder()
-                .franchiseId(franchiseId)
-                .userId(userId)
-                .status(CustomerStatus.ACTIVE)
-                .build();
-
-        return customerFranchiseRepository.save(customerFranchise);
+        return customerFranchiseRepository.save(cf);
     }
 
     @Override
