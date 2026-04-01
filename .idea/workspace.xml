@@ -4,9 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="84aa4ac9-dac9-47fe-8aab-60e898a11d06" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="9f9231dc-c67f-4a8d-9334-df6cb0dbc8fa" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/controller/LoyaltyWalletController.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/controller/LoyaltyWalletController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/dto/response/EarnPointsResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/dto/response/EarnPointsResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/impl/LoyaltyTransactionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/impl/LoyaltyTransactionServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/controller/ShiftController.java" beforeDir="false" afterPath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/controller/ShiftController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/repository/StaffShiftRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/repository/StaffShiftRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/service/ShiftConfigurationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/service/ShiftConfigurationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/service/impl/ShiftConfigurationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/shift-service/src/main/java/com/franchiseproject/shiftservice/service/impl/ShiftConfigurationServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shift-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/shift-service/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,28 +52,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Maven.identity-access-service [clean].executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.ApiGatewayApplication.executor": "Run",
-    "Spring Boot.CustomerServiceApplication.executor": "Run",
-    "Spring Boot.FranchiseServiceApplication.executor": "Run",
-    "Spring Boot.IdentityAccessServiceApplication.executor": "Run",
-    "Spring Boot.InventoryServiceApplication.executor": "Run",
-    "Spring Boot.LoyaltyServiceApplication.executor": "Run",
-    "Spring Boot.OrderServiceApplication.executor": "Run",
-    "Spring Boot.PaymentServiceApplication.executor": "Run",
-    "Spring Boot.ProductServiceApplication.executor": "Run",
-    "Spring Boot.PromotionServiceApplication.executor": "Run",
-    "Spring Boot.ReportServiceApplication.executor": "Run",
-    "Spring Boot.ShiftServiceApplication.executor": "Run",
-    "git-widget-placeholder": "sprint04__team02__userManagerAll__thu",
-    "kotlin-language-version-configured": "true",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "advanced.settings"
+    "git-widget-placeholder": "Merging sprint04__team02__userManagerAll__thu"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -89,19 +75,7 @@
         <option value="KtorApplicationConfigurationType" />
         <option value="MicronautRunConfigurationType" />
         <option value="QuarkusRunConfigurationType" />
-        <option value="SpringBootApplicationConfigurationType" />
       </set>
-    </option>
-    <option name="hiddenConfigurations">
-      <map>
-        <entry key="SpringBootApplicationConfigurationType">
-          <value>
-            <set>
-              <option value="DeliveryServiceApplication" />
-            </set>
-          </value>
-        </entry>
-      </map>
     </option>
   </component>
   <component name="RunManager" selected="Spring Boot.IdentityAccessServiceApplication">
@@ -209,13 +183,6 @@
         <item itemvalue="Spring Boot.ReportServiceApplication" />
       </list>
     </recent_temporary>
-  </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
-      </set>
-    </attachedChunks>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
