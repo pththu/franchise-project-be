@@ -23,6 +23,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -86,7 +87,7 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
         transaction = loyaltyTransactionRepository.save(transaction);
 
         // 1. TÍNH TOÁN SỐ TIỀN ĐƯỢC GIẢM
-        java.math.BigDecimal discountValue = java.math.BigDecimal.valueOf(request.getPointsToDeduct() * 1000L);
+        BigDecimal discountValue = BigDecimal.valueOf(request.getPointsToDeduct() * 1000L);
 
         // 2. GÁN VÀO RESPONSE VÀ TRẢ VỀ
         EarnPointsResponse response = loyaltyMapper.toEarnPointsResponse(transaction, wallet.getCustomerLoyaltyTier().name());
