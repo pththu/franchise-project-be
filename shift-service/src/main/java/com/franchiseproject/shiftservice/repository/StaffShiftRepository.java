@@ -26,4 +26,7 @@ public interface StaffShiftRepository extends JpaRepository<StaffShift, UUID> {
     long countByStaffIdAndWorkDateBetween(UUID staffId, LocalDate start, LocalDate end);
 
     long countByStaffIdAndWorkDateBetweenAndStatusIn(UUID staffId, LocalDate weekStart, LocalDate weekEnd, List<ShiftStatus> assigned);
+
+    List<StaffShift> findByStaffIdAndWorkDateBetween(UUID staffId, LocalDate startDate, LocalDate endDate);
+
 }
