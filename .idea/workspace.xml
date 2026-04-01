@@ -4,43 +4,28 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f9231dc-c67f-4a8d-9334-df6cb0dbc8fa" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/dto/response/EarnPointsResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/dto/response/EarnPointsResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/impl/LoyaltyTransactionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/impl/LoyaltyTransactionServiceImpl.java" afterDir="false" />
+    <list default="true" id="b5d3bb93-9215-46a9-a40c-1b7f944246ae" name="Changes" comment="Merge branch 'sprint04' of https://git.fsoft-academy.edu.vn/hcm26_cpl_java_03/mockproject/projectteam2/be into sprint04_team05_promotionsManagenment_haunv&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/8bfde334-781c-4b77-9322-d8fc533bbd07.corrupted.20260401-100156.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/8bfde334-781c-4b77-9322-d8fc533bbd07.corrupted.20260401-100156.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="sprint04_team02" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
-  "isMigrated": true
+  &quot;isMigrated&quot;: true
 }</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
   </component>
   <component name="ProjectColorInfo">{
-  "associatedIndex": 4,
-  "fromUser": false
+  &quot;associatedIndex&quot;: 4,
+  &quot;fromUser&quot;: false
 }</component>
   <component name="ProjectId" id="3BiRzXgySrVdYQEnnc49E8kz74P" />
   <component name="ProjectLevelVcsManager">
@@ -66,8 +51,7 @@
     "Spring Boot.OrderServiceApplication.executor": "Run",
     "Spring Boot.ProductServiceApplication.executor": "Run",
     "Spring Boot.PromotionServiceApplication.executor": "Run",
-    "git-widget-placeholder": "sprint04__team02__coreEarnRedeem__tai",
-    "ignore.virus.scanning.warn.message": "true",
+    "git-widget-placeholder": "Merging sprint04__team02",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -77,87 +61,34 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="T:\study\iuh\internship\code\FranchiseProject\sprint04\be\franchise-service\src\main\java\com\franchiseproject\franchiseservice\exception" />
-      <recent name="D:\OJT\sprint04\be\promotion-service\src\main\java\franchiseproject\promotion_service" />
-      <recent name="D:\mockproject\inventory-service\src\main\java\franchiseproject\inventory_service" />
-    </key>
-    <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="com.franchiseproject.customerservice.dto.request" />
-      <recent name="com.franchiseproject.customerservice.enums" />
-      <recent name="com.franchiseproject.identityaccessservice.dto.response" />
-      <recent name="com.franchiseproject.identityaccessservice.enums" />
-      <recent name="com.franchiseproject.franchiseservice.dto" />
-    </key>
-  </component>
   <component name="RunDashboard">
     <option name="configurationTypes">
       <set>
         <option value="KtorApplicationConfigurationType" />
         <option value="MicronautRunConfigurationType" />
         <option value="QuarkusRunConfigurationType" />
+        <option value="SpringBootApplicationConfigurationType" />
       </set>
     </option>
+    <option name="configurationStatuses">
+      <map>
+        <entry key="SpringBootApplicationConfigurationType">
+          <value>
+            <map>
+              <entry key="ApiGatewayApplication" value="STOPPED" />
+              <entry key="CustomerServiceApplication" value="STOPPED" />
+              <entry key="FranchiseServiceApplication" value="STOPPED" />
+              <entry key="IdentityAccessServiceApplication" value="STOPPED" />
+              <entry key="LoyaltyServiceApplication" value="STOPPED" />
+              <entry key="OrderServiceApplication" value="STOPPED" />
+              <entry key="ProductServiceApplication" value="FAILED" />
+            </map>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.IdentityAccessServiceApplication">
-    <configuration name="DeliveryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="delivery-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.deliveryservice.DeliveryServiceApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="FranchiseServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
-      <module name="franchise-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.franchiseservice.FranchiseServiceApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="LoyaltyServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <envs>
-        <env name="DB_PASSWORD" value="XSBBYPBmgdLKwrapWYDE4C29ZYVOczBX" />
-        <env name="DB_URL" value="jdbc:postgresql://dpg-d6nd4iv5r7bs73cv57lg-a.singapore-postgres.render.com/auth_franchise_qyzo" />
-        <env name="DB_USERNAME" value="sa" />
-      </envs>
-      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
-      <module name="loyalty-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.loyaltyservice.LoyaltyServiceApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="OrderServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="order-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.orderservice.OrderServiceApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="PaymentServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="payment-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.paymentservice.PaymentServiceApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ProductServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="product-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="franchiseproject.product_service.ProductServiceApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="PromotionServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
-      <module name="promotion-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="franchiseproject.promotion_service.PromotionServiceApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
+  <component name="RunManager" selected="Spring Boot.ReportServiceApplication">
     <configuration name="ReportServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="report-service" />
@@ -172,27 +103,11 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ShiftServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
-      <module name="shift-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.shiftservice.ShiftServiceApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <list>
-      <item itemvalue="Spring Boot.FranchiseServiceApplication" />
-      <item itemvalue="Spring Boot.OrderServiceApplication" />
-      <item itemvalue="Spring Boot.ShiftServiceApplication" />
-      <item itemvalue="Spring Boot.DeliveryServiceApplication" />
       <item itemvalue="Spring Boot.ApiGatewayApplication" />
       <item itemvalue="Spring Boot.InventoryServiceApplication" />
       <item itemvalue="Spring Boot.CustomerServiceApplication" />
       <item itemvalue="Spring Boot.IdentityAccessServiceApplication" />
-      <item itemvalue="Spring Boot.LoyaltyServiceApplication" />
-      <item itemvalue="Spring Boot.PaymentServiceApplication" />
-      <item itemvalue="Spring Boot.ProductServiceApplication" />
-      <item itemvalue="Spring Boot.PromotionServiceApplication" />
       <item itemvalue="Spring Boot.ReportServiceApplication" />
     </list>
     <recent_temporary>
@@ -203,8 +118,8 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="84aa4ac9-dac9-47fe-8aab-60e898a11d06" name="Changes" comment="" />
-      <created>1774926286869</created>
+      <changelist id="b5d3bb93-9215-46a9-a40c-1b7f944246ae" name="Changes" comment="Merge branch 'sprint04' of https://git.fsoft-academy.edu.vn/hcm26_cpl_java_03/mockproject/projectteam2/be into sprint04_team05_promotionsManagenment_haunv&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml" />
+      <created>1774970168733</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1774970168733</updated>
@@ -214,15 +129,5 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <breakpoint enabled="true" type="java-exception">
-          <properties class="jakarta.persistence.PersistenceException" package="jakarta.persistence" />
-          <option name="timeStamp" value="1" />
-        </breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

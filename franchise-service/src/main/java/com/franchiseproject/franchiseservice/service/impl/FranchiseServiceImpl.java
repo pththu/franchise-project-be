@@ -176,6 +176,7 @@ public class FranchiseServiceImpl implements FranchiseService {
                 .map(franchiseMapper::toFranchiseResponse)
                 .toList();
     }
+
     public List<FranchiseDTO> getFranchisesByIds(List<UUID> ids) {
         if (ids == null || ids.isEmpty()) return List.of();
         return franchiseRepository.findAllById(ids).stream()
