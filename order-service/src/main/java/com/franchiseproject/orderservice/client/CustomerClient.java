@@ -158,4 +158,34 @@ public class CustomerClient {
         }
         return java.util.Collections.emptyMap();
     }
+
+    public void saveCustomerFranchise(UUID customerId, UUID franchiseId) {
+        if (customerId == null || franchiseId == null) return;
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
+
+            var spec = RestClient.builder().baseUrl("http://localhost:3003").build()
+                    .post()
+                    .uri("/api/customers/save-customer-franchise");
+
+            if (cookies != null) {
+                StringBuilder cookieBuilder = new StringBuilder();
+                for (var c : cookies) {
+                    cookieBuilder.append(c.getName()).append("=").append(c.getValue()).append("; ");
+                }
+                spec.header("Cookie", cookieBuilder.toString());
+            }
+
+            Map<String, Object> requestBody = Map.of(
+                    "customerId", customerId,
+                    "franchiseId", franchiseId
+            );
+
+            spec.body(requestBody).retrieve().toBodilessEntity();
+            log.info("Successfully saved CustomerFranchise link for customerId {} and franchiseId {}", customerId, franchiseId);
+        } catch (Exception e) {
+            log.error("Error saving CustomerFranchise for customerId {}: {}", customerId, e.getMessage());
+        }
+    }
 }

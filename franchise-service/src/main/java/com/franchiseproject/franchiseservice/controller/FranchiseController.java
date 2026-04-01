@@ -115,6 +115,12 @@ public class FranchiseController {
                 .data(franchiseService.searchByIds(franchiseIds))
                 .build();
     }
+
+    @GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<Object>> streamFranchiseEvents() {
+        return franchiseService.getFranchiseEvents();
+    }
+
     @PostMapping("/internal/search-by-ids")
     public ApiResponse<List<FranchiseDTO>> getFranchisesByIds(@RequestBody List<UUID> ids) {
         return ApiResponse.<List<FranchiseDTO>>builder()
@@ -122,10 +128,5 @@ public class FranchiseController {
                 .message("Bulk fetch franchises successfully")
                 .data(franchiseService.getFranchisesByIds(ids))
                 .build();
-    }
-
-    @GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<Object>> streamFranchiseEvents() {
-        return franchiseService.getFranchiseEvents();
     }
 }
