@@ -176,7 +176,7 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
         );
 
         if (alreadyRefunded) {
-                throw new AppException(ErrorCode.ORDER_ALREADY_REFUNDED);
+            throw new AppException(ErrorCode.ORDER_ALREADY_REFUNDED);
         }
 
         LoyaltyWallet wallet = loyaltyWalletRepository
