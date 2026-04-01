@@ -6,21 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="84aa4ac9-dac9-47fe-8aab-60e898a11d06" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customer-service/.run/CustomerServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/.run/CustomerServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/controller/CustomerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/controller/CustomerController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/repository/CustomerFranchiseRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/repository/CustomerFranchiseRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/service/CustomerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/service/CustomerService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/service/impl/CustomerServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/customer-service/src/main/java/com/franchiseproject/customerservice/service/impl/CustomerServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity-access-service/.run/IdentityAccessServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/.run/IdentityAccessServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/dto/request/UserCreationRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/dto/request/UserCreationRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/entity/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/service/impl/AuthenticationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/service/impl/AuthenticationServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/identity-access-service/src/main/java/com/franchiseproject/identityaccessservice/service/impl/UserServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/.run/LoyaltyServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/.run/LoyaltyServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/.run/OrderServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/.run/OrderServiceApplication.run.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,25 +64,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.ApiGatewayApplication.executor": "Run",
-    "Spring Boot.CustomerServiceApplication.executor": "Run",
-    "Spring Boot.FranchiseServiceApplication.executor": "Run",
-    "Spring Boot.IdentityAccessServiceApplication.executor": "Run",
-    "Spring Boot.InventoryServiceApplication.executor": "Run",
-    "Spring Boot.LoyaltyServiceApplication.executor": "Run",
-    "Spring Boot.OrderServiceApplication.executor": "Run",
-    "Spring Boot.PaymentServiceApplication.executor": "Run",
-    "Spring Boot.ProductServiceApplication.executor": "Run",
-    "Spring Boot.PromotionServiceApplication.executor": "Run",
-    "Spring Boot.ReportServiceApplication.executor": "Run",
-    "Spring Boot.ShiftServiceApplication.executor": "Run",
-    "git-widget-placeholder": "sprint04__team02__userManagerAll__thu",
-    "kotlin-language-version-configured": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.ApiGatewayApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.CustomerServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.FranchiseServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.IdentityAccessServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.InventoryServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.LoyaltyServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.OrderServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.PaymentServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.ProductServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.PromotionServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.ReportServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.ShiftServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;sprint04__team02__userManagerAll__thu&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="T:\study\iuh\internship\code\FranchiseProject\sprint04\be\franchise-service\src\main\java\com\franchiseproject\franchiseservice\exception" />
@@ -137,11 +123,18 @@
         <entry key="SpringBootApplicationConfigurationType">
           <value>
             <map>
+              <entry key="ApiGatewayApplication" value="STOPPED" />
               <entry key="CustomerServiceApplication" value="STOPPED" />
+              <entry key="FranchiseServiceApplication" value="STOPPED" />
               <entry key="IdentityAccessServiceApplication" value="STOPPED" />
+              <entry key="InventoryServiceApplication" value="STOPPED" />
               <entry key="LoyaltyServiceApplication" value="STOPPED" />
-              <entry key="OrderServiceApplication" value="FAILED" />
+              <entry key="OrderServiceApplication" value="STOPPED" />
+              <entry key="PaymentServiceApplication" value="STOPPED" />
               <entry key="ProductServiceApplication" value="FAILED" />
+              <entry key="PromotionServiceApplication" value="STOPPED" />
+              <entry key="ReportServiceApplication" value="STOPPED" />
+              <entry key="ShiftServiceApplication" value="STOPPED" />
             </map>
           </value>
         </entry>
