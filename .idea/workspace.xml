@@ -5,56 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="84aa4ac9-dac9-47fe-8aab-60e898a11d06" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/8bfde334-781c-4b77-9322-d8fc533bbd07.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/8bfde334-781c-4b77-9322-d8fc533bbd07/storage_v2/_src_/database/auth_franchise_qyzo.Nn7zKg.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/8bfde334-781c-4b77-9322-d8fc533bbd07/storage_v2/_src_/database/auth_franchise_qyzo.Nn7zKg/schema/information_schema.FNRwLQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/8bfde334-781c-4b77-9322-d8fc533bbd07/storage_v2/_src_/database/auth_franchise_qyzo.Nn7zKg/schema/pg_catalog.0S1ZNQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/8bfde334-781c-4b77-9322-d8fc533bbd07/storage_v2/_src_/database/auth_franchise_qyzo.Nn7zKg/schema/public.abK9xQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/8bfde334-781c-4b77-9322-d8fc533bbd07/storage_v2/_src_/database/auth_franchise_qyzo.Nn7zKg/schema/public.abK9xQ.zip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/aws.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/db-forest-config.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/db-forest-config.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hs_err_pid16136.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/hs_err_pid21560.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/.run/InventoryServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/.run/InventoryServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/controller/LoyaltyWalletController.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/controller/LoyaltyWalletController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/exception/ErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/exception/ErrorCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/mapper/LoyaltyMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/mapper/LoyaltyMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/model/LoyaltyTransaction.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/model/LoyaltyTransaction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/model/LoyaltyWallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/model/LoyaltyWallet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/LoyaltyWalletService.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/LoyaltyWalletService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/impl/CustomerTierServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/impl/CustomerTierServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/impl/LoyaltyWalletServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/service/impl/LoyaltyWalletServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/.run/OrderServiceApplication.run.xml" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/.run/OrderServiceApplication.run.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/CustomerClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/CustomerClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/LoyaltyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/client/LoyaltyClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/EarnPointsRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/EarnPointsRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/LoyaltyReserveRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/LoyaltyReserveRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/LoyaltyTraceBackRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/dto/request/LoyaltyTraceBackRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/entity/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/entity/Order.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/service/impl/OrderServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/franchiseproject/orderservice/service/impl/OrderServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/entity/PaymentTransaction.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/franchiseproject/paymentservice/entity/PaymentTransaction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/client/LoyaltyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/client/LoyaltyClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/controller/PromotionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/controller/PromotionController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/service/PromotionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/service/PromotionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/service/impl/PromotionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/promotion-service/src/main/java/franchiseproject/promotion_service/service/impl/PromotionServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/replay_pid16136.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/client/CustomerServiceClient.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/client/ProductServiceClient.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/config/ServiceUrlConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/config/ServiceUrlConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/config/WebClientConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/config/WebClientConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/dto/customer/CustomerResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/dto/order/OrderResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/dto/order/OrderResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/dto/product/ProductResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/service/ReportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/service/ReportService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/service/impl/ReactiveReportServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/java/com/example/reportservice/service/impl/ReactiveReportServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/report-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/report-service/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,6 +45,8 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Maven.identity-access-service [clean].executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.ApiGatewayApplication.executor": "Run",
@@ -107,8 +61,12 @@
     "Spring Boot.PromotionServiceApplication.executor": "Run",
     "Spring Boot.ReportServiceApplication.executor": "Run",
     "Spring Boot.ShiftServiceApplication.executor": "Run",
-    "git-widget-placeholder": "Merging sprint04__team02__userManagerAll__thu",
-    "kotlin-language-version-configured": "true"
+    "git-widget-placeholder": "sprint04__team02__userManagerAll__thu",
+    "kotlin-language-version-configured": "true",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "advanced.settings"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -134,24 +92,13 @@
         <option value="SpringBootApplicationConfigurationType" />
       </set>
     </option>
-    <option name="configurationStatuses">
+    <option name="hiddenConfigurations">
       <map>
         <entry key="SpringBootApplicationConfigurationType">
           <value>
-            <map>
-              <entry key="ApiGatewayApplication" value="STOPPED" />
-              <entry key="CustomerServiceApplication" value="STOPPED" />
-              <entry key="FranchiseServiceApplication" value="STOPPED" />
-              <entry key="IdentityAccessServiceApplication" value="STOPPED" />
-              <entry key="InventoryServiceApplication" value="STOPPED" />
-              <entry key="LoyaltyServiceApplication" value="STOPPED" />
-              <entry key="OrderServiceApplication" value="STOPPED" />
-              <entry key="PaymentServiceApplication" value="STOPPED" />
-              <entry key="ProductServiceApplication" value="FAILED" />
-              <entry key="PromotionServiceApplication" value="STOPPED" />
-              <entry key="ReportServiceApplication" value="STOPPED" />
-              <entry key="ShiftServiceApplication" value="STOPPED" />
-            </map>
+            <set>
+              <option value="DeliveryServiceApplication" />
+            </set>
           </value>
         </entry>
       </map>
