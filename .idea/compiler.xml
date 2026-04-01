@@ -134,16 +134,10 @@
         <module name="customer-service" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="api-gateway (1)" target="17" />
-      <module name="api-gateway (2)" target="17" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
-      <module name="api-gateway (1)" options="-parameters" />
-      <module name="api-gateway (2)" options="-parameters" />
       <module name="customer-service" options="-parameters" />
       <module name="delivery-service" options="-parameters -Amapstruct.suppressGeneratorTimestamp=true -Amapstruct.defaultComponentModel=spring -Amapstruct.verbose=true" />
       <module name="identity-access-service" options="-parameters" />

@@ -215,7 +215,7 @@ public class PromotionServiceImpl implements PromotionService {
             return;
         }
 
-        if ("PAID".equalsIgnoreCase(status)) {
+        if ("WAITING_FOR_CONFIRMATION".equalsIgnoreCase(status)) {
 
             Promotion p = repo.findById(usage.getPromotionId())
                     .orElseThrow();
