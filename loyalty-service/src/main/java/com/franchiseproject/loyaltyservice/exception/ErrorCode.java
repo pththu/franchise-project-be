@@ -15,6 +15,7 @@ public enum ErrorCode {
     FRANCHISE_ID_REQUIRED(4006, "Franchise ID is required"),
     USER_ID_REQUIRED(4007, "User ID is required"),
     ORDER_ID_REQUIRED(4008, "Order ID is required"),
+    LOYALTY_WALLET_ALREADY_EXISTS(4014, "Loyalty wallet already exists"),
 
     // --- REDEEM POINTS ---
     INSUFFICIENT_POINTS(4001, "Not enough points to deduct"),
