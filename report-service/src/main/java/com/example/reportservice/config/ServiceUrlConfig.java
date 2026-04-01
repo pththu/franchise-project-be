@@ -13,8 +13,6 @@ import jakarta.annotation.PostConstruct;
 public class ServiceUrlConfig {
 
     private Service orderService = new Service();
-    private Service productService = new Service();
-    private Service customerService = new Service();
 
     @Data
     public static class Service {
@@ -22,7 +20,6 @@ public class ServiceUrlConfig {
         private String path;
 
         public String getFullUrl() {
-            // Xóa /** nếu có trong path
             String cleanPath = path != null ? path.replace("/**", "") : "";
             return url + cleanPath;
         }
@@ -32,8 +29,6 @@ public class ServiceUrlConfig {
     public void init() {
         log.info("========== SERVICE URLS CONFIGURATION ==========");
         log.info("Order Service: {}", orderService.getFullUrl());
-        log.info("Product Service: {}", productService.getFullUrl());
-        log.info("Customer Service: {}", customerService.getFullUrl());
         log.info("================================================");
     }
 }
