@@ -251,6 +251,19 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
     }
 
     @Override
+    public List<StaffShiftResponse> getScheduleRange(UUID staffId, LocalDate startDate, LocalDate endDate) {
+        List<StaffShift> shifts = staffShiftRepository.findByStaffIdAndWorkDateBetween(staffId, startDate, endDate);
+
+        return shifts.stream()
+                .map(shift -> {
+                    StaffShiftResponse response = staffShiftMapper.toResponse(shift);
+                    enhanceWithShiftDetails(response, shift);
+                    return response;
+                })
+                .toList();
+    }
+
+    @Override
     public ShiftStatisticResponse getStatisticByDate(LocalDate date) {
         List<StaffShift> shifts = staffShiftRepository.findByWorkDate(date);
 

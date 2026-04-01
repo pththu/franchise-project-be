@@ -88,6 +88,15 @@ public class ShiftController {
         return service.getSchedule(staffId, date);
     }
 
+    @GetMapping("/assignments/range")
+    public List<StaffShiftResponse> getScheduleRange(
+            @RequestParam UUID staffId,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate
+    ) {
+        return service.getScheduleRange(staffId, startDate, endDate);
+    }
+
     // ================= STATISTICS =================
     @GetMapping("/statistics")
     public ShiftStatisticResponse getStatisticByDate(

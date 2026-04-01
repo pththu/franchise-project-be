@@ -306,7 +306,6 @@ public class UserController {
                 .build();
     }
 
-    // uncheck
     @GetMapping("/franchise/staff")
     public ApiResponse<Page<UserResponse>> getStaffByFranchise(
             @PathParam("franchiseId") UUID franchiseId,
@@ -316,6 +315,15 @@ public class UserController {
                 .statusCode(200)
                 .message("Get list staff")
                 .data(userService.getStaffByFranchise(franchiseId, page))
+                .build();
+    }
+
+    @GetMapping("/search-customer-by-phone")
+    public ApiResponse<List<UserResponse>> searchByPhone(@RequestParam("numberPhone") String numberPhone) {
+        return ApiResponse.<List<UserResponse>>builder()
+                .statusCode(200)
+                .message("Search customer by number")
+                .data(userService.searchByPhone(numberPhone))
                 .build();
     }
 

@@ -6,4 +6,6 @@ import java.util.UUID;
 
 public interface LoyaltyWalletService {
     LoyaltyWalletResponse getTierInfoFromWallet(UUID userId);
+
+    LoyaltyWalletResponse createWallet(UUID userId);
 }

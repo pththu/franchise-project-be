@@ -468,6 +468,30 @@ public class UserServiceImpl implements UserService {
         return users.map(user -> userMapper.toUserResponse(user, franchiseClient));
     }
 
+    @Override
+    public List<UserResponse> searchByPhone(String numberPhone) {
+        if (numberPhone == null || numberPhone.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String cleanPhone = numberPhone.trim().replaceAll("\\s+", "");
+
+        String corePhone = cleanPhone;
+        if (cleanPhone.startsWith("+84")) {
+            corePhone = cleanPhone.substring(3);
+        } else if (cleanPhone.startsWith("0")) {
+            corePhone = cleanPhone.substring(1);
+        }
+
+        String prefixWithZero = "0" + corePhone;
+        String prefixWith84 = "+84" + corePhone;
+
+        return userRepository.findByNumber(prefixWithZero, prefixWith84)
+                .stream()
+                .map(user -> userMapper.toUserResponse(user, franchiseClient))
+                .collect(Collectors.toList());
+    }
+
     private Map<UUID, FranchiseResponse> fetchFranchisesConcurrently(Set<UUID> franchiseIds) {
         if (franchiseIds.isEmpty()) return Collections.emptyMap();
 

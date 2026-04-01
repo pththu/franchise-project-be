@@ -1,6 +1,7 @@
 package com.franchiseproject.customerservice.controller;
 
 import com.franchiseproject.customerservice.dto.ApiResponse;
+import com.franchiseproject.customerservice.dto.request.SaveCustomerRequest;
 import com.franchiseproject.customerservice.dto.request.SearchRequest;
 import com.franchiseproject.customerservice.dto.request.UpdateCustomerRequest;
 import com.franchiseproject.customerservice.dto.response.CustomerFranchiseResponse;
@@ -109,18 +110,16 @@ public class CustomerController {
                 .build();
     }
 
-    public ApiResponse<CustomerFranchise> createCustormerAtFranchise(
-            @PathVariable("franchiseId") UUID franchiseId,
-            @RequestParam("customerId") UUID customerId
-    ) {
-
-        if (franchiseId == null || customerId == null) {
+    @PostMapping("/save-customer-franchise")
+    public ApiResponse<CustomerFranchise> saveCustomerFranchise(@RequestBody SaveCustomerRequest request ) {
+        if (request.getFranchiseId() == null || request.getCustomerId() == null) {
             throw new AppException(ErrorCode.DATA_NULL);
         }
 
         return ApiResponse.<CustomerFranchise>builder()
                 .statusCode(201)
                 .message("Create customer of franchise")
+                .data(customerService.saveCustomerFranchise(request))
                 .build();
     }
 
@@ -178,4 +177,6 @@ public class CustomerController {
                 .data(customerService.searchCustomers(request))
                 .build();
     }
+
+
 }
