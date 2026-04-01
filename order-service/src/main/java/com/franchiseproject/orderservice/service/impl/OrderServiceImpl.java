@@ -248,6 +248,17 @@ public class OrderServiceImpl implements OrderService {
         if (order.getTypeOrder() == TypeOrder.POS) {
             commitInventory(order);
         }
+
+        // Save customer -- franchise (after Checkout success).
+        if (order.getCustomerId() != null && order.getFranchiseId() != null) {
+            try {
+                // Automatically save or update the relationship via customer-service API
+                customerClient.saveCustomerFranchise(order.getCustomerId(), order.getFranchiseId());
+            } catch (Exception e) {
+                log.warn("Error unable to save CustomerFranchise for order {}: {}", order.getId(), e.getMessage());
+            }
+        }
+
         if (order.getCustomerId() != null) {
             try {
                 // Try to resolve userId.
@@ -302,7 +313,7 @@ public class OrderServiceImpl implements OrderService {
         if (!currentStatus.canBeCancelledByCustomer()) {
             throw new AppException(ErrorCode.NO_CANCEL);
         }
-        // If cancellation happens, we move to CANCELLED. 
+        // If cancellation happens, we move to CANCELLED.
         // Note: For online orders, they were confirmed (WAITING_FOR_CONFIRMATION) or preparing.
         order.setOrderStatus(OrderStatus.CANCELLED);
         releaseInventory(order);
@@ -684,5 +695,3 @@ public class OrderServiceImpl implements OrderService {
         log.info("Order {} deleted permanently.", orderId);
     }
 }
-
-
