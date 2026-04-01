@@ -34,9 +34,8 @@ public class LoyaltyClient {
                     });
 
             if (response != null && response.getData() != null) {
-                // Return discount value: points * 100
-                int pointsDeducted = Math.abs(response.getData().getPointsEarned());
-                return BigDecimal.valueOf(pointsDeducted).multiply(BigDecimal.valueOf(100));
+                // Return discount value: points * 1000
+                return response.getData().getDiscountValue();
             }
             return BigDecimal.ZERO;
         } catch (HttpClientErrorException e) {

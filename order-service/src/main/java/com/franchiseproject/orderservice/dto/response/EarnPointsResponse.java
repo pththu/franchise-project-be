@@ -3,6 +3,7 @@ package com.franchiseproject.orderservice.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -18,4 +19,5 @@ public class EarnPointsResponse {
     Integer currentBalance;
     String newTierName;
     Instant timestamp;
+    BigDecimal discountValue;
 }
