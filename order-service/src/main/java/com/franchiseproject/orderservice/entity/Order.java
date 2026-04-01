@@ -28,7 +28,7 @@ import java.util.UUID;
 public class Order {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
-    @Column(name = "id", unique = true, nullable = false)
+    @Column(name = "id", nullable = false)
     UUID id;
     @Column(name = "franchise_id", nullable = false)
     UUID franchiseId;

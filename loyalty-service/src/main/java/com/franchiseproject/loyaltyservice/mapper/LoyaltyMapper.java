@@ -2,8 +2,10 @@ package com.franchiseproject.loyaltyservice.mapper;
 
 import com.franchiseproject.loyaltyservice.dto.request.DeductPointsRequest;
 import com.franchiseproject.loyaltyservice.dto.response.EarnPointsResponse;
+import com.franchiseproject.loyaltyservice.dto.response.LoyaltyWalletResponse;
 import com.franchiseproject.loyaltyservice.dto.response.TransactionHistoryResponse;
 import com.franchiseproject.loyaltyservice.model.LoyaltyTransaction;
+import com.franchiseproject.loyaltyservice.model.LoyaltyWallet;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -20,4 +22,6 @@ public interface LoyaltyMapper {
     EarnPointsResponse toEarnPointsResponse(LoyaltyTransaction transaction, String tierName);
 
     TransactionHistoryResponse toTransactionHistoryResponse(LoyaltyTransaction transaction);
+
+    LoyaltyWalletResponse toLoyaltyWalletResponse(LoyaltyWallet wallet);
 }

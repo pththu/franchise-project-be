@@ -104,9 +104,9 @@ public class PromotionServiceImpl implements PromotionService {
 
 
     @Override
-    public List<Promotion> getAvailablePromotions(UUID customerId, UUID franchiseId, BigDecimal orderValue) {
+    public List<Promotion> getAvailablePromotions(UUID customerId, BigDecimal orderValue) {
 
-        String rankStr = loyaltyClient.getRank(customerId, franchiseId);
+        String rankStr = loyaltyClient.getRank(customerId);
 
         if (rankStr == null || rankStr.isBlank()) {
             rankStr = "BRONZE";
@@ -150,7 +150,7 @@ public class PromotionServiceImpl implements PromotionService {
         }
 
         // 👉 check rank
-        String rankStr = loyaltyClient.getRank(req.getCustomerId(), req.getFranchiseId());
+        String rankStr = loyaltyClient.getRank(req.getCustomerId());
         if (rankStr == null || rankStr.isBlank()) {
             rankStr = "BRONZE";
         }
@@ -215,7 +215,7 @@ public class PromotionServiceImpl implements PromotionService {
             return;
         }
 
-        if ("PAID".equalsIgnoreCase(status)) {
+        if ("WAITING_FOR_CONFIRMATION".equalsIgnoreCase(status)) {
 
             Promotion p = repo.findById(usage.getPromotionId())
                     .orElseThrow();

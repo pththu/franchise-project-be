@@ -4,10 +4,7 @@ import com.franchiseproject.loyaltyservice.dto.ApiResponse;
 import com.franchiseproject.loyaltyservice.dto.response.LoyaltyWalletResponse;
 import com.franchiseproject.loyaltyservice.service.LoyaltyWalletService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -28,6 +25,15 @@ public class LoyaltyWalletController {
                 .statusCode(200)
                 .message("Get user tier info successfully")
                 .data(tierInfo)
+                .build();
+    }
+
+    @PostMapping("/users/{userId}")
+    public ApiResponse<LoyaltyWalletResponse> createWallet(@PathVariable UUID userId) {
+        return ApiResponse.<LoyaltyWalletResponse>builder()
+                .statusCode(201)
+                .message("Loyalty wallet created successfully")
+                .data(loyaltyWalletService.createWallet(userId))
                 .build();
     }
 }
