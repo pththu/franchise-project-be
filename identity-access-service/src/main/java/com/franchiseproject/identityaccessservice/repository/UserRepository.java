@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.awt.*;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,7 +27,14 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByUsernameOrEmail(String username, String email);
 
-    Optional<User> findByRoleName(String roleName);
+    @Query("SELECT u FROM User u WHERE u.role.name = 'CUSTOMER' AND u.status = 'ACTIVE'")
+    List<User> getAllCustomer();
+
+    @Query("""
+        SELECT u FROM User u
+        WHERE u.role.name = CAST(:roleName AS string) AND u.status = 'ACTIVE'
+    """)
+    Page<User> findByRoleName(@Param("roleName") String roleName, Pageable pageable );
 
     Page<User> findAll(Pageable pageable);
 
@@ -36,7 +44,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             AND u.status != 'DELETED'
             AND u.franchiseId = :franchiseId
     """)
-    Page<User> findByRole(
+    Page<User> findByRoleAndFranchiseId(
             @Param("roleName") String roleName,
             @Param("franchiseId") UUID franchiseId,
             Pageable pageable);
@@ -73,4 +81,13 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             """)
     Object[] countUserStats();
 
+    @Query("""
+        SELECT u FROM User u 
+        WHERE u.phone LIKE CONCAT('%', CAST(:prefix1 AS string), '%') 
+            OR u.phone LIKE CONCAT('%', CAST(:prefix2 AS string), '%')
+    """)
+    List<User> findByNumber(
+            @Param("prefix1") String prefix1,
+            @Param("prefix2") String prefix2
+    );
 }

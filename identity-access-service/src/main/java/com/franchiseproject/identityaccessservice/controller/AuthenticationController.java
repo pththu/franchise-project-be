@@ -151,16 +151,6 @@ public class AuthenticationController {
                 .data("Logout: " + authenticationService.logout())
                 .build();
     }
-//
-//    @PutMapping("/{userId}/lock")
-//    public ApiResponse<UserLockResponse> lockUser(@PathVariable UUID userId) {
-//        return ApiResponse.<UserLockResponse>builder()
-//                .statusCode(200)
-//                .message("User locked")
-//                .data(authenticationService.lockUser(userId))
-//                .build();
-//    }
-
 
     @PostMapping("/change-password")
     public ApiResponse<?> changePassword(

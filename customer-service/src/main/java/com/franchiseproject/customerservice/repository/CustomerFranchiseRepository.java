@@ -24,10 +24,50 @@ public interface CustomerFranchiseRepository extends JpaRepository<CustomerFranc
 
     Page<CustomerFranchise> findByStatus(CustomerStatus status, Pageable pageable);
 
-    @Query("SELECT c FROM CustomerFranchise c " +
-            "WHERE (:franchiseId IS NULL OR c.franchiseId = :franchiseId) " +
-            "AND (:status IS NULL OR c.status = :status) " +
-            "AND (:filterByUserIds = false OR c.userId IN :userIds)")
+//    @Query("SELECT c FROM CustomerFranchise c " +
+//            "WHERE (:franchiseId IS NULL OR c.franchiseId = :franchiseId) " +
+//            "AND (:status IS NULL OR c.status = :status) " +
+//            "AND (:filterByUserIds = false OR c.userId IN :userIds)")
+//    Page<CustomerFranchise> searchCustomers(
+//            @Param("franchiseId") UUID franchiseId,
+//            @Param("status") CustomerStatus status,
+//            @Param("userIds") List<UUID> userIds,
+//            @Param("filterByUserIds") boolean filterByUserIds,
+//            Pageable pageable
+//    );
+
+    boolean existsByUserIdAndFranchiseId(UUID userId, UUID franchiseId);
+
+    @Query("""
+        SELECT cf FROM CustomerFranchise cf
+        WHERE cf.userId = :customerId AND cf.franchiseId = :franchiseId
+    """)
+    CustomerFranchise findByCustomerIdAndFranchiseId(
+            @Param("customerId") UUID customerId,
+            @Param("franchiseId") UUID franchiseId
+    );
+
+    @Query("""
+        SELECT c FROM CustomerFranchise c
+        WHERE c.franchiseId = :franchiseId
+            AND c.userId = :userId
+            AND c.status = 'ACTIVE'
+
+    """)
+    Optional<CustomerFranchise> findByUserIdAndFranchiseId(
+            @Param("userId") UUID userId,
+            @Param("franchiseId") UUID franchiseId
+    );
+
+    List<CustomerFranchise> findByUserIdIn(List<UUID> userIds);
+
+
+    @Query("""
+            SELECT cf FROM CustomerFranchise cf
+            WHERE (:franchiseId IS NULL OR cf.franchiseId = :franchiseId)
+              AND (:status IS NULL OR cf.status = :status)
+              AND (:filterByUserIds = false OR cf.userId IN :userIds)
+            """)
     Page<CustomerFranchise> searchCustomers(
             @Param("franchiseId") UUID franchiseId,
             @Param("status") CustomerStatus status,
@@ -35,8 +75,4 @@ public interface CustomerFranchiseRepository extends JpaRepository<CustomerFranc
             @Param("filterByUserIds") boolean filterByUserIds,
             Pageable pageable
     );
-
-    boolean existsByUserIdAndFranchiseId(UUID userId, UUID franchiseId);
-
-    Optional<CustomerFranchise> findByUserIdAndFranchiseId(UUID userId, UUID franchiseId);
 }

@@ -31,7 +31,7 @@ public interface OrderService {
 
     void cancelOrder(UUID orderId, UUID customerId);
 
-    void updateOrderStatus(UUID orderId, OrderStatus newStatus);
+    void updateOrderStatus(UUID orderId, OrderStatus newStatus, UUID staffId);
 
     List<OrderResponse> getOrderByCustomerId(UUID customerId);
 

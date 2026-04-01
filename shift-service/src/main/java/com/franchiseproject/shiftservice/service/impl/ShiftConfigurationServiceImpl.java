@@ -19,6 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
+import org.springframework.http.codec.ServerSentEvent;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -38,6 +41,9 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
     private final ShiftMapper shiftMapper;
     private final StaffShiftMapper staffShiftMapper;
 
+    // ================= SSE SINK =================
+    private final Sinks.Many<Object> shiftSink = Sinks.many().multicast().onBackpressureBuffer();
+
     // Constants
     private static final int GRACE_PERIOD_MINUTES = 15;
     private static final int LATE_THRESHOLD_MINUTES = 30;
@@ -56,6 +62,7 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
         shift.setStatus(true);
 
         ShiftResponse response = shiftMapper.toResponse(shiftRepository.save(shift));
+        emitShiftEvent(Map.of("type", "SHIFT_CREATED", "data", response));
         log.info("Shift created: {}", response);
         return response;
     }
@@ -70,13 +77,16 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
         shift.setEndTime(request.getEndTime());
         shift.setFranchiseId(request.getFranchiseId());
 
-        return shiftMapper.toResponse(shiftRepository.save(shift));
+        ShiftResponse response = shiftMapper.toResponse(shiftRepository.save(shift));
+        emitShiftEvent(Map.of("type", "SHIFT_UPDATED", "data", response));
+        return response;
     }
 
     @Override
     public ShiftResponse deleteShiftConfiguration(UUID id) {
         ShiftConfiguration shift = getShiftConfigOrThrow(id);
         shiftRepository.delete(shift);
+        emitShiftEvent(Map.of("type", "SHIFT_DELETED", "shiftId", id));
         return shiftMapper.toResponse(shift);
     }
 
@@ -101,13 +111,26 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
                 .status(ShiftStatus.ASSIGNED)
                 .build();
 
-        return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
+        StaffShiftResponse response = staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
+        emitShiftEvent(Map.of("type", "ASSIGN_SHIFT", "assignmentId", response.getId(), "data", response));
+        return response;
     }
 
     @Override
     public StaffShiftResponse updateAssignedShift(UUID staffShiftId, AssignShiftRequest request) {
         StaffShift staffShift = getStaffShiftOrThrow(staffShiftId);
         boolean hasChanges = false;
+
+        // Thêm cập nhật staffId
+        if (request.getStaffId() != null && !request.getStaffId().equals(staffShift.getStaffId())) {
+            // Kiểm tra nhân viên mới có bị trùng ca không
+            if (staffShiftRepository.existsByStaffIdAndWorkDate(
+                    request.getStaffId(), staffShift.getWorkDate())) {
+                throw new IllegalArgumentException("Nhân viên mới đã có ca trong ngày này");
+            }
+            staffShift.setStaffId(request.getStaffId());
+            hasChanges = true;
+        }
 
         if (request.getWorkDate() != null && !request.getWorkDate().equals(staffShift.getWorkDate())) {
             validateWorkDateChange(staffShift, request.getWorkDate());
@@ -125,7 +148,9 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
             return staffShiftMapper.toResponse(staffShift);
         }
 
-        return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
+        StaffShiftResponse response = staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
+        emitShiftEvent(Map.of("type", "UPDATE_ASSIGNMENT", "assignmentId", staffShiftId, "data", response));
+        return response;
     }
 
     // ================= ATTENDANCE =================
@@ -138,34 +163,25 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
         ShiftConfiguration config = getShiftConfigOrThrow(staffShift.getShiftConfigId());
         LocalTime startTime = config.getStartTime();
 
-        // KHÔNG cho check-in trước giờ bắt đầu
         if (now.isBefore(startTime)) {
             throw new IllegalStateException(
-                    String.format("Chưa đến giờ check-in. Giờ bắt đầu: %s, hiện tại: %s",
-                            startTime, now)
+                    String.format("Chưa đến giờ check-in. Giờ bắt đầu: %s, hiện tại: %s", startTime, now)
             );
         }
 
-        // Tính số phút trễ
         long lateMinutes = Duration.between(startTime, now).toMinutes();
 
         if (lateMinutes > GRACE_PERIOD_MINUTES) {
             staffShift.setLateMinutes((int) lateMinutes);
             staffShift.setNote("Check-in trễ " + lateMinutes + " phút");
-
-            if (lateMinutes > LATE_THRESHOLD_MINUTES) {
-                log.warn("Staff {} check-in trễ {} phút (quá ngưỡng)",
-                        staffShift.getStaffId(), lateMinutes);
-            }
         }
 
         staffShift.setCheckInTime(now);
         staffShift.setStatus(ShiftStatus.CHECKED_IN);
 
-        log.info("Staff {} checked in at {} for shift {}",
-                staffShift.getStaffId(), now, shiftId);
-
-        return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
+        StaffShiftResponse response = staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
+        emitShiftEvent(Map.of("type", "CHECK_IN", "assignmentId", shiftId, "staffId", staffShift.getStaffId(), "data", response));
+        return response;
     }
 
     @Override
@@ -177,17 +193,18 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
         LocalTime now = LocalTime.now();
         LocalTime endTime = config.getEndTime();
 
-        // Kiểm tra check-out quá hạn
         if (now.isAfter(endTime.plusMinutes(CHECKOUT_TIMEOUT_MINUTES))) {
             staffShift.setStatus(ShiftStatus.INCOMPLETE);
             staffShift.setNote("Quên check-out - xử lý sau " + CHECKOUT_TIMEOUT_MINUTES + " phút");
-            log.info("Shift {} marked as INCOMPLETE (missed checkout)", shiftId);
         } else {
             staffShift.setStatus(ShiftStatus.CHECKED_OUT);
         }
 
         staffShift.setCheckOutTime(now);
-        return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
+
+        StaffShiftResponse response = staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
+        emitShiftEvent(Map.of("type", "CHECK_OUT", "assignmentId", shiftId, "staffId", staffShift.getStaffId(), "data", response));
+        return response;
     }
 
     @Override
@@ -205,13 +222,11 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
         staffShift.setStatus(ShiftStatus.ABSENT);
         staffShift.setNote("Vắng mặt");
 
-        log.info("Staff {} marked as ABSENT for shift {}",
-                staffShift.getStaffId(), shiftId);
-
-        return staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
+        StaffShiftResponse response = staffShiftMapper.toResponse(staffShiftRepository.save(staffShift));
+        emitShiftEvent(Map.of("type", "MARK_ABSENT", "assignmentId", shiftId, "staffId", staffShift.getStaffId(), "data", response));
+        return response;
     }
 
-    // ================= SCHEDULE =================
     @Override
     public List<StaffShiftResponse> getSchedule(UUID staffId, LocalDate date) {
         try {
@@ -235,7 +250,19 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
         }
     }
 
-    // ================= STATISTICS =================
+    @Override
+    public List<StaffShiftResponse> getScheduleRange(UUID staffId, LocalDate startDate, LocalDate endDate) {
+        List<StaffShift> shifts = staffShiftRepository.findByStaffIdAndWorkDateBetween(staffId, startDate, endDate);
+
+        return shifts.stream()
+                .map(shift -> {
+                    StaffShiftResponse response = staffShiftMapper.toResponse(shift);
+                    enhanceWithShiftDetails(response, shift);
+                    return response;
+                })
+                .toList();
+    }
+
     @Override
     public ShiftStatisticResponse getStatisticByDate(LocalDate date) {
         List<StaffShift> shifts = staffShiftRepository.findByWorkDate(date);
@@ -263,7 +290,6 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
                 .build();
     }
 
-    // ================= ATTENDANCE REPORT =================
     @Override
     public List<StaffShiftResponse> getIncompleteShifts(LocalDate date) {
         return staffShiftRepository.findByWorkDateAndStatus(date, ShiftStatus.INCOMPLETE)
@@ -295,8 +321,24 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
         );
     }
 
+    // ================= SSE METHODS =================
+    @Override
+    public Flux<ServerSentEvent<Object>> getShiftEvents() {
+        return shiftSink.asFlux()
+                .map(event -> ServerSentEvent.<Object>builder()
+                        .id(UUID.randomUUID().toString())
+                        .event("shift-update")
+                        .data(event)
+                        .build());
+    }
+
+    @Override
+    public void emitShiftEvent(Object eventData) {
+        shiftSink.tryEmitNext(eventData);
+    }
+
     // ================= SCHEDULED JOBS =================
-    @Scheduled(cron = "0 */5 * * * ?", zone = "Asia/Ho_Chi_Minh") // Chạy mỗi 5 phút
+    @Scheduled(cron = "0 */5 * * * ?", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void processMissedCheckIns() {
         LocalDate today = LocalDate.now();
@@ -312,14 +354,11 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
                 ShiftConfiguration config = getShiftConfigOrThrow(shift.getShiftConfigId());
                 LocalTime startTime = config.getStartTime();
 
-                // Nếu đã quá 30 phút sau giờ bắt đầu mà chưa check-in -> ABSENT
                 if (now.isAfter(startTime.plusMinutes(CHECKIN_TIMEOUT_MINUTES))) {
                     shift.setStatus(ShiftStatus.ABSENT);
                     shift.setNote("Vắng mặt - không check-in sau " + CHECKIN_TIMEOUT_MINUTES + " phút");
-
                     staffShiftRepository.save(shift);
-                    log.info("Marked shift {} as ABSENT (missed check-in after {} mins)",
-                            shift.getId(), CHECKIN_TIMEOUT_MINUTES);
+                    log.info("Marked shift {} as ABSENT (missed check-in after {} mins)", shift.getId(), CHECKIN_TIMEOUT_MINUTES);
                 }
             } catch (Exception e) {
                 log.error("Failed to process shift {}: {}", shift.getId(), e.getMessage());
@@ -327,7 +366,7 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
         }
     }
 
-    @Scheduled(cron = "0 */5 * * * ?", zone = "Asia/Ho_Chi_Minh") // Chạy mỗi 5 phút
+    @Scheduled(cron = "0 */5 * * * ?", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void processMissedCheckOuts() {
         LocalDate today = LocalDate.now();
@@ -347,10 +386,8 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
                     shift.setStatus(ShiftStatus.INCOMPLETE);
                     shift.setCheckOutTime(endTime);
                     shift.setNote("Quên check-out - tự động xử lý sau " + CHECKOUT_TIMEOUT_MINUTES + " phút");
-
                     staffShiftRepository.save(shift);
-                    log.info("Marked shift {} as INCOMPLETE (missed check-out after {} mins)",
-                            shift.getId(), CHECKOUT_TIMEOUT_MINUTES);
+                    log.info("Marked shift {} as INCOMPLETE (missed check-out after {} mins)", shift.getId(), CHECKOUT_TIMEOUT_MINUTES);
                 }
             } catch (Exception e) {
                 log.error("Failed to process shift {}: {}", shift.getId(), e.getMessage());
@@ -359,7 +396,6 @@ public class ShiftConfigurationServiceImpl implements ShiftConfigurationService 
     }
 
     // ================= PRIVATE HELPERS =================
-
     private void validateShiftConfig(CreateShiftRequest request) {
         if (request.getStartTime().isAfter(request.getEndTime())) {
             throw new IllegalArgumentException("Giờ bắt đầu phải trước giờ kết thúc");

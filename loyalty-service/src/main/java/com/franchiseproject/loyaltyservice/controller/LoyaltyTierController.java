@@ -3,7 +3,6 @@ package com.franchiseproject.loyaltyservice.controller;
 import com.franchiseproject.loyaltyservice.dto.ApiResponse;
 import com.franchiseproject.loyaltyservice.model.LoyaltyTier;
 import com.franchiseproject.loyaltyservice.repository.LoyaltyTierRepository;
-import com.franchiseproject.loyaltyservice.service.LoyaltyTierService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -22,7 +21,7 @@ public class LoyaltyTierController {
     @GetMapping("/tiers")
     public ApiResponse<List<LoyaltyTier>> getAllTiers() {
         List<LoyaltyTier> tiers = loyaltyTierRepository.findAll();
-        return ApiResponse.<List<com.franchiseproject.loyaltyservice.model.LoyaltyTier>>builder()
+        return ApiResponse.<List<LoyaltyTier>>builder()
                 .statusCode(200)
                 .message("Get all tiers configuration successfully")
                 .data(tiers)

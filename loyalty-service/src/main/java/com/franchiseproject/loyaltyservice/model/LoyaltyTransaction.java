@@ -21,20 +21,24 @@ import java.util.UUID;
 public class LoyaltyTransaction {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
-    @Column(unique = true, nullable = false)
+    @Column(columnDefinition = "UUID", unique = true, nullable = false)
     UUID id;
-    @Column(name = "franchise_id", nullable = true)
+    @Column(name = "franchise_id", columnDefinition = "UUID", nullable = false)
     UUID franchiseId;
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", columnDefinition = "UUID", nullable = false)
     UUID userId;
-    @Column(name = "promotion_id", nullable = true)
+    @Column(name = "order_id", columnDefinition = "UUID", nullable = false)
+    UUID orderId;
+    @Column(name = "promotion_id", columnDefinition = "UUID", nullable = true)
     UUID promotionId;
+    @Column(nullable = false)
     int points;
-    @Column(name = "balance_before")
+    @Column(name = "balance_before", nullable = false)
     int balanceBefore;
-    @Column(name = "balance_after")
+    @Column(name = "balance_after", nullable = false)
     int balanceAfter;
     @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
     LoyaltyTransactionType type;
     @Column(name = "description", columnDefinition = "TEXT")
     String description;

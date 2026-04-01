@@ -5,9 +5,7 @@ import com.franchiseproject.orderservice.dto.OrderResponse;
 import com.franchiseproject.orderservice.dto.request.PaymentResultRequest;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.request.AddAddressRequest;
-import com.franchiseproject.orderservice.dto.request.UpdateOrderRequest;
 import com.franchiseproject.orderservice.dto.response.PaymentQRResponse;
-import com.franchiseproject.orderservice.dto.response.PaymentResponse;
 import com.franchiseproject.orderservice.enums.OrderStatus;
 import com.franchiseproject.orderservice.enums.TypeOrder;
 import com.franchiseproject.orderservice.service.OrderService;
@@ -69,8 +67,9 @@ public class OrderController {
     @PatchMapping("/{orderId}/status")
     public ApiResponse<Void> updateOrderStatus(
             @PathVariable UUID orderId,
-            @RequestParam OrderStatus status) {
-        orderService.updateOrderStatus(orderId, status);
+            @RequestParam OrderStatus status,
+            @RequestParam(required = false) UUID staffId) {
+        orderService.updateOrderStatus(orderId, status, staffId);
         return ApiResponse.<Void>builder()
                 .message("Cập nhật trạng thái đơn hàng thành công")
                 .statusCode(200)

@@ -28,7 +28,7 @@ import java.util.UUID;
 public class Order {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
-    @Column(name = "id", unique = true, nullable = false)
+    @Column(name = "id", nullable = false)
     UUID id;
     @Column(name = "franchise_id", nullable = false)
     UUID franchiseId;
@@ -48,7 +48,7 @@ public class Order {
     @Column(length = 20, nullable = false)
     TypeOrder typeOrder;
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
+    @Column(length = 50, nullable = false)
     OrderStatus orderStatus;
     @Column(name = "price_ship", precision = 12, scale = 2)
     BigDecimal priceShip;

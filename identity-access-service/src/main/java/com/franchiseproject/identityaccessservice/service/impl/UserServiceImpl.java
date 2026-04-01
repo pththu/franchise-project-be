@@ -19,10 +19,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +33,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class UserServiceImpl implements UserService {
+
 
     CognitoService cognitoService;
     RoleRepository roleRepository;
@@ -172,13 +170,14 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
 
+        UUID userId = UUID.fromString(cognitoSub);
         UUID assignedFranchiseId = req.getFranchiseId();
         if (role.getName().equalsIgnoreCase("CUSTOMER")) {
             assignedFranchiseId = null;
         }
 
         User user = User.builder()
-                .id(UUID.fromString(cognitoSub))
+                .id(userId)
                 .username(req.getUsername())
                 .email(req.getEmail())
                 .fullName(req.getFullName())
@@ -318,15 +317,6 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-//        UUID franchiseId = user.getFranchiseId();
-//        UserResponse userResponse = userMapper.toUserResponse(user, franchiseClient);
-//        if (franchiseId != null) {
-//            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
-//            if (franchiseResponse != null) {
-//                userResponse.setFranchise(franchiseResponse);
-//            }
-//        }
-
         return userMapper.toUserResponse(user, franchiseClient);
     }
 
@@ -416,20 +406,16 @@ public class UserServiceImpl implements UserService {
         if (changed) {
             userRepository.save(user);
         }
-//
-//        UUID franchiseId = user.getFranchiseId();
-//        UserResponse userResponse = userMapper.toUserResponse(user, franchiseClient);
-//        if (franchiseId != null) {
-//            FranchiseResponse franchiseResponse = franchiseClient.getFranchiseById(franchiseId);
-//            if (franchiseResponse != null) {
-//                userResponse.setFranchise(franchiseResponse);
-//            }
-//        }
 
         return UserUpdateResponse.builder()
                 .isUpdated(changed)
                 .userResponse(userMapper.toUserResponse(user, franchiseClient))
                 .build();
+    }
+
+    @Override
+    public List<User> getAllCustomer() {
+        return userRepository.getAllCustomer();
     }
 
     @Override
@@ -455,9 +441,55 @@ public class UserServiceImpl implements UserService {
         Sort sort =  Sort.by("username").ascending();
 
         Pageable pageable = PageRequest.of(page,10, sort);
-        Page<User> users = userRepository.findByRole("STAFF", franchiseId, pageable);
+        Page<User> users = userRepository.findByRoleAndFranchiseId("STAFF", franchiseId, pageable);
 
         return users.map(user -> userMapper.toUserResponse(user, franchiseClient));
+    }
+
+    @Override
+    public UserResponse getUserById(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.toUserResponse(user, franchiseClient);
+    }
+
+    @Override
+    public Page<UserResponse> searchByRoleName(String roleName, int page, int size) {
+
+        Sort sort = Sort.by("fullName").ascending();
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sort
+        );
+
+        Page<User> users = userRepository.findByRoleName(roleName, pageable);
+
+        return users.map(user -> userMapper.toUserResponse(user, franchiseClient));
+    }
+
+    @Override
+    public List<UserResponse> searchByPhone(String numberPhone) {
+        if (numberPhone == null || numberPhone.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String cleanPhone = numberPhone.trim().replaceAll("\\s+", "");
+
+        String corePhone = cleanPhone;
+        if (cleanPhone.startsWith("+84")) {
+            corePhone = cleanPhone.substring(3);
+        } else if (cleanPhone.startsWith("0")) {
+            corePhone = cleanPhone.substring(1);
+        }
+
+        String prefixWithZero = "0" + corePhone;
+        String prefixWith84 = "+84" + corePhone;
+
+        return userRepository.findByNumber(prefixWithZero, prefixWith84)
+                .stream()
+                .map(user -> userMapper.toUserResponse(user, franchiseClient))
+                .collect(Collectors.toList());
     }
 
     private Map<UUID, FranchiseResponse> fetchFranchisesConcurrently(Set<UUID> franchiseIds) {
@@ -475,10 +507,5 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    @Override
-    public UserResponse getUserById(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return userMapper.toUserResponse(user, franchiseClient);
-    }
+
 }

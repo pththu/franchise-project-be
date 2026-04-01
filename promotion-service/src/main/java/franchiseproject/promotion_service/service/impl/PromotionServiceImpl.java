@@ -8,6 +8,7 @@ import franchiseproject.promotion_service.dto.PromotionResponse;
 import franchiseproject.promotion_service.entity.Promotion;
 import franchiseproject.promotion_service.entity.PromotionUsage;
 import franchiseproject.promotion_service.entity.UserPromotionUsage;
+import franchiseproject.promotion_service.enums.DiscountType;
 import franchiseproject.promotion_service.enums.LoyaltyTier;
 import franchiseproject.promotion_service.enums.PromotionStatus;
 import franchiseproject.promotion_service.enums.PromotionUsageStatus;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -104,9 +106,9 @@ public class PromotionServiceImpl implements PromotionService {
 
 
     @Override
-    public List<Promotion> getAvailablePromotions(UUID customerId, UUID franchiseId, BigDecimal orderValue) {
+    public List<Promotion> getAvailablePromotions(UUID customerId, BigDecimal orderValue) {
 
-        String rankStr = loyaltyClient.getRank(customerId, franchiseId);
+        String rankStr = loyaltyClient.getRank(customerId);
 
         if (rankStr == null || rankStr.isBlank()) {
             rankStr = "BRONZE";
@@ -122,6 +124,14 @@ public class PromotionServiceImpl implements PromotionService {
                 .filter(p -> p.getRequiredRank() == null
                         || rank.ordinal() >= p.getRequiredRank().ordinal())
                 .filter(p -> p.getUsageLimit() == null || p.getUsedCount() < p.getUsageLimit())
+                .filter(p -> {
+                    if (p.getPerUserLimit() == null) return true;
+                    UserPromotionUsage usage = userPromotionUsageRepo
+                            .findByUserIdAndPromotionId(customerId, p.getId())
+                            .orElse(null);
+                    int used = (usage == null) ? 0 : usage.getUsedCount();
+                    return used < p.getPerUserLimit();
+                })
                 .toList();
     }
 
@@ -145,12 +155,13 @@ public class PromotionServiceImpl implements PromotionService {
             throw new RuntimeException("Promotion đã hết hạn");
         }
 
-        if (req.getOrderValue().compareTo(p.getMinOrderValue()) < 0) {
+        if (p.getMinOrderValue() != null &&
+                req.getOrderValue().compareTo(p.getMinOrderValue()) < 0) {
             throw new RuntimeException("Không đủ giá trị đơn hàng");
         }
 
         // 👉 check rank
-        String rankStr = loyaltyClient.getRank(req.getCustomerId(), req.getFranchiseId());
+        String rankStr = loyaltyClient.getRank(req.getCustomerId());
         if (rankStr == null || rankStr.isBlank()) {
             rankStr = "BRONZE";
         }
@@ -194,11 +205,20 @@ public class PromotionServiceImpl implements PromotionService {
 
         usageRepo.save(usage);
 
-        // 🔥 TRẢ VỀ CHO ORDER
+        // TRẢ VỀ CHO ORDER
+        BigDecimal discountValue = Optional.ofNullable(p.getDiscountValue())
+                .orElse(BigDecimal.ZERO);
+
+        BigDecimal maxDiscount = Optional.ofNullable(p.getMaxDiscountValue())
+                .orElse(BigDecimal.ZERO);
+
+        if (p.getDiscountType() == DiscountType.FIXED) {
+            maxDiscount = discountValue;
+        }
         return new PromotionDiscountResponse(
                 usage.getId(),
-                p.getDiscountValue(),
-                p.getMaxDiscountValue(),
+                discountValue,
+                maxDiscount,
                 p.getDiscountType()
         );
     }
@@ -215,7 +235,7 @@ public class PromotionServiceImpl implements PromotionService {
             return;
         }
 
-        if ("PAID".equalsIgnoreCase(status)) {
+        if ("WAITING_FOR_CONFIRMATION".equalsIgnoreCase(status)) {
 
             Promotion p = repo.findById(usage.getPromotionId())
                     .orElseThrow();

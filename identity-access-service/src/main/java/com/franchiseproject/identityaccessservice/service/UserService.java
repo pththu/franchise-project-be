@@ -32,11 +32,19 @@ public interface UserService {
     Page<User> getAll(int page);
 
     Page<UserResponse> search(SeachUsersRequest request);
+    Page<UserResponse> searchByRoleName(String roleName, int page, int size);
+    List<UserResponse> searchByPhone(String numberPhone);
 
     StatsCountUserResponse countUsers();
 
+    List<User> getAllCustomer ();
     List<User> getUsersByIds(List<UUID> ids);
     Page<UserResponse> getStaffByFranchise(UUID franchiseId, int page);
 
     UserResponse getUserById(UUID id);
+
+
+
+
+
 }

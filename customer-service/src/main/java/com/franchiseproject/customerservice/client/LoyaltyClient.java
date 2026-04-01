@@ -32,7 +32,6 @@ public class LoyaltyClient {
         if (userId == null || franchiseId == null) return null;
 
         String url = loyaltyServiceBaseUrl + "/api/loyalty/customers/" + userId + "/franchises/" + franchiseId + "/tier-info";
-
         try {
             log.info("Calling Loyalty API: {}", url);
             ResponseEntity<ApiResponse<CustomerTierResponse>> response = restTemplate.exchange(
@@ -50,16 +49,22 @@ public class LoyaltyClient {
     }
 
     public List<CustomerTierResponse> getBulkCustomerTierInfo(List<UUID> customerIds) {
+        System.out.println("Start map loyalty");
         if (customerIds == null || customerIds.isEmpty()) return Collections.emptyList();
 
         String url = loyaltyServiceBaseUrl + "/api/loyalty/internal/customers/bulk-tier-info";
+        System.out.println("Start map loyalty "+ url);
 
         try {
             ResponseEntity<ApiResponse<List<CustomerTierResponse>>> response = restTemplate.exchange(
-                    url, HttpMethod.POST, new HttpEntity<>(customerIds),
-                    new ParameterizedTypeReference<ApiResponse<List<CustomerTierResponse>>>() {
-                    }
+                    url,
+                    HttpMethod.POST,
+                    new HttpEntity<>(customerIds),
+                    new ParameterizedTypeReference<ApiResponse<List<CustomerTierResponse>>>() {}
             );
+
+            System.out.println("Start map loyalty getBody"+ response.getBody().getData());
+            System.out.println("Start map loyalty getData()"+ response.getBody());
             return response.getBody() != null ? response.getBody().getData() : Collections.emptyList();
         } catch (Exception e) {
             log.error("Failed to fetch bulk loyalty info", e);

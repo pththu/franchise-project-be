@@ -21,7 +21,7 @@ public interface PromotionService {
 
     void delete(UUID id);
 
-    public List<Promotion> getAvailablePromotions(UUID userId, UUID franchiseId, BigDecimal orderValue);
+    public List<Promotion> getAvailablePromotions(UUID userId, BigDecimal orderValue);
 
     PromotionDiscountResponse applyDiscount(ApplyDiscountRequest req);
 

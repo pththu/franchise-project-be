@@ -92,8 +92,10 @@ public class MomoServiceImpl implements MomoService {
                 .lang("vi")
                 .build();
 
-
-        return momoClient.createMomoQR(request);
+        CreateMomoResponse  response = momoClient.createMomoQR(request);
+        paymentTransaction.setUrl(response.getPayUrl());
+        paymentTransactionRepository.save(paymentTransaction);//save url thanh toán
+        return response;
     }
 
     /// Dùng tạo signature

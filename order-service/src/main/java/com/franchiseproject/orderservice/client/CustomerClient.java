@@ -3,7 +3,6 @@ package com.franchiseproject.orderservice.client;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.response.CustomerResponse;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -23,66 +22,16 @@ import java.util.UUID;
 public class CustomerClient {
 
     public CustomerResponse getCustomerById(UUID id) {
-        if (id == null) return null;
-        try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            String token = null;
-            Cookie[] cookies = null;
-            if (attributes != null) {
-                HttpServletRequest request = attributes.getRequest();
-                token = request.getHeader("Authorization");
-                cookies = request.getCookies();
-            }
-
-            var spec = RestClient.builder()
-                    .baseUrl("http://localhost:3003")
-                    .build()
-                    .get()
-                    .uri("/api/customers/" + id);
-            if (token != null) {
-                spec = spec.header("Authorization", token);
-            }
-            if (cookies != null) {
-                StringBuilder cookieBuilder = new StringBuilder();
-                for (var c : cookies) {
-                    cookieBuilder.append(c.getName()).append("=").append(c.getValue()).append("; ");
-                }
-                spec = spec.header("Cookie", cookieBuilder.toString());
-            }
-
-            ApiResponse<Map<String, Object>> response = spec.retrieve()
-                    .body(new ParameterizedTypeReference<ApiResponse<Map<String, Object>>>() {});
-            
-            if (response != null && response.getData() != null) {
-                Map<String, Object> data = response.getData();
-                CustomerResponse res = new CustomerResponse();
-                res.setId(UUID.fromString(data.get("id").toString()));
-                
-                // Robust parsing: check for nested userResponse OR top-level userId
-                Map<String, Object> user = (Map<String, Object>) data.get("userResponse");
-                if (user != null && user.get("id") != null) {
-                    res.setUserId(UUID.fromString(user.get("id").toString()));
-                    res.setFullName((String) user.get("fullName"));
-                    res.setEmail((String) user.get("email"));
-                    res.setPhone((String) user.get("phone"));
-                } else if (data.get("userId") != null) {
-                    res.setUserId(UUID.fromString(data.get("userId").toString()));
-                    res.setFullName((String) data.get("fullName"));
-                }
-                
-                return res;
-            }
+        if (id == null)
             return null;
-        } catch (Exception e) {
-            log.warn("Could not fetch customer for ID {}: {}", id, e.getMessage());
-            // Fallback cleanly if remote API fails or 403/404
-            return null;
-        }
+        Map<UUID, CustomerResponse> customers = getCustomersByIds(Collections.singletonList(id));
+        return customers.get(id);
     }
 
     public List<UUID> searchCustomerIdsByKeyword(String keyword, UUID franchiseId) {
         try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
+                    .getRequestAttributes();
             Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
 
             // Step 1: Search Users in Identity Service
@@ -102,7 +51,9 @@ public class CustomerClient {
                 identitySpec.header("Cookie", cookieBuilder.toString());
             }
 
-            var identityRes = identitySpec.retrieve().body(new ParameterizedTypeReference<ApiResponse<Map<String, Object>>>() {});
+            var identityRes = identitySpec.retrieve()
+                    .body(new ParameterizedTypeReference<ApiResponse<Map<String, Object>>>() {
+                    });
             if (identityRes != null && identityRes.getData() != null) {
                 Object content = identityRes.getData().get("content");
                 if (content instanceof List) {
@@ -113,7 +64,8 @@ public class CustomerClient {
                             .map(id -> UUID.fromString(id.toString()))
                             .collect(java.util.stream.Collectors.toList());
 
-                    if (userIds.isEmpty()) return Collections.emptyList();
+                    if (userIds.isEmpty())
+                        return Collections.emptyList();
 
                     // Step 2: Resolve User IDs to Customer IDs in Customer Service
                     var customerSpec = RestClient.builder().baseUrl("http://localhost:3003").build()
@@ -121,7 +73,9 @@ public class CustomerClient {
                             .uri(uriBuilder -> uriBuilder
                                     .path("/api/customers/search")
                                     .queryParam("franchiseId", franchiseId)
-                                    .queryParam("userIds", userIds.stream().map(UUID::toString).collect(java.util.stream.Collectors.joining(",")))
+                                    .queryParam("userIds",
+                                            userIds.stream().map(UUID::toString)
+                                                    .collect(java.util.stream.Collectors.joining(",")))
                                     .build());
 
                     if (cookies != null) {
@@ -132,7 +86,9 @@ public class CustomerClient {
                         customerSpec.header("Cookie", cookieBuilder.toString());
                     }
 
-                    var customerRes = customerSpec.retrieve().body(new ParameterizedTypeReference<ApiResponse<Map<String, Object>>>() {});
+                    var customerRes = customerSpec.retrieve()
+                            .body(new ParameterizedTypeReference<ApiResponse<Map<String, Object>>>() {
+                            });
                     if (customerRes != null && customerRes.getData() != null) {
                         Object customerContent = customerRes.getData().get("content");
                         if (customerContent instanceof List) {
@@ -153,9 +109,11 @@ public class CustomerClient {
     }
 
     public Map<UUID, CustomerResponse> getCustomersByIds(List<UUID> ids) {
-        if (ids == null || ids.isEmpty()) return Collections.emptyMap();
+        if (ids == null || ids.isEmpty())
+            return Collections.emptyMap();
         try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
+                    .getRequestAttributes();
             Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
 
             var spec = RestClient.builder().baseUrl("http://localhost:3003").build()
@@ -172,7 +130,8 @@ public class CustomerClient {
 
             ApiResponse<java.util.List<Map<String, Object>>> res = spec.body(ids)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<ApiResponse<java.util.List<Map<String, Object>>>>() {});
+                    .body(new ParameterizedTypeReference<ApiResponse<java.util.List<Map<String, Object>>>>() {
+                    });
 
             if (res != null && res.getData() != null) {
                 return res.getData().stream()
@@ -198,5 +157,35 @@ public class CustomerClient {
             log.error("Error bulk fetching customers for IDs {}: {}", ids, e.getMessage());
         }
         return java.util.Collections.emptyMap();
+    }
+
+    public void saveCustomerFranchise(UUID customerId, UUID franchiseId) {
+        if (customerId == null || franchiseId == null) return;
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
+
+            var spec = RestClient.builder().baseUrl("http://localhost:3003").build()
+                    .post()
+                    .uri("/api/customers/save-customer-franchise");
+
+            if (cookies != null) {
+                StringBuilder cookieBuilder = new StringBuilder();
+                for (var c : cookies) {
+                    cookieBuilder.append(c.getName()).append("=").append(c.getValue()).append("; ");
+                }
+                spec.header("Cookie", cookieBuilder.toString());
+            }
+
+            Map<String, Object> requestBody = Map.of(
+                    "customerId", customerId,
+                    "franchiseId", franchiseId
+            );
+
+            spec.body(requestBody).retrieve().toBodilessEntity();
+            log.info("Successfully saved CustomerFranchise link for customerId {} and franchiseId {}", customerId, franchiseId);
+        } catch (Exception e) {
+            log.error("Error saving CustomerFranchise for customerId {}: {}", customerId, e.getMessage());
+        }
     }
 }

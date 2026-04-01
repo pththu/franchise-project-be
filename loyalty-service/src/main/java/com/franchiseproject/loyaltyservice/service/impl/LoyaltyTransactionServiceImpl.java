@@ -23,6 +23,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -40,9 +41,9 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     private static final double AMOUNT_PER_POINT = 10000.0;
 
     @Override
-    public List<TransactionHistoryResponse> getByCustomerId(UUID customerId) {
+    public List<TransactionHistoryResponse> getByUserId(UUID userId) {
         List<LoyaltyTransaction> transactions = loyaltyTransactionRepository
-                .findByUserIdOrderByCreatedAtDesc(customerId);
+                .findByUserIdOrderByCreatedAtDesc(userId);
 
         return transactions.stream()
                 .map(loyaltyMapper::toTransactionHistoryResponse)
@@ -55,7 +56,7 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     @Transactional
     public EarnPointsResponse deductPoints(DeductPointsRequest request) {
         LoyaltyWallet wallet = loyaltyWalletRepository
-                .findByUserIdAndFranchiseId(request.getCustomerId(), request.getFranchiseId())
+                .findByUserId(request.getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.LOYALTY_WALLET_NOT_FOUND));
 
         int currentPoints = wallet.getLoyaltyCurrentPoint();
@@ -69,20 +70,30 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
         wallet.setLoyaltyCurrentPoint(balanceAfter);
         loyaltyWalletRepository.save(wallet);
 
+        String desc = "Used " + request.getPointsToDeduct() + " points for order #" + request.getOrderId();
+
         LoyaltyTransaction transaction = LoyaltyTransaction.builder()
-                .userId(request.getCustomerId())
+                .userId(request.getUserId())
                 .franchiseId(request.getFranchiseId())
-                .promotionId(UUID.fromString(request.getOrderId()))
+                .orderId(request.getOrderId())
                 .points(-request.getPointsToDeduct())
                 .balanceBefore(balanceBefore)
                 .balanceAfter(balanceAfter)
                 .type(LoyaltyTransactionType.REDEEM)
                 .createdAt(Instant.now())
+                .description(desc)
                 .build();
 
         transaction = loyaltyTransactionRepository.save(transaction);
 
-        return loyaltyMapper.toEarnPointsResponse(transaction, wallet.getCustomerLoyaltyTier().name());
+        // 1. TÍNH TOÁN SỐ TIỀN ĐƯỢC GIẢM
+        BigDecimal discountValue = BigDecimal.valueOf(request.getPointsToDeduct() * 1000L);
+
+        // 2. GÁN VÀO RESPONSE VÀ TRẢ VỀ
+        EarnPointsResponse response = loyaltyMapper.toEarnPointsResponse(transaction, wallet.getCustomerLoyaltyTier().name());
+        response.setDiscountValue(discountValue);
+
+        return response;
     }
 
     @Override
@@ -96,10 +107,9 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
         }
 
         LoyaltyWallet wallet = loyaltyWalletRepository
-                .findByUserIdAndFranchiseId(request.getCustomerId(), request.getFranchiseId())
+                .findByUserId(request.getUserId())
                 .orElseGet(() -> LoyaltyWallet.builder()
-                        .userId(request.getCustomerId())
-                        .franchiseId(request.getFranchiseId())
+                        .userId(request.getUserId())
                         .loyaltyCurrentPoint(0)
                         .loyaltyTotalPoint(0)
                         .customerLoyaltyTier(CustomerLoyaltyTier.BRONZE)
@@ -117,14 +127,19 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
 
         loyaltyWalletRepository.save(wallet);
 
+        String desc = "Earned " + pointsEarned + " points from order #" + request.getOrderId();
+
         LoyaltyTransaction transaction = LoyaltyTransaction.builder()
-                .userId(request.getCustomerId())
+                .userId(request.getUserId())
                 .franchiseId(request.getFranchiseId())
+                .orderId(request.getOrderId())
+                .promotionId(request.getPromotionId())
                 .points(pointsEarned)
                 .balanceBefore(balanceBefore)
                 .balanceAfter(balanceAfter)
                 .type(LoyaltyTransactionType.EARN)
                 .createdAt(Instant.now())
+                .description(desc)
                 .build();
 
         transaction = loyaltyTransactionRepository.save(transaction);
@@ -155,18 +170,18 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     @Override
     @Transactional
     public EarnPointsResponse refundPoints(RefundPointsRequest request) {
-        boolean alreadyRefunded = loyaltyTransactionRepository.existsByUserIdAndPromotionIdAndType(
-                request.getCustomerId(),
-                UUID.fromString(request.getOrderId()),
+        boolean alreadyRefunded = loyaltyTransactionRepository.existsByUserIdAndOrderIdAndType(
+                request.getUserId(),
+                (request.getOrderId()),
                 LoyaltyTransactionType.REFUND
         );
 
         if (alreadyRefunded) {
-                throw new AppException(ErrorCode.ORDER_ALREADY_REFUNDED);
+            throw new AppException(ErrorCode.ORDER_ALREADY_REFUNDED);
         }
 
         LoyaltyWallet wallet = loyaltyWalletRepository
-                .findByUserIdAndFranchiseId(request.getCustomerId(), request.getFranchiseId())
+                .findByUserId(request.getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.LOYALTY_WALLET_NOT_FOUND));
 
         int balanceBefore = wallet.getLoyaltyCurrentPoint();
@@ -175,15 +190,18 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
 
         loyaltyWalletRepository.save(wallet);
 
+        String desc = "Refunded " + request.getPointsToRefund() + " points for cancelled order #" + request.getOrderId();
+
         LoyaltyTransaction transaction = LoyaltyTransaction.builder()
-                .userId(request.getCustomerId())
+                .userId(request.getUserId())
                 .franchiseId(request.getFranchiseId())
-                .promotionId(UUID.fromString(request.getOrderId()))
+                .orderId((request.getOrderId()))
                 .points(request.getPointsToRefund())
                 .balanceBefore(balanceBefore)
                 .balanceAfter(balanceAfter)
                 .type(LoyaltyTransactionType.REFUND)
                 .createdAt(Instant.now())
+                .description(desc)
                 .build();
 
         transaction = loyaltyTransactionRepository.save(transaction);

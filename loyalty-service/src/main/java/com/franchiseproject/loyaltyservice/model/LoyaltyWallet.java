@@ -21,14 +21,11 @@ import java.util.UUID;
 public class LoyaltyWallet {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
-    @Column(unique = true, nullable = false)
+    @Column(columnDefinition = "UUID", unique = true, nullable = false)
     UUID id;
 
     @Column(name = "user_id", columnDefinition = "UUID", nullable = false)
     UUID userId;
-
-    @Column(name = "franchise_id", columnDefinition = "UUID", nullable = false)
-    UUID franchiseId;
 
     @Enumerated(EnumType.STRING)
     CustomerLoyaltyTier customerLoyaltyTier;

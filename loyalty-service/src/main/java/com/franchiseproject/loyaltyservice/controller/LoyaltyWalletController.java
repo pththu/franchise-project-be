@@ -4,10 +4,7 @@ import com.franchiseproject.loyaltyservice.dto.ApiResponse;
 import com.franchiseproject.loyaltyservice.dto.response.LoyaltyWalletResponse;
 import com.franchiseproject.loyaltyservice.service.LoyaltyWalletService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -18,17 +15,25 @@ public class LoyaltyWalletController {
 
     private final LoyaltyWalletService loyaltyWalletService;
 
-    @GetMapping("/wallets/users/{userId}/franchises/{franchiseId}/tier-info")
+    @GetMapping("/wallets/users/{userId}")
     public ApiResponse<LoyaltyWalletResponse> getUserWallet(
-            @PathVariable UUID userId,
-            @PathVariable UUID franchiseId) {
+            @PathVariable UUID userId) {
 
-        LoyaltyWalletResponse tierInfo = loyaltyWalletService.getTierInfoFromWallet(userId, franchiseId);
+        LoyaltyWalletResponse tierInfo = loyaltyWalletService.getTierInfoFromWallet(userId);
 
         return ApiResponse.<LoyaltyWalletResponse>builder()
                 .statusCode(200)
                 .message("Get user tier info successfully")
                 .data(tierInfo)
+                .build();
+    }
+
+    @PostMapping("/users/{userId}")
+    public ApiResponse<LoyaltyWalletResponse> createWallet(@PathVariable UUID userId) {
+        return ApiResponse.<LoyaltyWalletResponse>builder()
+                .statusCode(201) // Mã 201 Created
+                .message("Loyalty wallet created successfully")
+                .data(loyaltyWalletService.createWallet(userId))
                 .build();
     }
 }

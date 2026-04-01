@@ -22,5 +22,6 @@ public class OrderResponse {
     private BigDecimal priceShip;
     private Instant createAt;
     private Instant updateAt;
+    private String customerName;
     private List<OrderItemResponse> orderDetails;
 }

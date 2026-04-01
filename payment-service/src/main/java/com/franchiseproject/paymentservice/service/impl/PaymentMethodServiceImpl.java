@@ -97,7 +97,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         switch (paymentMethod.getMethodName()) {
             case "MOMO":
                 CreateMomoResponse createMomoResponse = momoService.buildCreateMomoQR(orderResponse, paymentMethod);
-                log.info("Create Momo QR Response:" + createMomoResponse.getPayUrl());
+
                 return PaymentQRResponse.builder()
                         .paymentTransactionId(UUID.fromString(createMomoResponse.getRequestId()))
                         .method("MOMO")
@@ -150,7 +150,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                     PaymentTransaction p = PaymentTransaction.builder()
                             .amount(orderResponse.getTotalDue())
                             .orderId(orderResponse.getId())
-                            .status(StatusTransaction.PENDING)
+                            .status(StatusTransaction.SUCCESS)
                             .paymentMethod(paymentMethod)
                             .build();
                     PaymentTransaction saved = paymentTransactionService.createPaymentTransaction(p);
@@ -244,21 +244,22 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                     PaymentMethod method = paymentMethodRepository.findByMethodName("VNPAY")
                             .orElseThrow(() -> new RuntimeException("Payment method VNPAY not found"));
 
-                    PaymentTransaction p = paymentTransactionRepository.findByOrderId(UUID.fromString(orderIdStr))
+                    PaymentTransaction p = paymentTransactionRepository.findByOrderId(orderId)
                             .orElseGet(() -> paymentTransactionService.buildPaymentTransaction(finalOrder, method));
                     
                     p.setAmount(amount);
-                    p.setStatus(StatusTransaction.FAILED);
+                    StatusTransaction failStatus = "24".equals(responseCode) ? StatusTransaction.CANCELLED : StatusTransaction.FAILED;
+                    p.setStatus(failStatus);
                     p.setTransactionRef(params.get("vnp_TransactionNo"));
                     PaymentTransaction savedTx = paymentTransactionRepository.save(p);
 
                     if (order != null) {
                         orderClient.sendPaymentResult(com.franchiseproject.paymentservice.dto.request.PaymentResultRequest.builder()
-                                .orderId(UUID.fromString(orderIdStr))
+                                .orderId(orderId)
                                 .paymentTransactionId(savedTx.getId())
                                 .amount(amount)
                                 .paymentMethod("VNPAY")
-                                .status(StatusTransaction.FAILED)
+                                .status(failStatus)
                                 .build());
                     }
                 }
