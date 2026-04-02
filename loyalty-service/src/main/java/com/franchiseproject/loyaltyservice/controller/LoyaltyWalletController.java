@@ -28,7 +28,7 @@ public class LoyaltyWalletController {
                 .build();
     }
 
-    @PostMapping("/users/{userId}")
+    @PostMapping("/wallets/users/{userId}")
     public ApiResponse<LoyaltyWalletResponse> createWallet(@PathVariable UUID userId) {
         return ApiResponse.<LoyaltyWalletResponse>builder()
                 .statusCode(201) // Mã 201 Created

@@ -5,6 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b5d3bb93-9215-46a9-a40c-1b7f944246ae" name="Changes" comment="Merge branch 'sprint04' of https://git.fsoft-academy.edu.vn/hcm26_cpl_java_03/mockproject/projectteam2/be into sprint04_team05_promotionsManagenment_haunv&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/controller/LoyaltyWalletController.java" beforeDir="false" afterPath="$PROJECT_DIR$/loyalty-service/src/main/java/com/franchiseproject/loyaltyservice/controller/LoyaltyWalletController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/8bfde334-781c-4b77-9322-d8fc533bbd07.corrupted.20260401-100156.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/8bfde334-781c-4b77-9322-d8fc533bbd07.corrupted.20260401-100156.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -17,15 +20,15 @@
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
-  &quot;isMigrated&quot;: true
+  "isMigrated": true
 }</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
   </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 4,
-  &quot;fromUser&quot;: false
+  "associatedIndex": 4,
+  "fromUser": false
 }</component>
   <component name="ProjectId" id="3BiRzXgySrVdYQEnnc49E8kz74P" />
   <component name="ProjectLevelVcsManager">
@@ -42,16 +45,22 @@
     "RequestMappingsPanelWidth0": "75",
     "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "Spring Boot.ApiGatewayApplication.executor": "Run",
     "Spring Boot.CustomerServiceApplication.executor": "Run",
+    "Spring Boot.DeliveryServiceApplication.executor": "Run",
+    "Spring Boot.FranchiseServiceApplication.executor": "Run",
     "Spring Boot.IdentityAccessServiceApplication.executor": "Run",
+    "Spring Boot.InventoryServiceApplication.executor": "Run",
     "Spring Boot.LoyaltyServiceApplication.executor": "Run",
     "Spring Boot.OrderServiceApplication.executor": "Run",
+    "Spring Boot.PaymentServiceApplication.executor": "Run",
     "Spring Boot.ProductServiceApplication.executor": "Run",
     "Spring Boot.PromotionServiceApplication.executor": "Run",
-    "git-widget-placeholder": "Merging sprint04__team02",
+    "Spring Boot.ReportServiceApplication.executor": "Run",
+    "git-widget-placeholder": "sprint04__team02__coreEarnRedeem__tai",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -77,7 +86,6 @@
             <map>
               <entry key="ApiGatewayApplication" value="STOPPED" />
               <entry key="CustomerServiceApplication" value="STOPPED" />
-              <entry key="FranchiseServiceApplication" value="STOPPED" />
               <entry key="IdentityAccessServiceApplication" value="STOPPED" />
               <entry key="LoyaltyServiceApplication" value="STOPPED" />
               <entry key="OrderServiceApplication" value="STOPPED" />
@@ -89,6 +97,20 @@
     </option>
   </component>
   <component name="RunManager" selected="Spring Boot.ReportServiceApplication">
+    <configuration name="FranchiseServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="franchise-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.franchiseservice.FranchiseServiceApplication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.franchiseproject.franchiseservice.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="ReportServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="report-service" />
@@ -104,17 +126,33 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Spring Boot.DeliveryServiceApplication" />
+      <item itemvalue="Spring Boot.LoyaltyServiceApplication" />
+      <item itemvalue="Spring Boot.OrderServiceApplication" />
+      <item itemvalue="Spring Boot.PaymentServiceApplication" />
+      <item itemvalue="Spring Boot.ProductServiceApplication" />
+      <item itemvalue="Spring Boot.PromotionServiceApplication" />
       <item itemvalue="Spring Boot.ApiGatewayApplication" />
       <item itemvalue="Spring Boot.InventoryServiceApplication" />
       <item itemvalue="Spring Boot.CustomerServiceApplication" />
       <item itemvalue="Spring Boot.IdentityAccessServiceApplication" />
+      <item itemvalue="Spring Boot.FranchiseServiceApplication" />
       <item itemvalue="Spring Boot.ReportServiceApplication" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Spring Boot.ReportServiceApplication" />
+        <item itemvalue="Spring Boot.FranchiseServiceApplication" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.240" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.29346.240" />
+      </set>
+    </attachedChunks>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -124,10 +162,22 @@
       <option name="presentableId" value="Default" />
       <updated>1774970168733</updated>
       <workItem from="1774970173292" duration="714000" />
+      <workItem from="1775113255126" duration="3720000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/franchise-service/src/main/java/com/franchiseproject/franchiseservice/FranchiseServiceApplication.java</url>
+          <line>9</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
