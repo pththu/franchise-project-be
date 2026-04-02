@@ -70,7 +70,7 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
         wallet.setLoyaltyCurrentPoint(balanceAfter);
         loyaltyWalletRepository.save(wallet);
 
-        String desc = "Used " + request.getPointsToDeduct() + " points for order #" + request.getOrderId();
+            String desc = "Used " + request.getPointsToDeduct() + " points for order #" + request.getOrderId();
 
         LoyaltyTransaction transaction = LoyaltyTransaction.builder()
                 .userId(request.getUserId())
@@ -99,6 +99,16 @@ public class LoyaltyTransactionServiceImpl implements LoyaltyTransactionService 
     @Override
     @Transactional
     public EarnPointsResponse earnPoints(EarnPointsRequest request) {
+
+        boolean alreadyEarned = loyaltyTransactionRepository.existsByUserIdAndOrderIdAndType(
+                request.getUserId(),
+                request.getOrderId(),
+                LoyaltyTransactionType.EARN
+        );
+
+        if (alreadyEarned) {
+            throw new AppException(ErrorCode.ORDER_ALREADY_EARNED);
+        }
 
         int pointsEarned = (int) (request.getOrderAmount() / AMOUNT_PER_POINT);
 
