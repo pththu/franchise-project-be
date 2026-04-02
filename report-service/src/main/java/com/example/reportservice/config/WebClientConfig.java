@@ -8,9 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
@@ -55,6 +58,7 @@ public class WebClientConfig {
                 .codecs(configurer -> configurer
                         .defaultCodecs()
                         .maxInMemorySize(16 * 1024 * 1024))
+                .filter(forwardAuthHeader())
                 .filter(logRequest())
                 .filter(logResponse());
     }
@@ -64,6 +68,26 @@ public class WebClientConfig {
         return builder
                 .baseUrl(urlConfig.getOrderService().getFullUrl())
                 .build();
+    }
+
+    private ExchangeFilterFunction forwardAuthHeader() {
+        return (request, next) -> Mono.deferContextual(contextView -> {
+            ServerWebExchange exchange = contextView.getOrDefault(ServerWebExchange.class, null);
+            if (exchange != null) {
+                String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+                String cookieHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.COOKIE);
+
+                ClientRequest.Builder requestBuilder = ClientRequest.from(request);
+                if (authHeader != null) {
+                    requestBuilder.header(HttpHeaders.AUTHORIZATION, authHeader);
+                }
+                if (cookieHeader != null) {
+                    requestBuilder.header(HttpHeaders.COOKIE, cookieHeader);
+                }
+                return next.exchange(requestBuilder.build());
+            }
+            return next.exchange(request);
+        });
     }
 
     private ExchangeFilterFunction logRequest() {

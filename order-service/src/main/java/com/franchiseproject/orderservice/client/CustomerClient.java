@@ -3,9 +3,11 @@ package com.franchiseproject.orderservice.client;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
 import com.franchiseproject.orderservice.dto.response.CustomerResponse;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -21,6 +23,52 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CustomerClient {
 
+    private void forwardAuthHeaders(RestClient.RequestBodySpec spec) {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            
+            // Forward Authorization header
+            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            if (authHeader != null) {
+                spec.header(HttpHeaders.AUTHORIZATION, authHeader);
+            }
+
+            // Forward Cookies
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                StringBuilder cookieBuilder = new StringBuilder();
+                for (Cookie cookie : cookies) {
+                    cookieBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append("; ");
+                }
+                spec.header(HttpHeaders.COOKIE, cookieBuilder.toString());
+            }
+        }
+    }
+
+    private void forwardAuthHeaders(RestClient.RequestHeadersSpec<?> spec) {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            
+            // Forward Authorization header
+            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            if (authHeader != null) {
+                spec.header(HttpHeaders.AUTHORIZATION, authHeader);
+            }
+
+            // Forward Cookies
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                StringBuilder cookieBuilder = new StringBuilder();
+                for (Cookie cookie : cookies) {
+                    cookieBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append("; ");
+                }
+                spec.header(HttpHeaders.COOKIE, cookieBuilder.toString());
+            }
+        }
+    }
+
     public CustomerResponse getCustomerById(UUID id) {
         if (id == null)
             return null;
@@ -30,10 +78,6 @@ public class CustomerClient {
 
     public List<UUID> searchCustomerIdsByKeyword(String keyword, UUID franchiseId) {
         try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
-                    .getRequestAttributes();
-            Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
-
             // Step 1: Search Users in Identity Service
             var identitySpec = RestClient.builder().baseUrl("http://localhost:3004").build()
                     .get()
@@ -43,13 +87,7 @@ public class CustomerClient {
                             .queryParam("keyword", keyword)
                             .build());
 
-            if (cookies != null) {
-                StringBuilder cookieBuilder = new StringBuilder();
-                for (var c : cookies) {
-                    cookieBuilder.append(c.getName()).append("=").append(c.getValue()).append("; ");
-                }
-                identitySpec.header("Cookie", cookieBuilder.toString());
-            }
+            forwardAuthHeaders(identitySpec);
 
             var identityRes = identitySpec.retrieve()
                     .body(new ParameterizedTypeReference<ApiResponse<Map<String, Object>>>() {
@@ -78,13 +116,7 @@ public class CustomerClient {
                                                     .collect(java.util.stream.Collectors.joining(",")))
                                     .build());
 
-                    if (cookies != null) {
-                        StringBuilder cookieBuilder = new StringBuilder();
-                        for (var c : cookies) {
-                            cookieBuilder.append(c.getName()).append("=").append(c.getValue()).append("; ");
-                        }
-                        customerSpec.header("Cookie", cookieBuilder.toString());
-                    }
+                    forwardAuthHeaders(customerSpec);
 
                     var customerRes = customerSpec.retrieve()
                             .body(new ParameterizedTypeReference<ApiResponse<Map<String, Object>>>() {
@@ -112,23 +144,13 @@ public class CustomerClient {
         if (ids == null || ids.isEmpty()) return Collections.emptyMap();
 
         try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
-                    .getRequestAttributes();
-            Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
-
             // Call Identity Service (Port 3004) directly to get user names
             var searchSpec = RestClient.builder().baseUrl("http://localhost:3004").build()
                     .post()
                     .uri("/api/auth/users/bulk")
                     .body(ids);
 
-            if (cookies != null) {
-                StringBuilder cookieBuilder = new StringBuilder();
-                for (var cookie : cookies) {
-                    cookieBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append("; ");
-                }
-                searchSpec.header("Cookie", cookieBuilder.toString());
-            }
+            forwardAuthHeaders(searchSpec);
 
             ApiResponse<List<Map<String, Object>>> res = searchSpec.retrieve()
                     .body(new ParameterizedTypeReference<ApiResponse<List<Map<String, Object>>>>() {});
@@ -166,21 +188,11 @@ public class CustomerClient {
         if (customerId == null || franchiseId == null)
             return;
         try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
-                    .getRequestAttributes();
-            Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
-
             var spec = RestClient.builder().baseUrl("http://localhost:3003").build()
                     .post()
                     .uri("/api/customers/save-customer-franchise");
 
-            if (cookies != null) {
-                StringBuilder cookieBuilder = new StringBuilder();
-                for (var c : cookies) {
-                    cookieBuilder.append(c.getName()).append("=").append(c.getValue()).append("; ");
-                }
-                spec.header("Cookie", cookieBuilder.toString());
-            }
+            forwardAuthHeaders(spec);
 
             Map<String, Object> requestBody = Map.of(
                     "customerId", customerId,
