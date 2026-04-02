@@ -103,7 +103,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderDetails(details);
         BigDecimal totalItems = orderDetailService.calculateTotal(details);
         order.setTotalDue(totalItems);//tổng hóa đơn khi chưa trừ
-        orderRepository.save(order);
+        orderRepository.saveAndFlush(order);
         return handleReserve(order, request, totalItems);
     }
 
@@ -136,7 +136,7 @@ public class OrderServiceImpl implements OrderService {
             order.setTotalDue(finalTotal);
             order.setTotalDiscount(finalTotal.subtract(totalItems));
             order.setOrderStatus(OrderStatus.WAITING_FOR_CONFIRMATION);
-            orderRepository.save(order);// save lần 2 sau khi set giá cả các thứ.
+            orderRepository.saveAndFlush(order);// save lần 2 sau khi set giá cả các thứ.
             if (request.getTypeOrder() != null && "Online".equalsIgnoreCase(request.getTypeOrder().name())) {
                 inventoryClient.notifyNewOrder(order.getFranchiseId());
             }
@@ -178,10 +178,10 @@ public class OrderServiceImpl implements OrderService {
             // If POS and no payment URL, it's a cash/synchronous payment -> Complete it now!
             if (order.getTypeOrder() == TypeOrder.POS && (res.getPaymentUrl() == null || res.getPaymentUrl().isEmpty())) {
                 order.setOrderStatus(OrderStatus.COMPLETED);
-                orderRepository.save(order);
+                orderRepository.saveAndFlush(order);
                 finalizeSuccessfulOrder(order);
             } else {
-                orderRepository.save(order);
+                orderRepository.saveAndFlush(order);
             }
             res.setOrderId(order.getId());
             return res;
