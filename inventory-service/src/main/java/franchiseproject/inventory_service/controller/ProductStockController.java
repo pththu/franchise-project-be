@@ -93,4 +93,13 @@ public class ProductStockController {
                 .message("Khấu trừ kho chính thức thành công")
                 .build();
     }
+
+    @PostMapping("/bulk-available")
+    public ApiResponse<java.util.Map<UUID, Integer>> getBulkAvailableStock(@RequestBody List<UUID> variantIds) {
+        return ApiResponse.<java.util.Map<UUID, Integer>>builder()
+                .statusCode(200)
+                .message("Lấy tồn kho khả dụng thành công")
+                .data(productStockService.getBulkAvailableStock(variantIds))
+                .build();
+    }
 }

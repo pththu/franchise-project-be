@@ -246,4 +246,21 @@ public class ProductStockServiceImpl implements ProductStockService {
             inventoryTransactionRepository.save(tx);
         }
     }
+
+    @Override
+    public Map<UUID, Integer> getBulkAvailableStock(List<UUID> variantIds) {
+        if (variantIds == null || variantIds.isEmpty()) return Map.of();
+        
+        List<ProductStock> stocks = productStockRepository.findByProductVariantIdIn(variantIds);
+        Map<UUID, Integer> availableStockMap = new java.util.HashMap<>();
+        
+        for (UUID vid : variantIds) {
+            int totalQty = stocks.stream()
+                    .filter(s -> s.getProductVariantId().equals(vid))
+                    .mapToInt(s -> s.getQuantity() - s.getReservedQuantity())
+                    .sum();
+            availableStockMap.put(vid, Math.max(0, totalQty));
+        }
+        return availableStockMap;
+    }
 }

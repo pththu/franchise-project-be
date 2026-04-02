@@ -103,4 +103,21 @@ public class InventoryClient {
             log.warn("Notify order status update failed for order: {}", orderId, e);
         }
     }
+
+    public java.util.Map<java.util.UUID, Integer> getBulkAvailableStock(java.util.List<java.util.UUID> variantIds) {
+        try {
+            var response = inventoryRestClient.post()
+                    .uri("/api/inventory/stocks/bulk-available")
+                    .body(variantIds)
+                    .retrieve()
+                    .body(new org.springframework.core.ParameterizedTypeReference<com.franchiseproject.orderservice.dto.response.ApiResponse<java.util.Map<java.util.UUID, Integer>>>() {});
+            
+            if (response != null && response.getData() != null) {
+                return response.getData();
+            }
+        } catch (Exception e) {
+            log.error("Failed to fetch bulk available stock", e);
+        }
+        return java.util.Map.of();
+    }
 }
