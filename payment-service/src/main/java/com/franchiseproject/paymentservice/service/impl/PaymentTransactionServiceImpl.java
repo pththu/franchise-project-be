@@ -3,6 +3,7 @@ package com.franchiseproject.paymentservice.service.impl;
 import com.franchiseproject.paymentservice.client.OrderClient;
 import com.franchiseproject.paymentservice.dto.request.PaymentResultRequest;
 import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
+import com.franchiseproject.paymentservice.dto.response.RePaymentResponse;
 import com.franchiseproject.paymentservice.dto.response.order.OrderResponse;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
 import com.franchiseproject.paymentservice.entity.PaymentTransaction;
@@ -56,10 +57,10 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
         log.info("IPN/Return handle transaction: {} with resultCode: {}", paymentTransactionId, resultCode);
         PaymentTransaction paymentTransaction = paymentTransactionRepository.findById(paymentTransactionId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_TRANSACTION));
-        
+
         // Idempotency check: if transaction is already processed, skip
-        if (paymentTransaction.getStatus() != StatusTransaction.CREATED && 
-            paymentTransaction.getStatus() != StatusTransaction.PENDING) {
+        if (paymentTransaction.getStatus() != StatusTransaction.CREATED &&
+                paymentTransaction.getStatus() != StatusTransaction.PENDING) {
             log.info("Transaction {} already in final state: {}. Skipping.", paymentTransactionId, paymentTransaction.getStatus());
             return;
         }
@@ -146,7 +147,8 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
 
     @Override
     @Scheduled(fixedRate = 60000) // chạy mỗi 60s
-    @Transactional /// cần update thêm
+    @Transactional
+    /// cần update thêm
     public void expirePendingTransactions() {
         Instant timeout = Instant.now().minus(15, ChronoUnit.MINUTES);
         List<PaymentTransaction> transactions =
@@ -203,5 +205,20 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
                 });
     }
 
-    
+    @Override
+    @Transactional
+    public RePaymentResponse getPayUrl(UUID orderId) {
+        PaymentTransaction pay = paymentTransactionRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_TRANSACTION));
+        if (pay.getStatus() != StatusTransaction.PENDING) {
+            throw new AppException(ErrorCode.ORDER_NOT_PAYABLE);
+        }
+        if (pay.getUrl() == null) {
+            throw new AppException(ErrorCode.PAYMENT_URL_NOT_FOUND);
+        }
+        return RePaymentResponse.builder()
+                .orderId(pay.getOrderId())
+                .payUrl(pay.getUrl())
+                .build();
+    }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ErrorCode {
+    PAYMENT_URL_NOT_FOUND(400, "Không tìm thấy payUrl trong transaction", HttpStatus.NOT_FOUND),
     INVALID_STATE_TRANSACTION(400, "Invalid state transition", HttpStatus.BAD_REQUEST),
     TRANSACTION_ALREADY_EXISTS(400, "Order đã có transaction", HttpStatus.CONFLICT),
     METHOD_EMPTY(400, "Không tìm thấy payment method khả dụng", HttpStatus.BAD_REQUEST),

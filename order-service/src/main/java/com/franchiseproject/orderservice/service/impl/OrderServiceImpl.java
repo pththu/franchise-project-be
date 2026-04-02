@@ -133,6 +133,7 @@ public class OrderServiceImpl implements OrderService {
             }
             BigDecimal finalTotal = calculateOrder(totalItems, request.getDistance(), discount, discountType, maxDiscountValue);
             order.setTotalDue(finalTotal);
+            order.setTotalDiscount(finalTotal.subtract(totalItems));
             order.setOrderStatus(OrderStatus.WAITING_FOR_CONFIRMATION);
             orderRepository.save(order);// save lần 2 sau khi set giá cả các thứ.
             if (request.getTypeOrder() != null && "Online".equalsIgnoreCase(request.getTypeOrder().name())) {
@@ -234,9 +235,13 @@ public class OrderServiceImpl implements OrderService {
             } else {
                 // Online order (Customer): if payment failed, rollback, DELETE transaction, and DELETE order
                 log.info("Online Payment result NOT SUCCESS for order {}. Rolling back, deleting transaction, and deleting order.", order.getId());
+                log.info("TotalDiscount: {}", order.getTotalDiscount());
                 promotionClient.apiPromotionTraceBack(order.getId(), OrderStatus.FAILED_ORDER);
                 releaseInventory(order);
-//                loyaltyClient.apiLoyaltyTraceBackPoints(order.getCustomerId(), order.getFranchiseId(), order.getId(), );
+                Integer pointToRefund = Optional.ofNullable(order.getTotalDiscount())
+                        .map(v -> v.divide(BigDecimal.valueOf(1000), 0, RoundingMode.DOWN).intValue())
+                        .orElse(0);
+                loyaltyClient.apiLoyaltyTraceBackPoints(order.getCustomerId(), order.getFranchiseId(), order.getId(), pointToRefund);
                 inventoryClient.notifyOrderStatus(order.getId(), "FAILED_ORDER", order.getFranchiseId());
                 paymentClient.deleteTransactionByOrderId(order.getId());
                 deleteOrderPermanently(order.getId());

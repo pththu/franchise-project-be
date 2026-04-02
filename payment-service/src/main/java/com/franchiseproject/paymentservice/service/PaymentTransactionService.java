@@ -1,5 +1,6 @@
 package com.franchiseproject.paymentservice.service;
 
+import com.franchiseproject.paymentservice.dto.response.RePaymentResponse;
 import com.franchiseproject.paymentservice.dto.response.order.OrderResponse;
 import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
@@ -23,4 +24,5 @@ public interface PaymentTransactionService {
     void deleteTransaction(UUID id);
 
     void deleteTransactionByOrderId(UUID orderId);
+    RePaymentResponse getPayUrl(UUID orderId);
 }
