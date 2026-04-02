@@ -19,7 +19,7 @@ import com.franchiseproject.orderservice.entity.OrderDetail;
 import com.franchiseproject.orderservice.repository.OrderRepository;
 import com.franchiseproject.orderservice.service.OrderDetailService;
 import com.franchiseproject.orderservice.service.OrderService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -63,6 +63,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderResponse> searchOrderById(String keyword) {
         List<UUID> customerIds = customerClient.searchCustomerIdsByKeyword(keyword, null);
         List<Order> orders;
@@ -375,6 +376,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public Page<OrderResponse> getOrdersByFranchiseAndFilters(
             UUID franchiseId,
             OrderStatus status,
@@ -393,12 +395,15 @@ public class OrderServiceImpl implements OrderService {
 
         Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
 
-        return orders.map(order -> {
+        Page<OrderResponse> responsePage = orders.map(order -> {
             OrderResponse res = orderMapper.toOrderResponse(order);
             var customer = customerMap.get(order.getCustomerId());
             res.setCustomerName(customer != null ? customer.getFullName() : "Guest");
             return res;
         });
+
+        populateProductImagesForList(responsePage.getContent());
+        return responsePage;
     }
 
 
@@ -444,6 +449,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderResponse> searchOrders(UUID franchiseId, String keyword) {
         List<UUID> customerIds = customerClient.searchCustomerIdsByKeyword(keyword, franchiseId);
         List<Order> orders;
@@ -461,7 +467,7 @@ public class OrderServiceImpl implements OrderService {
 
         Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(activeCustomerIds);
 
-        return orders.stream()
+        List<OrderResponse> responseList = orders.stream()
                 .map(order -> {
                     OrderResponse res = orderMapper.toOrderResponse(order);
                     var customer = customerMap.get(order.getCustomerId());
@@ -469,10 +475,13 @@ public class OrderServiceImpl implements OrderService {
                     return res;
                 })
                 .toList();
+        populateProductImagesForList(responseList);
+        return responseList;
     }
 
 
     @Override
+    @Transactional(readOnly = true)
     public Page<OrderResponse> getOrdersByFilters(
             OrderStatus status,
             TypeOrder typeOrder,

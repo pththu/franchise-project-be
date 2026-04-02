@@ -55,7 +55,7 @@ public class CategoryController {
 
     @PutMapping("/update/{id}")
     public ApiResponse<CategoryResponse> update(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @RequestBody CategoryUpdateRequest request
     ) {
         Category category = categoryService.getById(id);
@@ -71,7 +71,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ApiResponse<Boolean> delete(@PathVariable UUID id) {
+    public ApiResponse<Boolean> delete(@PathVariable("id") UUID id) {
         Category category = categoryService.getById(id);
 
         if (category.getStatus() == CategoryStatus.INACTIVE) {
