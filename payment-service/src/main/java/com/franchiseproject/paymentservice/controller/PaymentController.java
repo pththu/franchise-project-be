@@ -1,10 +1,7 @@
 package com.franchiseproject.paymentservice.controller;
 
 import com.franchiseproject.paymentservice.dto.request.OptionPaymentMethodRequest;
-import com.franchiseproject.paymentservice.dto.response.ApiResponse;
-import com.franchiseproject.paymentservice.dto.response.PaymentMethodResponse;
-import com.franchiseproject.paymentservice.dto.response.PaymentQRResponse;
-import com.franchiseproject.paymentservice.dto.response.PaymentTransactionResponse;
+import com.franchiseproject.paymentservice.dto.response.*;
 import com.franchiseproject.paymentservice.entity.PaymentMethod;
 import com.franchiseproject.paymentservice.enums.StatusTransaction;
 import com.franchiseproject.paymentservice.exception.AppException;
@@ -19,6 +16,7 @@ import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
@@ -135,7 +133,7 @@ public class PaymentController {
             String[] parts = result.split("\\|");
             String orderId = parts[0];
             String typeOrder = parts[1];
-            
+
             String redirectUrl = feReturnUrl;
             if ("POS".equalsIgnoreCase(typeOrder)) {
                 // Get base URL (e.g., http://localhost:5173) from feReturnUrl
@@ -149,7 +147,7 @@ public class PaymentController {
                     redirectUrl = feReturnUrl.replace("/order-success", "/staff/order-success");
                 }
             }
-            
+
             redirectUrl += (redirectUrl.contains("?") ? "&" : "?") + "orderId=" + orderId;
             response.sendRedirect(redirectUrl);
         } else {
@@ -172,4 +170,15 @@ public class PaymentController {
                 .statusCode(200)
                 .build();
     }
+
+    @GetMapping("/pay-url/{orderId}")
+    public ApiResponse<RePaymentResponse> payUrl(@PathVariable UUID orderId) {
+        RePaymentResponse response = paymentTransactionService.getPayUrl(orderId);
+        return ApiResponse.<RePaymentResponse>builder()
+                .message("Payment URL get success")
+                .data(response)
+                .statusCode(200)
+                .build();
+    }
+
 }

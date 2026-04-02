@@ -2,15 +2,13 @@ package com.franchiseproject.orderservice.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.UUID;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -22,7 +20,7 @@ public class LoyaltyTraceBackRequest {
     UUID franchiseId;
 
     @NotNull(message = "orderId không được trống")
-    String orderId;
+    UUID orderId;
 
     @PositiveOrZero(message = "Số điểm đơn hàng không được âm")
     int pointsToRefund;
