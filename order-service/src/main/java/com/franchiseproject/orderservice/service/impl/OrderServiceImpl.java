@@ -56,10 +56,34 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> getAll() {
-        return orderRepository.findAll()
-                .stream()
-                .map(this::mapToOrderResponseWithCustomer)
+        // Tối ưu: Dùng findAllWithDetails để fetch OrderDetails bằng EntityGraph (tránh N+1)
+        List<Order> orders = orderRepository.findAllWithDetails();
+        if (orders.isEmpty()) return Collections.emptyList();
+
+        List<OrderResponse> responseList = orders.stream()
+                .map(orderMapper::toOrderResponse)
                 .toList();
+
+        List<UUID> customerIds = orders.stream()
+                .map(Order::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (!customerIds.isEmpty()) {
+            try {
+                Map<UUID, CustomerResponse> customerMap = customerClient.getCustomersByIds(customerIds);
+                responseList.forEach(res -> {
+                    CustomerResponse c = customerMap.get(res.getCustomerId());
+                    if (c != null) res.setCustomerName(c.getFullName());
+                });
+            } catch (Exception e) {
+                log.warn("Failed to bulk fetch customers for getAll: {}", e.getMessage());
+            }
+        }
+
+        populateProductImagesForList(responseList);
+        return responseList;
     }
 
     @Override
@@ -397,8 +421,20 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> getOrderByCustomerId(UUID customerId) {
-        List<Order> o = orderRepository.findAllByCustomerId(customerId);
-        return o.stream().map(this::mapToOrderResponseWithCustomer).toList();
+        List<Order> orders = orderRepository.findAllByCustomerId(customerId);
+        if (orders.isEmpty()) return Collections.emptyList();
+
+        List<OrderResponse> responseList = orders.stream()
+                .map(orderMapper::toOrderResponse)
+                .toList();
+
+        CustomerResponse c = customerClient.getCustomerById(customerId);
+        if (c != null) {
+            responseList.forEach(res -> res.setCustomerName(c.getFullName()));
+        }
+
+        populateProductImagesForList(responseList);
+        return responseList;
     }
 
 
@@ -563,14 +599,34 @@ public class OrderServiceImpl implements OrderService {
                     pageable
             );
         }
-        return orders.map(this::mapToOrderResponseWithCustomer);
+
+        List<OrderResponse> list = orders.getContent().stream()
+                .map(orderMapper::toOrderResponse)
+                .toList();
+
+        CustomerResponse c = customerClient.getCustomerById(customerId);
+        if (c != null) {
+            list.forEach(res -> res.setCustomerName(c.getFullName()));
+        }
+
+        populateProductImagesForList(list);
+
+        return new org.springframework.data.domain.PageImpl<>(list, pageable, orders.getTotalElements());
     }
 
     @Override
     public OrderResponse getOrderById(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-        return mapToOrderResponseWithCustomer(order);
+        OrderResponse res = orderMapper.toOrderResponse(order);
+        if (order.getCustomerId() != null) {
+            CustomerResponse c = customerClient.getCustomerById(order.getCustomerId());
+            if (c != null) {
+                res.setCustomerName(c.getFullName());
+            }
+        }
+        populateProductImages(res);
+        return res;
     }
 
     /// Tính số tiền cần trả
