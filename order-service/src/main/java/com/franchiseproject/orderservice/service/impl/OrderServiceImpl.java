@@ -236,6 +236,7 @@ public class OrderServiceImpl implements OrderService {
                 log.info("Online Payment result NOT SUCCESS for order {}. Rolling back, deleting transaction, and deleting order.", order.getId());
                 promotionClient.apiPromotionTraceBack(order.getId(), OrderStatus.FAILED_ORDER);
                 releaseInventory(order);
+//                loyaltyClient.apiLoyaltyTraceBackPoints(order.getCustomerId(), order.getFranchiseId(), order.getId(), );
                 inventoryClient.notifyOrderStatus(order.getId(), "FAILED_ORDER", order.getFranchiseId());
                 paymentClient.deleteTransactionByOrderId(order.getId());
                 deleteOrderPermanently(order.getId());
@@ -284,12 +285,15 @@ public class OrderServiceImpl implements OrderService {
         // Reverted logic: Try traceback but ignore if it fails (likely due to no promotion used)
         try {
             promotionClient.apiPromotionTraceBack(order.getId(), order.getOrderStatus());
+
+            ///  dùng tạm
             loyaltyClient.apiLoyaltyEarn(order.getCustomerId(), order.getFranchiseId(), order.getId(), order.getTotalDue().doubleValue());
             log.info("customerId: {}, franchiseId: {}, orderId: {}, totalDue: {}",
                     order.getCustomerId(),
                     order.getFranchiseId(),
                     order.getId(),
                     order.getTotalDue().doubleValue());
+
         } catch (Exception e) {
             log.warn("Promotion traceback failed or not found for order {}: {}", order.getId(), e.getMessage());
         }
