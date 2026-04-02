@@ -19,4 +19,6 @@ public interface ProductStockService {
     void releaseStock(List<StockRequestItemRequest> items, UUID locationId);
 
     void commitStock(List<StockRequestItemRequest> items, UUID locationId);
+
+    java.util.Map<UUID, Integer> getBulkAvailableStock(List<UUID> variantIds);
 }

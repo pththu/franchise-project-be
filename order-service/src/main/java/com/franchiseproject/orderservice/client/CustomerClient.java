@@ -109,60 +109,65 @@ public class CustomerClient {
     }
 
     public Map<UUID, CustomerResponse> getCustomersByIds(List<UUID> ids) {
-        if (ids == null || ids.isEmpty())
-            return Collections.emptyMap();
+        if (ids == null || ids.isEmpty()) return Collections.emptyMap();
+
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
                     .getRequestAttributes();
             Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
 
-            var spec = RestClient.builder().baseUrl("http://localhost:3003").build()
+            // Call Identity Service (Port 3004) directly to get user names
+            var searchSpec = RestClient.builder().baseUrl("http://localhost:3004").build()
                     .post()
-                    .uri("/api/customers/bulk");
+                    .uri("/api/auth/users/bulk")
+                    .body(ids);
 
             if (cookies != null) {
                 StringBuilder cookieBuilder = new StringBuilder();
-                for (var c : cookies) {
-                    cookieBuilder.append(c.getName()).append("=").append(c.getValue()).append("; ");
+                for (var cookie : cookies) {
+                    cookieBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append("; ");
                 }
-                spec.header("Cookie", cookieBuilder.toString());
+                searchSpec.header("Cookie", cookieBuilder.toString());
             }
 
-            ApiResponse<java.util.List<Map<String, Object>>> res = spec.body(ids)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<ApiResponse<java.util.List<Map<String, Object>>>>() {
-                    });
+            ApiResponse<List<Map<String, Object>>> res = searchSpec.retrieve()
+                    .body(new ParameterizedTypeReference<ApiResponse<List<Map<String, Object>>>>() {});
 
             if (res != null && res.getData() != null) {
-                return res.getData().stream()
-                        .map(data -> {
-                            Map<String, Object> user = (Map<String, Object>) data.get("userResponse");
-                            CustomerResponse c = new CustomerResponse();
-                            c.setId(UUID.fromString(data.get("id").toString()));
-                            if (user != null) {
-                                c.setUserId(UUID.fromString(user.get("id").toString()));
-                                c.setFullName((String) user.get("fullName"));
-                                c.setEmail((String) user.get("email"));
-                                c.setPhone((String) user.get("phone"));
-                            }
-                            return c;
-                        })
-                        .collect(java.util.stream.Collectors.toMap(
-                                CustomerResponse::getId,
-                                c -> c,
-                                (existing, replacing) -> existing // Handle duplicates if any
-                        ));
+                List<Map<String, Object>> userList = res.getData();
+
+                return userList.stream()
+                    .map(data -> {
+                        CustomerResponse c = new CustomerResponse();
+                        // Identity service returns User UUID in 'id'
+                        if (data.get("id") != null) {
+                            UUID userId = UUID.fromString(data.get("id").toString());
+                            c.setUserId(userId);
+                            c.setId(userId); // Also set as ID for safety
+                        }
+                        c.setFullName((String) data.get("fullName"));
+                        c.setEmail((String) data.get("email"));
+                        c.setPhone((String) data.get("phone"));
+                        return c;
+                    })
+                    .filter(c -> c.getUserId() != null)
+                    .collect(java.util.stream.Collectors.toMap(
+                            CustomerResponse::getUserId, 
+                            c -> c, 
+                            (c1, c2) -> c1));
             }
         } catch (Exception e) {
-            log.error("Error bulk fetching customers for IDs {}: {}", ids, e.getMessage());
+            log.error("Error bulk fetching users from Identity Service for IDs {}: {}", ids, e.getMessage());
         }
-        return java.util.Collections.emptyMap();
+        return Collections.emptyMap();
     }
 
     public void saveCustomerFranchise(UUID customerId, UUID franchiseId) {
-        if (customerId == null || franchiseId == null) return;
+        if (customerId == null || franchiseId == null)
+            return;
         try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
+                    .getRequestAttributes();
             Cookie[] cookies = attributes != null ? attributes.getRequest().getCookies() : null;
 
             var spec = RestClient.builder().baseUrl("http://localhost:3003").build()
@@ -179,11 +184,11 @@ public class CustomerClient {
 
             Map<String, Object> requestBody = Map.of(
                     "customerId", customerId,
-                    "franchiseId", franchiseId
-            );
+                    "franchiseId", franchiseId);
 
             spec.body(requestBody).retrieve().toBodilessEntity();
-            log.info("Successfully saved CustomerFranchise link for customerId {} and franchiseId {}", customerId, franchiseId);
+            log.info("Successfully saved CustomerFranchise link for customerId {} and franchiseId {}", customerId,
+                    franchiseId);
         } catch (Exception e) {
             log.error("Error saving CustomerFranchise for customerId {}: {}", customerId, e.getMessage());
         }

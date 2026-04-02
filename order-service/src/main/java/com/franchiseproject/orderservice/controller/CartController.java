@@ -3,6 +3,7 @@ package com.franchiseproject.orderservice.controller;
 import com.franchiseproject.orderservice.dto.request.AddOnlineItemRequest;
 import com.franchiseproject.orderservice.dto.request.AddPosItemRequest;
 import com.franchiseproject.orderservice.dto.response.ApiResponse;
+import com.franchiseproject.orderservice.dto.response.CartItemResponse;
 import com.franchiseproject.orderservice.entity.PosCartItem;
 import com.franchiseproject.orderservice.service.CartService;
 import jakarta.validation.Valid;
@@ -60,9 +61,9 @@ public class CartController {
     }
     // Lấy danh sách sản phẩm trong giỏ hàng (Online)
     @GetMapping("/online/{customerId}")
-    public ApiResponse<List<PosCartItem>> getOnlineCart(
+    public ApiResponse<List<CartItemResponse>> getOnlineCart(
             @PathVariable UUID customerId) {
-        return ApiResponse.<List<PosCartItem>>builder()
+        return ApiResponse.<List<CartItemResponse>>builder()
                 .message("Lấy giỏ Online thành công")
                 .data(cartService.getCartOnline(customerId))
                 .statusCode(200)
@@ -109,6 +110,30 @@ public class CartController {
                 .statusCode(200)
                 .data(null)
                 .errors(null)
+                .build();
+    }
+
+    // Xóa tất cả sản phẩm
+    @DeleteMapping("/online/{customerId}/clear")
+    public ApiResponse<Void> clearOnlineCart(@PathVariable UUID customerId) {
+        cartService.clearOnlineCart(customerId);
+        return ApiResponse.<Void>builder()
+                .message("Xóa toàn bộ giỏ Online thành công")
+                .statusCode(200)
+                .data(null)
+                .build();
+    }
+
+    // Xóa nhiều sản phẩm
+    @DeleteMapping("/online/{customerId}/remove-multiple")
+    public ApiResponse<Void> removeMultipleOnlineItems(
+            @PathVariable UUID customerId,
+            @RequestBody List<UUID> variantIds) {
+        cartService.removeMultipleOnlineItems(customerId, variantIds);
+        return ApiResponse.<Void>builder()
+                .message("Xóa nhiều sản phẩm thành công")
+                .statusCode(200)
+                .data(null)
                 .build();
     }
 }

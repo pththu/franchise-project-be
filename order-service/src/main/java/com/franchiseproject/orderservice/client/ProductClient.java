@@ -64,6 +64,22 @@ public class ProductClient {
         }
     }
 
+    public ApiResponse<List<com.franchiseproject.orderservice.dto.response.ProductVariantDetailResponse>> getProductVariantsBulk(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return ApiResponse.<List<com.franchiseproject.orderservice.dto.response.ProductVariantDetailResponse>>builder().data(List.of()).build();
+        }
+        var spec = RestClient.builder()
+                .baseUrl(productServiceUrl)
+                .build()
+                .post()
+                .uri("/api/products/variants/bulk")
+                .body(ids);
+        
+        addAuthHeaders(spec);
+        
+        return spec.retrieve().body(new ParameterizedTypeReference<ApiResponse<List<com.franchiseproject.orderservice.dto.response.ProductVariantDetailResponse>>>() {});
+    }
+
     public BigDecimal validateAndCalculate(UUID customerId,
                                            UUID promotionId,
                                            BigDecimal totalItems) {
