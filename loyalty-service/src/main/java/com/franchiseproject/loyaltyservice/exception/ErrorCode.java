@@ -27,6 +27,7 @@ public enum ErrorCode {
 
     // --- REFUND POINTS ---
     ORDER_ALREADY_REFUNDED(4014, "Order points have already been refunded"),
+    ORDER_ALREADY_EARNED(4015, "Order points have already been earned"),
 
     POINTS_IS_REQUIRED(4009, "Points amount is required"),
     POINTS_CANNOT_BE_ZERO(4010, "Adjustment points cannot be zero"),
