@@ -134,7 +134,14 @@ public class OrderServiceImpl implements OrderService {
             }
             BigDecimal finalTotal = calculateOrder(totalItems, request.getDistance(), discount, discountType, maxDiscountValue);
             order.setTotalDue(finalTotal);
-            order.setTotalDiscount(finalTotal.subtract(totalItems));
+
+            BigDecimal shippingFee = order.getTypeOrder() == TypeOrder.Online
+                    ? BigDecimal.valueOf(20000)
+                    : BigDecimal.ZERO;
+            BigDecimal adjustedFinalTotal = finalTotal.subtract(shippingFee);
+            BigDecimal totalDiscount = totalItems.subtract(adjustedFinalTotal);
+            order.setTotalDiscount(totalDiscount);
+
             order.setOrderStatus(OrderStatus.WAITING_FOR_CONFIRMATION);
             orderRepository.save(order);// save lần 2 sau khi set giá cả các thứ.
             if (request.getTypeOrder() != null && "Online".equalsIgnoreCase(request.getTypeOrder().name())) {
@@ -204,6 +211,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void handlePaymentResult(PaymentResultRequest result) {
+        final BigDecimal POINT_RATE = BigDecimal.valueOf(1000);
         Order order = orderRepository.findById(result.getOrderId())
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
@@ -228,6 +236,13 @@ public class OrderServiceImpl implements OrderService {
                 // For now, trigger cancel notifications to other services
                 inventoryClient.notifyOrderStatus(order.getId(), "CANCELLED", order.getFranchiseId());
 
+                Integer pointToRefund = Optional.ofNullable(order.getTotalDiscount())
+                        .map(discount -> discount.divide(POINT_RATE, 0, RoundingMode.DOWN))
+                        .map(BigDecimal::intValue)
+                        .orElse(0);
+                loyaltyClient.apiLoyaltyTraceBackPoints(order.getCustomerId(), order.getFranchiseId(), order.getId(), pointToRefund);
+
+
                 // Actually, the most reliable way to rollback is to use the order details
                 // since we are about to delete it.
                 promotionClient.apiPromotionTraceBack(order.getId(), OrderStatus.FAILED_ORDER);
@@ -238,11 +253,14 @@ public class OrderServiceImpl implements OrderService {
                 log.info("Online Payment result NOT SUCCESS for order {}. Rolling back, deleting transaction, and deleting order.", order.getId());
                 log.info("TotalDiscount: {}", order.getTotalDiscount());
                 promotionClient.apiPromotionTraceBack(order.getId(), OrderStatus.FAILED_ORDER);
-                releaseInventory(order);
+
                 Integer pointToRefund = Optional.ofNullable(order.getTotalDiscount())
-                        .map(v -> v.divide(BigDecimal.valueOf(1000), 0, RoundingMode.DOWN).intValue())
+                        .map(discount -> discount.divide(POINT_RATE, 0, RoundingMode.DOWN))
+                        .map(BigDecimal::intValue)
                         .orElse(0);
                 loyaltyClient.apiLoyaltyTraceBackPoints(order.getCustomerId(), order.getFranchiseId(), order.getId(), pointToRefund);
+
+                releaseInventory(order);
                 inventoryClient.notifyOrderStatus(order.getId(), "FAILED_ORDER", order.getFranchiseId());
                 paymentClient.deleteTransactionByOrderId(order.getId());
                 deleteOrderPermanently(order.getId());
