@@ -64,7 +64,7 @@ public class ProductController {
     }
 
     @GetMapping("/detail/{id}")
-    public ApiResponse<ProductResponse> getDetail(@PathVariable UUID id) {
+    public ApiResponse<ProductResponse> getDetail(@PathVariable("id") UUID id) {
         return ApiResponse.<ProductResponse>builder()
                 .statusCode(200)
                 .message("Get product by id")
@@ -82,7 +82,7 @@ public class ProductController {
     }
 
     @GetMapping("/variant/{id}")
-    public ApiResponse<ProductVariantDetailResponse> getProductVariant(@PathVariable UUID id) {
+    public ApiResponse<ProductVariantDetailResponse> getProductVariant(@PathVariable("id") UUID id) {
         ProductVariant variant = productService.getProductVariantById(id);
         Product parentProduct = variant.getProduct();
 
@@ -150,7 +150,7 @@ public class ProductController {
 
     @GetMapping("/franchise/{locationId}")
     public ApiResponse<Page<ProductResponse>> getByFranchise(
-            @PathVariable UUID locationId,
+            @PathVariable("locationId") UUID locationId,
             @Valid @ModelAttribute SearchProductRequest request) {
         
         return ApiResponse.<Page<ProductResponse>>builder()

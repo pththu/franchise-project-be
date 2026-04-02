@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,8 +26,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             AND (:typeOrder IS NULL OR o.typeOrder = :typeOrder)
             """)
     Page<Order> findByFilters(
-            OrderStatus status,
-            TypeOrder typeOrder,
+            @Param("status") OrderStatus status,
+            @Param("typeOrder") TypeOrder typeOrder,
             Pageable pageable
     );
 
@@ -37,9 +38,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             AND (:typeOrder IS NULL OR o.typeOrder = :typeOrder)
             """)
     Page<Order> findByFranchiseIdAndFilters(
-            UUID franchiseId,
-            OrderStatus status,
-            TypeOrder typeOrder,
+            @Param("franchiseId") UUID franchiseId,
+            @Param("status") OrderStatus status,
+            @Param("typeOrder") TypeOrder typeOrder,
             Pageable pageable
     );
 
@@ -56,34 +57,34 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     @Query("""
                 SELECT o FROM Order o
-                WHERE CAST(o.id as string) LIKE %:keyword%
+                WHERE CAST(o.id AS text) LIKE %:keyword%
             """)
-    List<Order> searchOrderByIdLike(String keyword);
+    List<Order> searchOrderByIdLike(@Param("keyword") String keyword);
 
     @Query("""
             SELECT o FROM Order o
-            WHERE (CAST(o.id AS string) LIKE %:keyword% OR o.customerId IN :customerIds)
+            WHERE (CAST(o.id AS text) LIKE %:keyword% OR o.customerId IN :customerIds)
             """)
-    List<Order> searchOrdersByCustomerIdsWithoutFranchise(String keyword, java.util.List<java.util.UUID> customerIds);
+    List<Order> searchOrdersByCustomerIdsWithoutFranchise(@Param("keyword") String keyword, @Param("customerIds") java.util.List<java.util.UUID> customerIds);
 
     @Query("""
                 SELECT o FROM Order o
-                WHERE CAST(o.id as string) LIKE %:keyword% OR o.customerId IN :customerIds
+                WHERE CAST(o.id AS text) LIKE %:keyword% OR o.customerId IN :customerIds
             """)
-    List<Order> searchOrderByIdOrCustomerIds(String keyword, java.util.List<java.util.UUID> customerIds);
+    List<Order> searchOrderByIdOrCustomerIds(@Param("keyword") String keyword, @Param("customerIds") java.util.List<java.util.UUID> customerIds);
     @Query("""
             SELECT o FROM Order o
             WHERE o.franchiseId = :franchiseId
-            AND CAST(o.id AS string) LIKE %:keyword%
+            AND CAST(o.id AS text) LIKE %:keyword%
             """)
-    List<Order> searchOrders(UUID franchiseId, String keyword);
+    List<Order> searchOrders(@Param("franchiseId") UUID franchiseId, @Param("keyword") String keyword);
 
     @Query("""
             SELECT o FROM Order o
             WHERE o.franchiseId = :franchiseId
-            AND (CAST(o.id AS string) LIKE %:keyword% OR o.customerId IN :customerIds)
+            AND (CAST(o.id AS text) LIKE %:keyword% OR o.customerId IN :customerIds)
             """)
-    List<Order> searchOrdersByCustomerIds(UUID franchiseId, String keyword, java.util.List<java.util.UUID> customerIds);
+    List<Order> searchOrdersByCustomerIds(@Param("franchiseId") UUID franchiseId, @Param("keyword") String keyword, @Param("customerIds") java.util.List<java.util.UUID> customerIds);
 
     Page<Order> findByCustomerId(UUID customerId, Pageable pageable);
 
