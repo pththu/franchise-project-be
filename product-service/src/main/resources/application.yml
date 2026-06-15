@@ -1,0 +1,24 @@
+server:
+  port: 3001
+
+spring:
+  application:
+    name: product-service
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate.jdbc.time_zone: UTC
+
+# ✅ ĐỂ Ở ĐÂY (ngoài spring)
+cloudinary:
+  cloud-name: dyio9wcoc
+  api-key: 816764714946318
+  api-secret: _AGuv3TF86jBBL_Nx2v2qIKLIAA

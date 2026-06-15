@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DeliveryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <envs>
+      <env name="DB_PASSWORD" value="JsxqgpuCVH2J1Iw1SoQ4kJQnkb4S7yXL" />
+      <env name="DB_URL" value="jdbc:postgresql://dpg-d74tl4i4d50c73e11i8g-a.singapore-postgres.render.com:5432/group_03_x26r?sslmode=require" />
+      <env name="DB_USERNAME" value="group_03_user" />
+      <env name="API_KEY" value="be404ab39aa94ae2bd00133e5add65a3" />
+    </envs>
+    <module name="delivery-service" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.franchiseproject.deliveryservice.DeliveryServiceApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -1,0 +1,30 @@
+package com.franchiseproject.loyaltyservice.controller;
+
+import com.franchiseproject.loyaltyservice.dto.ApiResponse;
+import com.franchiseproject.loyaltyservice.model.LoyaltyTier;
+import com.franchiseproject.loyaltyservice.repository.LoyaltyTierRepository;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/loyalty")
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class LoyaltyTierController {
+
+    LoyaltyTierRepository loyaltyTierRepository;
+
+    @GetMapping("/tiers")
+    public ApiResponse<List<LoyaltyTier>> getAllTiers() {
+        List<LoyaltyTier> tiers = loyaltyTierRepository.findAll();
+        return ApiResponse.<List<LoyaltyTier>>builder()
+                .statusCode(200)
+                .message("Get all tiers configuration successfully")
+                .data(tiers)
+                .build();
+    }
+}
